@@ -141,29 +141,63 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
 
         raise HTTPException(status_code=401, detail="Rostro no reconocido")
 
-    except ImportError:
-        # face_recognition no instalado — modo simulación para desarrollo
-        # En producción instalar: pip install face_recognition
-        if usuarios:
-            usuario = usuarios[0]
+    except (ImportError, Exception):
+        # Comparación por histograma de color (fallback sin dlib)
+        from PIL import Image
+        import io
+
+        def histograma(img_bytes):
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGB").resize((64, 64))
+            h = img.histogram()
+            total = sum(h) or 1
+            return [v / total for v in h]
+
+        def similitud(h1, h2):
+            return sum(min(a, b) for a, b in zip(h1, h2))
+
+        try:
+            hist_capturada = histograma(foto_bytes)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Imagen inválida")
+
+        mejor_usuario = None
+        mejor_score = 0.0
+        UMBRAL = 0.85  # ajustar según necesidad
+
+        for usuario in usuarios:
+            for foto_path in [usuario.foto_frontal, usuario.foto_lateral_izq, usuario.foto_lateral_der]:
+                if not foto_path or not os.path.exists(foto_path):
+                    continue
+                try:
+                    with open(foto_path, "rb") as f:
+                        hist_reg = histograma(f.read())
+                    score = similitud(hist_capturada, hist_reg)
+                    if score > mejor_score:
+                        mejor_score = score
+                        mejor_usuario = usuario
+                except Exception:
+                    continue
+
+        if mejor_usuario and mejor_score >= UMBRAL:
             import secrets
             token = secrets.token_hex(32)
             return {
                 "success": True,
                 "token": token,
-                "message": f"[DEMO] Bienvenido, {usuario.nombre_completo}",
+                "message": f"Bienvenido, {mejor_usuario.nombre_completo}",
                 "usuario": {
-                    "id": usuario.id,
-                    "nombre_completo": usuario.nombre_completo,
-                    "username": usuario.username,
-                    "numero_dni": usuario.numero_dni,
-                    "email": usuario.email,
-                    "rol": usuario.rol,
-                    "foto_frontal": usuario.foto_frontal,
-                    "usar_reconocimiento_facial": usuario.usar_reconocimiento_facial
+                    "id": mejor_usuario.id,
+                    "nombre_completo": mejor_usuario.nombre_completo,
+                    "username": mejor_usuario.username,
+                    "numero_dni": mejor_usuario.numero_dni,
+                    "email": mejor_usuario.email,
+                    "rol": mejor_usuario.rol,
+                    "foto_frontal": mejor_usuario.foto_frontal,
+                    "usar_reconocimiento_facial": mejor_usuario.usar_reconocimiento_facial
                 }
             }
-        raise HTTPException(status_code=503, detail="Reconocimiento facial no disponible")
+
+        raise HTTPException(status_code=401, detail="Rostro no reconocido")
 
 
 @router.post("/logout")

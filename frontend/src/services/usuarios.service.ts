@@ -1,6 +1,6 @@
 import api from './api'
 
-const USUARIOS_ENDPOINT = '/usuarios'
+const USUARIOS_ENDPOINT = '/usuarios/'
 
 export const usuariosService = {
   // Listar todos los usuarios
@@ -30,7 +30,7 @@ export const usuariosService = {
   // Crear nuevo usuario
   async crearUsuario(datos: FormData) {
     try {
-      const response = await api.post(USUARIOS_ENDPOINT + '/', datos)
+      const response = await api.post(USUARIOS_ENDPOINT, datos)
       return response.data
     } catch (error) {
       console.error('Error creando usuario:', error)

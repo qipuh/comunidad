@@ -362,7 +362,7 @@ const formularioValido = computed(() => {
   if (!formulario.value.nombre_completo) return false
   if (!formulario.value.telefono) return false
   if (!usuarioEditando.value && !formulario.value.password && !formulario.value.usar_reconocimiento_facial) return false
-  if (!previews.value.frontal || !previews.value.lateral_izq || !previews.value.lateral_der) return false
+  if (!usuarioEditando.value && (!previews.value.frontal || !previews.value.lateral_izq || !previews.value.lateral_der)) return false
   return true
 })
 
@@ -463,7 +463,7 @@ const editarUsuario = (usuario) => {
     departamento: usuario.departamento || '',
     provincia: usuario.provincia || '',
     distrito: usuario.distrito || '',
-    telefono: usuario.telefono,
+    telefono: usuario.telefono || '',
     password: '',
     rol: usuario.rol,
     estado: usuario.estado,
@@ -471,6 +471,18 @@ const editarUsuario = (usuario) => {
     foto_frontal: null,
     foto_lateral_izq: null,
     foto_lateral_der: null
+  }
+  // Mostrar fotos existentes como previews
+  const fotoUrl = (path) => {
+    if (!path) return null
+    // path puede ser "uploads/usuarios/archivo.jpg" o absoluto
+    const parte = path.replace(/\\/g, '/').split('uploads/').pop()
+    return `/uploads/${parte}`
+  }
+  previews.value = {
+    frontal: fotoUrl(usuario.foto_frontal),
+    lateral_izq: fotoUrl(usuario.foto_lateral_izq),
+    lateral_der: fotoUrl(usuario.foto_lateral_der),
   }
   datosFactilizaCargados.value = true
   showModal.value = true

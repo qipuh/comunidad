@@ -141,7 +141,7 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
 
         raise HTTPException(status_code=401, detail="Rostro no reconocido")
 
-    except (ImportError, Exception):
+    except BaseException:
         # Comparación por histograma de color (fallback sin dlib)
         from PIL import Image
         import io

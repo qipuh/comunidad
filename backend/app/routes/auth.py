@@ -142,43 +142,63 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Rostro no reconocido")
 
     except BaseException:
-        # Comparación por histograma de color (fallback sin dlib)
-        from PIL import Image
-        import io
+        # Comparación por características visuales sin dlib
+        from PIL import Image, ImageFilter
+        import io, math
 
-        def histograma(img_bytes):
-            img = Image.open(io.BytesIO(img_bytes)).convert("RGB").resize((64, 64))
-            h = img.histogram()
-            total = sum(h) or 1
-            return [v / total for v in h]
+        SIZE = 128
 
-        def similitud(h1, h2):
-            return sum(min(a, b) for a, b in zip(h1, h2))
+        def extraer_vector(img_bytes):
+            img = Image.open(io.BytesIO(img_bytes)).convert("L")  # escala de grises
+            # Recortar zona central (rostro suele estar centrado)
+            w, h = img.size
+            margen_x, margen_y = w // 6, h // 8
+            img = img.crop((margen_x, margen_y, w - margen_x, h - margen_y))
+            img = img.resize((SIZE, SIZE), Image.LANCZOS)
+            img = img.filter(ImageFilter.SHARPEN)
+            pixels = list(img.getdata())
+            total = len(pixels)
+            media = sum(pixels) / total
+            std = math.sqrt(sum((p - media) ** 2 for p in pixels) / total) or 1
+            # Normalizar
+            return [(p - media) / std for p in pixels]
+
+        def similitud_vectores(v1, v2):
+            # Correlación de Pearson (1.0 = idéntico, 0.0 = sin relación)
+            dot = sum(a * b for a, b in zip(v1, v2))
+            n = len(v1)
+            return dot / n  # ya normalizados, dot/n ≈ correlación
 
         try:
-            hist_capturada = histograma(foto_bytes)
+            vec_capturado = extraer_vector(foto_bytes)
         except Exception:
             raise HTTPException(status_code=400, detail="Imagen inválida")
 
         mejor_usuario = None
-        mejor_score = 0.0
-        UMBRAL = 0.55
+        mejor_score = -999.0
+        scores_por_usuario = {}
+        UMBRAL = 0.35  # correlación mínima
 
         for usuario in usuarios:
+            scores_fotos = []
             for foto_path in [usuario.foto_frontal, usuario.foto_lateral_izq, usuario.foto_lateral_der]:
                 if not foto_path or not os.path.exists(foto_path):
                     continue
                 try:
                     with open(foto_path, "rb") as f:
-                        hist_reg = histograma(f.read())
-                    score = similitud(hist_capturada, hist_reg)
-                    if score > mejor_score:
-                        mejor_score = score
-                        mejor_usuario = usuario
+                        vec_reg = extraer_vector(f.read())
+                    score = similitud_vectores(vec_capturado, vec_reg)
+                    scores_fotos.append(score)
                 except Exception:
                     continue
+            if scores_fotos:
+                score_usuario = max(scores_fotos)
+                scores_por_usuario[usuario.nombre_completo] = round(score_usuario, 4)
+                if score_usuario > mejor_score:
+                    mejor_score = score_usuario
+                    mejor_usuario = usuario
 
-        print(f"[FACIAL] mejor_score={mejor_score:.4f} umbral={UMBRAL} usuario={mejor_usuario.nombre_completo if mejor_usuario else None}")
+        print(f"[FACIAL] scores={scores_por_usuario} umbral={UMBRAL} ganador={mejor_usuario.nombre_completo if mejor_usuario else None} score={mejor_score:.4f}")
         if mejor_usuario and mejor_score >= UMBRAL:
             import secrets
             token = secrets.token_hex(32)

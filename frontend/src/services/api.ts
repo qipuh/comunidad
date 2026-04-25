@@ -7,10 +7,7 @@ import axios from 'axios'
 // Crear instancia de axios con configuración base
 export const api = axios.create({
   baseURL: '/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 10000
 })
 
 // Interceptor para agregar token si existe

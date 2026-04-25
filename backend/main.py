@@ -6,11 +6,21 @@ Sistema de Configuración Dinámico para Comunidades
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,http://localhost:3000,http://localhost:8080"
+).split(",") + ["*"]
 
 # Crear aplicación FastAPI
 app = FastAPI(
@@ -22,11 +32,15 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8080", "*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Servir uploads de fotos
+os.makedirs("uploads/usuarios", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ════════════════════════════════════════════════════════════════
 # IMPORTAR RUTAS

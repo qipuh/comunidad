@@ -73,7 +73,10 @@
       "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8080/api/integraciones/factiliza/config\" -Method GET)",
       "WebFetch(domain:docs.factiliza.com)",
       "Bash(git init *)",
-      "Bash(git remote *)"
+      "Bash(git remote *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@38.250.161.113 \"echo 'Conectado OK' && uname -a && whoami\")"
     ]
   }
 }

@@ -4,8 +4,11 @@ Database configuration for SQLAlchemy.
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 import os
 from typing import Generator
+
+load_dotenv()
 
 # Get database URL from environment, with SQLite fallback for development
 DATABASE_URL = os.getenv(
@@ -13,7 +16,7 @@ DATABASE_URL = os.getenv(
     "sqlite:///./comunidad.db"  # Development default
 )
 
-# Create engine with different configs for SQLite vs PostgreSQL
+# Create engine with different configs for SQLite vs MySQL/PostgreSQL
 if "sqlite" in DATABASE_URL:
     engine = create_engine(
         DATABASE_URL,
@@ -24,9 +27,10 @@ else:
     engine = create_engine(
         DATABASE_URL,
         echo=False,
-        pool_size=20,
-        max_overflow=40,
-        pool_pre_ping=True
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        pool_recycle=3600
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,7 +1,10 @@
 <template>
   <div class="dashboard-container">
+    <!-- Overlay móvil -->
+    <div class="sidebar-overlay" :class="{ active: sidebarOpen }" @click="sidebarOpen = false"></div>
+
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <div class="logo">
           <ion-icon name="analytics-outline" class="logo-icon"></ion-icon>
@@ -68,6 +71,9 @@
       <!-- Header -->
       <header class="top-header">
         <div class="header-left">
+          <button class="menu-toggle" @click="sidebarOpen = !sidebarOpen">
+            <ion-icon name="menu-outline"></ion-icon>
+          </button>
           <h1 v-if="activeView === 'dashboard'">Hola, {{ usuario?.nombre_completo?.split(' ')[0] || 'Bienvenido' }}</h1>
           <h1 v-else-if="activeView === 'usuarios'">Usuarios</h1>
           <h1 v-else-if="activeView === 'configuracion'">Configuración</h1>
@@ -304,9 +310,11 @@ const inicialesUsuario = computed(() => {
 })
 
 const activeView = ref('dashboard')
+const sidebarOpen = ref(false)
 
 const navigateTo = (view) => {
   activeView.value = view
+  sidebarOpen.value = false
 }
 
 onMounted(() => {
@@ -832,6 +840,28 @@ ion-icon {
   }
 }
 
+/* MENU TOGGLE - oculto en desktop */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #334155;
+  padding: 4px;
+  line-height: 1;
+}
+
+/* OVERLAY */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+}
+.sidebar-overlay.active { display: block; }
+
 /* VIEW CONTENT */
 .view-content {
   display: flex;
@@ -884,27 +914,79 @@ ion-icon {
 }
 
 @media (max-width: 768px) {
+  /* Sidebar como drawer */
   .sidebar {
-    width: 80px;
-    padding: 16px 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    width: 260px;
+  }
+  .sidebar.open {
+    transform: translateX(0);
   }
 
-  .logo-text,
-  .nav-label {
-    display: none;
+  /* Mostrar botón hamburguesa */
+  .menu-toggle {
+    display: flex;
+    align-items: center;
   }
 
-  .sidebar-footer {
-    display: none;
+  /* Header compacto */
+  .top-header {
+    padding: 12px 16px;
+    gap: 12px;
   }
 
+  .header-subtitle { display: none; }
+
+  .top-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .user-info { display: none; }
+
+  /* Main content ocupa todo el ancho */
+  .main-content {
+    padding: 16px;
+    width: 100%;
+  }
+
+  /* Stats en 2 columnas */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-value { font-size: 1.4rem; }
+
+  /* Dashboard grid en 1 columna */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr 1fr;
   }
 
-  .top-header {
+  .stat-card {
     flex-direction: column;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 8px;
   }
+
+  .top-header h1 { font-size: 1rem; }
+
+  .main-content { padding: 12px; }
 }
 </style>

@@ -502,4 +502,18 @@ onUnmounted(() => {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1.5rem;
+    border-radius: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .login-page { align-items: stretch; }
+  .login-header h1 { font-size: 1.3rem; }
+  .logo-circle { width: 56px; height: 56px; font-size: 1.5rem; }
+}
 </style>

@@ -1130,17 +1130,41 @@ tbody tr:hover {
 }
 
 @media (max-width: 768px) {
-  .fotos-grid {
-    grid-template-columns: 1fr;
+  /* Header */
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
+  .header-content h2 { font-size: 18px; }
+  .btn-primary { width: 100%; justify-content: center; }
+  .search-bar { max-width: 100%; }
 
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
+  /* Tabla: scroll horizontal */
+  .usuarios-table {
+    overflow-x: auto;
   }
+  table { min-width: 520px; }
+  th, td { padding: 10px 12px; font-size: 13px; }
 
+  /* Modal ocupa toda la pantalla */
+  .modal-overlay-full { padding: 0; align-items: flex-end; }
   .modal-contenedor {
     max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 95vh;
   }
+
+  /* Grids del formulario en 1 columna */
+  .fotos-grid,
+  .grid-2,
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  th, td { padding: 8px 10px; font-size: 12px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-body-scroll { padding: 14px 16px; }
+  .seccion { margin-bottom: 20px; padding-bottom: 20px; }
 }
 </style>

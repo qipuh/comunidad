@@ -178,6 +178,7 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
                 except Exception:
                     continue
 
+        print(f"[FACIAL] mejor_score={mejor_score:.4f} umbral={UMBRAL} usuario={mejor_usuario.nombre_completo if mejor_usuario else None}")
         if mejor_usuario and mejor_score >= UMBRAL:
             import secrets
             token = secrets.token_hex(32)

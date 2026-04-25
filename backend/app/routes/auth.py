@@ -162,7 +162,7 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
 
         mejor_usuario = None
         mejor_score = 0.0
-        UMBRAL = 0.85  # ajustar según necesidad
+        UMBRAL = 0.55
 
         for usuario in usuarios:
             for foto_path in [usuario.foto_frontal, usuario.foto_lateral_izq, usuario.foto_lateral_der]:

@@ -177,7 +177,7 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
         mejor_usuario = None
         mejor_score = -999.0
         scores_por_usuario = {}
-        UMBRAL = 0.35  # correlación mínima
+        UMBRAL = 0.20  # correlación mínima
 
         for usuario in usuarios:
             scores_fotos = []
@@ -198,8 +198,12 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
                     mejor_score = score_usuario
                     mejor_usuario = usuario
 
-        print(f"[FACIAL] scores={scores_por_usuario} umbral={UMBRAL} ganador={mejor_usuario.nombre_completo if mejor_usuario else None} score={mejor_score:.4f}")
-        if mejor_usuario and mejor_score >= UMBRAL:
+        # Verificar que el ganador supere al segundo por margen suficiente
+        todos_scores = sorted(scores_por_usuario.values(), reverse=True)
+        segundo_score = todos_scores[1] if len(todos_scores) > 1 else 0
+        margen = mejor_score - segundo_score
+        print(f"[FACIAL] scores={scores_por_usuario} umbral={UMBRAL} ganador={mejor_usuario.nombre_completo if mejor_usuario else None} score={mejor_score:.4f} margen={margen:.4f}")
+        if mejor_usuario and mejor_score >= UMBRAL and margen >= 0.05:
             import secrets
             token = secrets.token_hex(32)
             return {

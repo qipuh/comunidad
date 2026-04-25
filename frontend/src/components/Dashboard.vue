@@ -300,7 +300,7 @@ const emit = defineEmits(['cerrar-sesion'])
 
 const inicialesUsuario = computed(() => {
   const nombre = props.usuario?.nombre_completo || ''
-  return nombre.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase() || 'U'
+  return nombre.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() || 'U'
 })
 
 const activeView = ref('dashboard')

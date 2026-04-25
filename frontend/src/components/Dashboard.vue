@@ -84,10 +84,10 @@
 
         <div class="header-right">
           <div class="user-profile">
-            <img src="https://via.placeholder.com/40" alt="Margaret" class="avatar">
+            <div class="avatar-initials" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1rem;">{{ inicialesUsuario }}</div>
             <div class="user-info">
-              <p class="user-name">Margaret Nelson</p>
-              <p class="user-role">Administrador</p>
+              <p class="user-name">{{ usuario?.nombre_completo?.split(' ')[0] || 'Usuario' }}</p>
+              <p class="user-role">{{ usuario?.rol === 'admin' ? 'Administrador' : 'Usuario' }}</p>
             </div>
             <button class="menu-btn">
               <ion-icon name="ellipsis-vertical"></ion-icon>
@@ -224,7 +224,7 @@
             </div>
             <div class="activity-list">
               <div class="activity-item">
-                <img src="https://via.placeholder.com/32" alt="User" class="activity-avatar">
+                <div class="activity-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">U</div>
                 <div class="activity-details">
                   <p class="activity-user">John Doe</p>
                   <p class="activity-action">creó un nuevo campo</p>
@@ -232,7 +232,7 @@
                 </div>
               </div>
               <div class="activity-item">
-                <img src="https://via.placeholder.com/32" alt="User" class="activity-avatar">
+                <div class="activity-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">U</div>
                 <div class="activity-details">
                   <p class="activity-user">Jane Smith</p>
                   <p class="activity-action">completó un registro</p>
@@ -240,7 +240,7 @@
                 </div>
               </div>
               <div class="activity-item">
-                <img src="https://via.placeholder.com/32" alt="User" class="activity-avatar">
+                <div class="activity-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">U</div>
                 <div class="activity-details">
                   <p class="activity-user">Mike Johnson</p>
                   <p class="activity-action">actualizó la configuración</p>
@@ -289,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import UsuariosView from './dashboard/UsuariosView.vue'
 import ConfiguracionView from './dashboard/ConfiguracionView.vue'
 import ReportesView from './dashboard/ReportesView.vue'
@@ -297,6 +297,11 @@ import IntegracionesView from './dashboard/IntegracionesView.vue'
 
 const props = defineProps({ usuario: Object })
 const emit = defineEmits(['cerrar-sesion'])
+
+const inicialesUsuario = computed(() => {
+  const nombre = props.usuario?.nombre_completo || ''
+  return nombre.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase() || 'U'
+})
 
 const activeView = ref('dashboard')
 

@@ -123,6 +123,39 @@ async def crear_concepto(datos: ConceptoPagoCreate, db: Session = Depends(get_db
     }
 
 
+@router.put("/conceptos/{concepto_id}")
+async def actualizar_concepto(concepto_id: int, datos: ConceptoPagoCreate, db: Session = Depends(get_db)):
+    """Actualizar un concepto de pago"""
+    concepto = db.query(ConceptoPago).filter(ConceptoPago.id == concepto_id).first()
+    if not concepto:
+        raise HTTPException(status_code=404, detail="Concepto no encontrado")
+
+    concepto.nombre = datos.nombre
+    concepto.descripcion = datos.descripcion
+    concepto.monto = datos.monto
+    concepto.tipo = datos.tipo
+    concepto.recurrencia = datos.recurrencia
+    concepto.dia_cobro = datos.dia_cobro
+    concepto.cada_n_periodos = datos.cada_n_periodos
+    concepto.fecha_inicio = datos.fecha_inicio
+    concepto.fecha_fin = datos.fecha_fin
+
+    db.commit()
+    return {"success": True, "message": "Concepto actualizado"}
+
+
+@router.delete("/conceptos/{concepto_id}")
+async def eliminar_concepto(concepto_id: int, db: Session = Depends(get_db)):
+    """Eliminar un concepto de pago"""
+    concepto = db.query(ConceptoPago).filter(ConceptoPago.id == concepto_id).first()
+    if not concepto:
+        raise HTTPException(status_code=404, detail="Concepto no encontrado")
+
+    db.delete(concepto)
+    db.commit()
+    return {"success": True, "message": "Concepto eliminado"}
+
+
 @router.get("/conceptos/{concepto_id}")
 async def obtener_concepto(concepto_id: int, db: Session = Depends(get_db)):
     """Obtener detalles de un concepto"""

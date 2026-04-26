@@ -48,6 +48,13 @@
           <ion-icon name="flash-outline" class="nav-icon"></ion-icon>
           <span class="nav-label">Integraciones</span>
         </button>
+        <button
+          @click="navigateTo('cobranza')"
+          :class="['nav-item', { active: activeView === 'cobranza' }]"
+        >
+          <ion-icon name="cash-outline" class="nav-icon"></ion-icon>
+          <span class="nav-label">Cobranza</span>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -290,6 +297,9 @@
 
       <!-- Integraciones View -->
       <IntegracionesView v-if="activeView === 'integraciones'" />
+
+      <!-- Cobranza View -->
+      <CobranzaView v-if="activeView === 'cobranza'" />
     </main>
   </div>
 </template>
@@ -300,6 +310,7 @@ import UsuariosView from './dashboard/UsuariosView.vue'
 import ConfiguracionView from './dashboard/ConfiguracionView.vue'
 import ReportesView from './dashboard/ReportesView.vue'
 import IntegracionesView from './dashboard/IntegracionesView.vue'
+import CobranzaView from './dashboard/CobranzaView.vue'
 
 const props = defineProps({ usuario: Object })
 const emit = defineEmits(['cerrar-sesion'])

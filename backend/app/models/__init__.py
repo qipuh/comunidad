@@ -14,6 +14,17 @@ from app.models.factiliza import (
     FactilizaConsultaDNI,
     FactilizaLog
 )
+from app.models.cobranza import (
+    ConceptoPago,
+    AsignacionConcepto,
+    Cuota,
+    Pago,
+    TipoConcepto,
+    Recurrencia,
+    MetodoPago,
+    EstadoCuota,
+    EstadoPago
+)
 
 __all__ = [
     "Usuario",
@@ -28,5 +39,14 @@ __all__ = [
     "AuthTypeEnum",
     "FactilizaConfiguracion",
     "FactilizaConsultaDNI",
-    "FactilizaLog"
+    "FactilizaLog",
+    "ConceptoPago",
+    "AsignacionConcepto",
+    "Cuota",
+    "Pago",
+    "TipoConcepto",
+    "Recurrencia",
+    "MetodoPago",
+    "EstadoCuota",
+    "EstadoPago"
 ]

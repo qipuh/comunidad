@@ -52,6 +52,7 @@ try:
     from app.routes.factiliza import router as factiliza_router
     from app.routes.usuarios import router as usuarios_router
     from app.routes.auth import router as auth_router
+    from app.routes.cobranza import router as cobranza_router
     logger.info("✅ Rutas importadas correctamente")
 except Exception as e:
     logger.warning(f"⚠️ Error importando rutas: {e}")
@@ -66,6 +67,7 @@ try:
     app.include_router(validaciones_router, tags=["Validaciones"])
     app.include_router(factiliza_router, tags=["Factiliza"])
     app.include_router(usuarios_router, tags=["Usuarios"])
+    app.include_router(cobranza_router, tags=["Cobranza"])
     logger.info("✅ Rutas registradas en la aplicación")
 except Exception as e:
     logger.error(f"ERROR registrando rutas: {type(e).__name__}: {e}", exc_info=True)

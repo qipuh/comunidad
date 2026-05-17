@@ -272,7 +272,7 @@
                         :disabled="fila.estado === 'error'"
                       >
                     </td>
-                    <td>{{ fila.datos.nombre_completo }}</td>
+                    <td>{{ [fila.datos.nombres, fila.datos.apellido_paterno, fila.datos.apellido_materno].filter(n => n).join(' ') }}</td>
                     <td class="dni">{{ fila.datos.dni }}</td>
                     <td>{{ fila.datos.sexo }}</td>
                     <td>{{ fila.datos.fecha_nacimiento || '-' }}</td>
@@ -352,12 +352,23 @@
 
             <div class="grid-2">
               <div class="form-group">
-                <label>Nombre Completo *</label>
-                <input v-model="formulario.nombre_completo" type="text" disabled>
+                <label>Nombres *</label>
+                <input v-model="formulario.nombres" type="text" disabled>
               </div>
               <div class="form-group">
                 <label>Fecha de Nacimiento</label>
                 <input v-model="formulario.fecha_nacimiento" type="text" disabled>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Apellido Paterno</label>
+                <input v-model="formulario.apellido_paterno" type="text" disabled>
+              </div>
+              <div class="form-group">
+                <label>Apellido Materno</label>
+                <input v-model="formulario.apellido_materno" type="text" disabled>
               </div>
             </div>
 
@@ -621,7 +632,9 @@ const filtroRol = ref('')
 
 const formulario = ref({
   numero_dni: '',
-  nombre_completo: '',
+  nombres: '',
+  apellido_paterno: '',
+  apellido_materno: '',
   fecha_nacimiento: '',
   sexo: '',
   estado_civil: '',
@@ -669,7 +682,7 @@ const usuariosFiltrados = computed(() => {
 
 const formularioValido = computed(() => {
   if (!datosFactilizaCargados.value) return false
-  if (!formulario.value.nombre_completo) return false
+  if (!formulario.value.nombres) return false
   if (!formulario.value.telefono) return false
   if (!usuarioEditando.value && !formulario.value.password && !formulario.value.usar_reconocimiento_facial) return false
   if (!usuarioEditando.value && (!previews.value.frontal || !previews.value.lateral_izq || !previews.value.lateral_der)) return false
@@ -754,7 +767,9 @@ const consultarDNI = async () => {
 
     const datos = respuesta.data
 
-    formulario.value.nombre_completo = datos.nombre_completo || ''
+    formulario.value.nombres = datos.nombres || ''
+    formulario.value.apellido_paterno = datos.apellido_paterno || ''
+    formulario.value.apellido_materno = datos.apellido_materno || ''
     formulario.value.fecha_nacimiento = datos.fecha_nacimiento || ''
     formulario.value.sexo = datos.sexo || ''
     formulario.value.estado_civil = datos.estado_civil || ''
@@ -786,7 +801,9 @@ const cargarFoto = (event, tipo) => {
 
 const limpiarDatos = () => {
   formulario.value.numero_dni = ''
-  formulario.value.nombre_completo = ''
+  formulario.value.nombres = ''
+  formulario.value.apellido_paterno = ''
+  formulario.value.apellido_materno = ''
   formulario.value.fecha_nacimiento = ''
   formulario.value.sexo = ''
   formulario.value.estado_civil = ''
@@ -815,7 +832,9 @@ const editarUsuario = (usuario) => {
 
   formulario.value = {
     numero_dni: usuario.numero_dni,
-    nombre_completo: usuario.nombre_completo,
+    nombres: usuario.nombres || '',
+    apellido_paterno: usuario.apellido_paterno || '',
+    apellido_materno: usuario.apellido_materno || '',
     fecha_nacimiento: usuario.fecha_nacimiento || '',
     sexo: usuario.sexo || '',
     estado_civil: usuario.estado_civil || '',
@@ -861,7 +880,9 @@ const guardarUsuario = async () => {
   try {
     const formData = new FormData()
     formData.append('numero_dni', formulario.value.numero_dni)
-    formData.append('nombre_completo', formulario.value.nombre_completo)
+    formData.append('nombres', formulario.value.nombres)
+    formData.append('apellido_paterno', formulario.value.apellido_paterno)
+    formData.append('apellido_materno', formulario.value.apellido_materno)
     formData.append('fecha_nacimiento', formulario.value.fecha_nacimiento)
     formData.append('sexo', formulario.value.sexo)
     formData.append('estado_civil', formulario.value.estado_civil)
@@ -962,7 +983,9 @@ const cerrarModal = () => {
 const resetFormulario = () => {
   formulario.value = {
     numero_dni: '',
-    nombre_completo: '',
+    nombres: '',
+    apellido_paterno: '',
+    apellido_materno: '',
     fecha_nacimiento: '',
     sexo: '',
     estado_civil: '',

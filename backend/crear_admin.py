@@ -30,7 +30,8 @@ def main():
         usuario = Usuario(
             username="admin@comunidad.test",
             numero_dni="99999999",
-            nombre_completo="Administrador Sistema",
+            nombres="Administrador",
+            apellido_paterno="Sistema",
             email="admin@comunidad.test",
             fecha_nacimiento="1990-01-01",
             sexo="M",

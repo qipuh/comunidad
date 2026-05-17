@@ -96,3 +96,8 @@ class Usuario(Base):
         foreign_keys="ConfiguracionCampo.creado_por",
         back_populates=None
     )
+
+    @property
+    def nombre_completo(self):
+        partes = [self.nombres, self.apellido_paterno, self.apellido_materno]
+        return ' '.join(p for p in partes if p and p.strip()).upper()

@@ -29,7 +29,8 @@ def crear_usuario_admin():
         usuario_admin = Usuario(
             username="admin@comunidad.test",
             numero_dni="12345678",
-            nombre_completo="Administrador del Sistema",
+            nombres="Administrador",
+            apellido_paterno="Sistema",
             email="admin@comunidad.test",
             fecha_nacimiento="1990-01-01",
             sexo="M",

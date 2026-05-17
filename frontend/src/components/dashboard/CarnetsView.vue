@@ -696,45 +696,47 @@ export default {
 
       try {
         cargando.value = true
+        const totalUsuarios = usuarios.value.length
+        let procesados = 0
 
         const pdf = new jsPDF({
           orientation: 'landscape',
           unit: 'mm',
-          format: 'A4'
+          format: [254, 144] // Tamaño de carnet: 254mm x 144mm
         })
 
-        let pageCount = 0
-        const colWidth = 95.6
-        const rowHeight = 50
-
-        for (let idx = 0; idx < usuarios.value.length; idx++) {
+        for (let idx = 0; idx < totalUsuarios; idx++) {
           const usuario = usuarios.value[idx]
           usuarioSeleccionado.value = usuario
+          procesados++
 
+          // Generar QR para este usuario
           await generarQR(usuario, `qr-canvas-${usuario.id}`)
-          await new Promise(r => setTimeout(r, 100))
+          await new Promise(r => setTimeout(r, 150))
 
           const anversoEl = document.getElementById(`carnet-anverso-${usuario.id}`)
           if (!anversoEl) continue
 
-          const carnetCanvas = await html2canvas(anversoEl, { scale: 1.5, useCORS: true })
+          // Capturar el carnet anverso
+          const carnetCanvas = await html2canvas(anversoEl, { scale: 2, useCORS: true })
           const carnetImg = carnetCanvas.toDataURL('image/png')
 
-          const colIndex = idx % 2
-          const rowIndex = Math.floor((idx % 4) / 2)
+          // Agregar imagen a la página actual (completa)
+          pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
 
-          const posX = 10 + (colIndex * (colWidth + 5))
-          const posY = 10 + (rowIndex * (rowHeight + 5))
+          // Agregar nueva página para el siguiente carnet (excepto el último)
+          if (idx < totalUsuarios - 1) {
+            pdf.addPage([254, 144], 'landscape')
+          }
 
-          pdf.addImage(carnetImg, 'PNG', posX, posY, colWidth - 5, rowHeight - 5)
-
-          if ((idx + 1) % 4 === 0 && idx < usuarios.value.length - 1) {
-            pdf.addPage('A4', 'landscape')
+          // Mostrar progreso (cada 10)
+          if (procesados % 10 === 0) {
+            console.log(`Procesados ${procesados}/${totalUsuarios} carnets...`)
           }
         }
 
-        pdf.save(`carnets-export-${new Date().getTime()}.pdf`)
-        alert(`Exportados ${usuarios.value.length} carnets exitosamente`)
+        pdf.save(`carnets-completos-${new Date().getTime()}.pdf`)
+        alert(`✅ Exportados ${totalUsuarios} carnets exitosamente\nCada carnet en su propia página`)
       } catch (error) {
         console.error('Error exportando todos los carnets:', error)
         alert('Error al exportar: ' + error.message)

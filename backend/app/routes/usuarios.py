@@ -765,6 +765,7 @@ async def importar_confirmado(
                 db.add(nuevo_usuario)
                 db.flush()
 
+                nombre_completo = f"{nombres} {apellido_paterno}".strip()
                 usuarios_creados.append({
                     "id": nuevo_usuario.id,
                     "dni": dni,
@@ -860,6 +861,7 @@ async def importar_excel(
                 db.add(nuevo_usuario)
                 db.flush()
 
+                nombre_completo = f"{nombres} {apellido_paterno}".strip()
                 usuarios_creados.append({
                     "id": nuevo_usuario.id,
                     "dni": dni,

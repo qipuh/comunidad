@@ -42,6 +42,10 @@
                 <label>Nombre Corto (Siglas):</label>
                 <input v-model="configCarnet.nombre_corto" type="text" class="form-input" placeholder="CC.TPCT">
               </div>
+              <div class="form-group">
+                <label>URL QR (para reverso):</label>
+                <input v-model="configCarnet.url_qr" type="text" class="form-input" placeholder="https://ejemplo.com">
+              </div>
             </div>
 
             <!-- Imágenes -->
@@ -386,6 +390,9 @@
                     <span class="m-etiqueta">Anexo que Pertenece</span>
                     <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
                   </div>
+                  <div v-if="configCarnet.url_qr" class="qr-url-container">
+                    <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
@@ -431,7 +438,8 @@ export default {
       fondo_anverso_url: null,
       fondo_reverso_url: null,
       firma_secretario_url: null,
-      firma_presidente_url: null
+      firma_presidente_url: null,
+      url_qr: null
     })
 
     const usuariosFiltrados = computed(() => {
@@ -548,7 +556,8 @@ export default {
           nombre_comunidad: configCarnet.value.nombre_comunidad,
           subtitulo: configCarnet.value.subtitulo,
           resolucion: configCarnet.value.resolucion,
-          nombre_corto: configCarnet.value.nombre_corto
+          nombre_corto: configCarnet.value.nombre_corto,
+          url_qr: configCarnet.value.url_qr || ''
         }
 
         console.log('Guardando configuración:', params)
@@ -617,6 +626,24 @@ export default {
         }, 50)
       } catch (error) {
         console.error('Error generando QR:', error)
+      }
+    }
+
+    const generarQRURL = async (usuario, urlQR) => {
+      if (!usuario || !urlQR) return
+      try {
+        setTimeout(async () => {
+          const canvas = document.getElementById(`qr-url-canvas-${usuario.id}`)
+          if (canvas) {
+            await QRCode.toCanvas(canvas, urlQR, {
+              width: 80,
+              margin: 1,
+              color: { dark: '#000000', light: '#FFFFFF' }
+            })
+          }
+        }, 50)
+      } catch (error) {
+        console.error('Error generando QR de URL:', error)
       }
     }
 
@@ -730,6 +757,16 @@ export default {
     watch(() => usuarioSeleccionado.value, async (nuevoUsuario) => {
       if (nuevoUsuario) {
         await generarQR(nuevoUsuario, `qr-canvas-completo-${nuevoUsuario.id}`)
+        if (configCarnet.value.url_qr) {
+          await generarQRURL(nuevoUsuario, configCarnet.value.url_qr)
+        }
+      }
+    })
+
+    // Regenerar QR de URL cuando cambia
+    watch(() => configCarnet.value.url_qr, async (nuevaUrl) => {
+      if (usuarioSeleccionado.value && nuevaUrl) {
+        await generarQRURL(usuarioSeleccionado.value, nuevaUrl)
       }
     })
 
@@ -2147,6 +2184,19 @@ export default {
   margin-top: 2px;
   letter-spacing: 0.2px;
   line-height: 1.3;
+}
+
+.qr-url-container {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding-top: 10px;
+}
+
+.qr-url {
+  width: 70px !important;
+  height: 70px !important;
 }
 
 @media print {

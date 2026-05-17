@@ -525,7 +525,8 @@ async def obtener_config_carnet(db: Session = Depends(get_db)):
             "fondo_anverso_url": config.fondo_anverso_url,
             "fondo_reverso_url": config.fondo_reverso_url,
             "firma_secretario_url": getattr(config, 'firma_secretario_url', None),
-            "firma_presidente_url": getattr(config, 'firma_presidente_url', None)
+            "firma_presidente_url": getattr(config, 'firma_presidente_url', None),
+            "url_qr": getattr(config, 'url_qr', None)
         }
     except Exception as e:
         # Si hay error (ej: columna no existe), devolver valores por defecto
@@ -539,7 +540,8 @@ async def obtener_config_carnet(db: Session = Depends(get_db)):
             "fondo_anverso_url": None,
             "fondo_reverso_url": None,
             "firma_secretario_url": None,
-            "firma_presidente_url": None
+            "firma_presidente_url": None,
+            "url_qr": None
         }
 
 
@@ -549,6 +551,7 @@ async def actualizar_config_carnet(
     subtitulo: str = Query(...),
     resolucion: str = Query(...),
     nombre_corto: str = Query(...),
+    url_qr: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -563,7 +566,8 @@ async def actualizar_config_carnet(
                 nombre_comunidad=nombre_comunidad,
                 subtitulo=subtitulo,
                 resolucion=resolucion,
-                nombre_corto=nombre_corto
+                nombre_corto=nombre_corto,
+                url_qr=url_qr
             )
             db.add(config)
         else:
@@ -572,6 +576,10 @@ async def actualizar_config_carnet(
             config.resolucion = resolucion
             try:
                 config.nombre_corto = nombre_corto
+            except:
+                pass
+            try:
+                config.url_qr = url_qr
             except:
                 pass
 

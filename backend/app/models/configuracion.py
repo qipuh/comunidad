@@ -271,6 +271,9 @@ class ConfiguracionCarnet(Base):
     firma_secretario_url = Column(String(500), nullable=True)  # Firma del secretario
     firma_presidente_url = Column(String(500), nullable=True)  # Firma del presidente
 
+    # QR código
+    url_qr = Column(String(500), nullable=True)  # URL para generar QR en reverso
+
     # Auditoría
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

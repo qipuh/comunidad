@@ -93,7 +93,7 @@
             <div class="opcion-info">
               <strong>{{ op.nombre }}</strong>
               <small v-if="op.usuario_id" class="usuario-badge">
-                <ion-icon name="id-card-outline"></ion-icon> {{ op.descripcion }}
+                <ion-icon name="id-card-outline"></ion-icon> {{ extraerDNI(op.descripcion) }}
               </small>
               <p v-else-if="op.descripcion" class="desc-opcion">{{ op.descripcion }}</p>
             </div>
@@ -217,6 +217,16 @@ const calcularPorcentaje = (votos, total) => {
 const obtenerNombreCompleto = (usuario) => {
   const partes = [usuario.nombres, usuario.apellido_paterno, usuario.apellido_materno].filter(p => p && p.trim())
   return partes.join(' ') || 'Sin nombre'
+}
+
+const extraerDNI = (descripcion) => {
+  if (!descripcion) return ''
+  // Si contiene @, es un email con formato DNI@comunidad.local, extraer el DNI
+  if (descripcion.includes('@')) {
+    return descripcion.split('@')[0]
+  }
+  // Si no, es solo el DNI
+  return descripcion
 }
 
 async function cargarDetalle() {

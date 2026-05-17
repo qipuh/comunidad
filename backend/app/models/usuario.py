@@ -99,5 +99,12 @@ class Usuario(Base):
 
     @property
     def nombre_completo(self):
-        partes = [self.nombres, self.apellido_paterno, self.apellido_materno]
-        return ' '.join(p for p in partes if p and p.strip()).upper()
+        partes = []
+        if self.nombres:
+            partes.append(str(self.nombres).strip())
+        if self.apellido_paterno:
+            partes.append(str(self.apellido_paterno).strip())
+        if self.apellido_materno:
+            partes.append(str(self.apellido_materno).strip())
+        nombre = ' '.join(partes)
+        return nombre.upper() if nombre else ''

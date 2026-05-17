@@ -2286,7 +2286,7 @@ td {
 
 .sidebar-content {
   background: white;
-  width: 420px;
+  width: 620px;
   height: 100%;
   display: flex;
   flex-direction: column;

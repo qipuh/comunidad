@@ -119,16 +119,17 @@ async def listar_usuarios(
     db: Session = Depends(get_db)
 ):
     """Listar todos los usuarios"""
-    usuarios = db.query(Usuario).order_by(Usuario.created_at.desc()).limit(limit).offset(offset).all()
-    total = db.query(Usuario).count()
+    try:
+        usuarios = db.query(Usuario).order_by(Usuario.created_at.desc()).limit(limit).offset(offset).all()
+        total = db.query(Usuario).count()
 
-    return {
-        "success": True,
-        "count": len(usuarios),
-        "total": total,
-        "limit": limit,
-        "offset": offset,
-        "data": [
+        return {
+            "success": True,
+            "count": len(usuarios),
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "data": [
             {
                 "id": u.id,
                 "email": u.email,
@@ -160,7 +161,12 @@ async def listar_usuarios(
             }
             for u in usuarios
         ]
-    }
+        }
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] Error en listar_usuarios: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error listando usuarios: {str(e)}")
 
 
 @router.post("/")

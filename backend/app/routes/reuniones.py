@@ -50,6 +50,10 @@ class RegistroAsistenciaFacial(BaseModel):
     foto_base64: str
 
 
+class RegistroAsistenciaManual(BaseModel):
+    usuario_id: int
+
+
 class AsistenciaResponse(BaseModel):
     id: int
     usuario_id: int
@@ -457,6 +461,70 @@ async def registrar_asistencia_facial(
             "numero_dni": usuario_match.numero_dni,
             "fecha_hora_registro": asistencia.fecha_hora_registro.isoformat(),
             "metodo_registro": "facial",
+        }
+    }
+
+
+@router.post("/{reunion_id}/asistencia/manual")
+async def registrar_asistencia_manual(
+    reunion_id: int,
+    datos: RegistroAsistenciaManual,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Registra asistencia manualmente seleccionando un usuario"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin puede registrar asistencia")
+
+    reunion = db.query(Reunion).filter_by(id=reunion_id).first()
+    if not reunion:
+        raise HTTPException(status_code=404, detail="Reunión no encontrada")
+
+    # Verificar que la reunión esté en_curso
+    if reunion.estado != "en_curso":
+        raise HTTPException(status_code=400, detail="La reunión debe estar en estado 'en_curso'")
+
+    # Buscar usuario por ID
+    usuario_registro = db.query(Usuario).filter_by(id=datos.usuario_id).first()
+    if not usuario_registro:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Verificar que el estado del usuario está permitido
+    estados_permitidos = reunion.estados_usuario_permitidos.split(",")
+    if usuario_registro.estado not in estados_permitidos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El estado del usuario '{usuario_registro.estado}' no está permitido en esta reunión"
+        )
+
+    # Verificar si ya está registrado
+    ya_asistio = db.query(AsistenciaReunion).filter(
+        AsistenciaReunion.reunion_id == reunion_id,
+        AsistenciaReunion.usuario_id == usuario_registro.id
+    ).first()
+
+    if ya_asistio:
+        raise HTTPException(status_code=400, detail="Este usuario ya está registrado en esta reunión")
+
+    # Registrar asistencia
+    asistencia = AsistenciaReunion(
+        reunion_id=reunion_id,
+        usuario_id=usuario_registro.id,
+        metodo_registro="manual",
+    )
+    db.add(asistencia)
+    db.commit()
+    db.refresh(asistencia)
+
+    return {
+        "success": True,
+        "asistencia": {
+            "id": asistencia.id,
+            "usuario_id": usuario_registro.id,
+            "nombre_completo": usuario_registro.nombre_completo,
+            "numero_dni": usuario_registro.numero_dni,
+            "fecha_hora_registro": asistencia.fecha_hora_registro.isoformat(),
+            "metodo_registro": "manual",
         }
     }
 

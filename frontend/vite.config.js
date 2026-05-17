@@ -22,12 +22,12 @@ export default defineConfig({
     middlewareMode: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:4242',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path
       },
       '/uploads': {
-        target: 'http://localhost:4242',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path
       }

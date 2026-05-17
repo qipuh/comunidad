@@ -4,10 +4,7 @@ from app.db.database import get_db
 from app.models.usuario import Usuario
 from pydantic import BaseModel
 from typing import Optional
-import base64
-import os
-import secrets
-from app.utils.auth import registrar_token
+from app.utils.auth import crear_access_token, get_current_user
 from app.utils.reconocimiento_facial import validar_rostro_contra_usuario
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -49,9 +46,8 @@ async def login(datos: LoginSchema, db: Session = Depends(get_db)):
     if usuario.password_hash != datos.password:
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
-    # Generar token simple (en producción usar JWT)
-    token = secrets.token_hex(32)
-    registrar_token(token, usuario.id)
+    # Generar token JWT
+    token = crear_access_token(usuario.id, usuario.rol, usuario.username)
 
     return {
         "success": True,
@@ -88,8 +84,7 @@ async def login_facial(datos: LoginFacialSchema, db: Session = Depends(get_db)):
     for usuario in usuarios:
         match, error = validar_rostro_contra_usuario(datos.foto_base64, usuario)
         if match:
-            token = secrets.token_hex(32)
-            registrar_token(token, usuario.id)
+            token = crear_access_token(usuario.id, usuario.rol, usuario.username)
             return {
                 "success": True,
                 "token": token,
@@ -116,6 +111,16 @@ async def logout():
 
 
 @router.get("/me")
-async def get_me(db: Session = Depends(get_db)):
-    """Obtener usuario actual - en producción validar token JWT"""
-    return {"success": True, "message": "Token válido"}
+async def get_me(usuario: Usuario = Depends(get_current_user)):
+    """Obtener usuario actual con token JWT validado"""
+    return {
+        "success": True,
+        "usuario": {
+            "id": usuario.id,
+            "nombre_completo": usuario.nombre_completo,
+            "username": usuario.username,
+            "numero_dni": usuario.numero_dni,
+            "email": usuario.email,
+            "rol": usuario.rol
+        }
+    }

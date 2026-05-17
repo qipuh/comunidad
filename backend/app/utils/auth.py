@@ -1,20 +1,38 @@
 """
-Utilidades de autenticación: token store y dependencias FastAPI.
+Utilidades de autenticación con JWT.
 """
 from fastapi import Header, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.usuario import Usuario
 from typing import Optional
+from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone
+import os
 
-# Token store: {token -> usuario_id}
-# En producción, usar Redis o una tabla de tokens en la DB
-_token_store: dict[str, int] = {}
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-12345")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 
-def registrar_token(token: str, usuario_id: int):
-    """Registra un token de autenticación emitido."""
-    _token_store[token] = usuario_id
+def crear_access_token(usuario_id: int, rol: str, username: str) -> str:
+    """Crear un token JWT con expiración de 24 horas."""
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    payload = {
+        "sub": str(usuario_id),
+        "rol": rol,
+        "username": username,
+        "exp": expire
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def _decode_token(token: str) -> dict:
+    """Decodificar y validar token JWT."""
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
 
 
 def get_current_user(
@@ -22,22 +40,14 @@ def get_current_user(
     db: Session = Depends(get_db)
 ) -> Usuario:
     """
-    Dependencia FastAPI que valida el token y retorna el usuario actual.
+    Dependencia FastAPI que valida el token JWT y retorna el usuario actual.
     Uso: @router.get("/mi-ruta")
          async def mi_ruta(usuario: Usuario = Depends(get_current_user)):
     """
-    # Extraer token del header "Authorization: Bearer <token>"
-    try:
-        token = authorization.replace("Bearer ", "").strip()
-    except Exception:
-        raise HTTPException(status_code=401, detail="Header Authorization inválido")
+    token = authorization.replace("Bearer ", "").strip()
+    payload = _decode_token(token)
+    usuario_id = int(payload.get("sub"))
 
-    # Buscar en el store
-    usuario_id = _token_store.get(token)
-    if not usuario_id:
-        raise HTTPException(status_code=401, detail="Token inválido o expirado")
-
-    # Cargar usuario de la DB
     usuario = db.query(Usuario).filter_by(id=usuario_id, estado="activo").first()
     if not usuario:
         raise HTTPException(status_code=401, detail="Usuario no encontrado o inactivo")
@@ -57,12 +67,8 @@ def get_current_user_optional(
 
     try:
         token = authorization.replace("Bearer ", "").strip()
-    except Exception:
+        payload = _decode_token(token)
+        usuario_id = int(payload.get("sub"))
+        return db.query(Usuario).filter_by(id=usuario_id, estado="activo").first()
+    except HTTPException:
         return None
-
-    usuario_id = _token_store.get(token)
-    if not usuario_id:
-        return None
-
-    usuario = db.query(Usuario).filter_by(id=usuario_id, estado="activo").first()
-    return usuario

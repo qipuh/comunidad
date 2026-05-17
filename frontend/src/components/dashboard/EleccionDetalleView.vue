@@ -13,14 +13,24 @@
       </div>
       <div class="header-right">
         <span :class="['estado-badge', `estado-${eleccion?.estado}`]">
+          <ion-icon :name="eleccion?.estado === 'borrador' ? 'document-outline' : eleccion?.estado === 'activo' ? 'play-circle-outline' : 'checkmark-circle-outline'"></ion-icon>
           {{ estadoLabel(eleccion?.estado) }}
         </span>
         <span :class="['tipo-badge', `tipo-${eleccion?.tipo}`]">
+          <ion-icon :name="eleccion?.tipo === 'cargo' ? 'briefcase-outline' : 'chatbubble-outline'"></ion-icon>
           {{ eleccion?.tipo === 'cargo' ? 'Cargo' : 'Acuerdo' }}
         </span>
-        <button v-if="isAdmin && eleccion?.estado !== 'cerrado'" class="btn-cambiar-estado" @click="mostrarDialogoCambioEstado = true">
-          Siguiente estado
-        </button>
+        <div class="header-acciones">
+          <button v-if="eleccion?.estado === 'cerrado' || eleccion?.estado === 'activo'" class="btn-exportar excel" @click="exportarExcel" title="Descargar datos en Excel">
+            <ion-icon name="document-outline"></ion-icon> Excel
+          </button>
+          <button v-if="eleccion?.estado === 'cerrado' || eleccion?.estado === 'activo'" class="btn-exportar pdf" @click="exportarPDF" title="Descargar reporte en PDF">
+            <ion-icon name="download-outline"></ion-icon> PDF
+          </button>
+          <button v-if="isAdmin && eleccion?.estado !== 'cerrado'" class="btn-cambiar-estado" @click="mostrarDialogoCambioEstado = true">
+            <ion-icon name="arrow-forward-outline"></ion-icon> Siguiente estado
+          </button>
+        </div>
       </div>
     </div>
 
@@ -33,6 +43,7 @@
     <!-- Tabs -->
     <div class="tabs-header">
       <button v-for="tab in tabs" :key="tab" :class="['tab-btn', { 'tab-active': tabActivo === tab }]" @click="tabActivo = tab">
+        <ion-icon :name="tabIcons[tab]"></ion-icon>
         {{ tabLabels[tab] }}
       </button>
     </div>
@@ -137,8 +148,8 @@
               <td>{{ p.nombres }} {{ p.apellido_paterno }} {{ p.apellido_materno }}</td>
               <td>{{ p.numero_dni }}</td>
               <td>
-                <span v-if="p.votó" class="chip votó">✓ Votó</span>
-                <span v-else class="chip pendiente">⊘ Pendiente</span>
+                <span v-if="p.votó" class="chip votó"><ion-icon name="checkmark-circle-outline"></ion-icon> Votó</span>
+                <span v-else class="chip pendiente"><ion-icon name="time-outline"></ion-icon> Pendiente</span>
               </td>
               <td v-if="eleccion?.estado === 'borrador'">
                 <button class="btn-eliminar-sm" @click="removerDelPadron(p.usuario_id)">
@@ -217,16 +228,6 @@
           <ion-icon name="warning-outline"></ion-icon>
           {{ resultados.total_impugnados }} voto(s) impugnado(s)
         </div>
-
-        <!-- Botones de exportación -->
-        <div class="exportacion-botones">
-          <button class="btn-exportar excel" @click="exportarExcel">
-            <ion-icon name="document-outline"></ion-icon> Exportar Excel
-          </button>
-          <button class="btn-exportar pdf" @click="exportarPDF">
-            <ion-icon name="download-outline"></ion-icon> Exportar PDF
-          </button>
-        </div>
       </div>
     </div>
 
@@ -261,9 +262,9 @@
               <td>{{ formatFecha(v.created_at) }}</td>
               <td>
                 <span v-if="v.impugnado" class="chip impugnado" :title="v.motivo_impugnacion">
-                  ⚠ Impugnado
+                  <ion-icon name="warning-outline"></ion-icon> Impugnado
                 </span>
-                <span v-else class="chip valido">✓ Válido</span>
+                <span v-else class="chip valido"><ion-icon name="shield-checkmark-outline"></ion-icon> Válido</span>
               </td>
               <td>
                 <button v-if="!v.impugnado" class="btn-accion" @click="abrirModalImpugnar(v)">
@@ -348,16 +349,23 @@ let chartBarras = null
 
 const tabs = ['candidatos', 'padron', 'resultados', 'votos']
 const tabLabels = {
-  candidatos: '📋 Candidatos',
-  padron: '👥 Padrón',
-  resultados: '📊 Resultados',
-  votos: '🗳️ Votos'
+  candidatos: 'Candidatos',
+  padron: 'Padrón',
+  resultados: 'Resultados',
+  votos: 'Votos'
+}
+const tabIcons = {
+  candidatos: 'people-outline',
+  padron: 'list-outline',
+  resultados: 'bar-chart-outline',
+  votos: 'checkbox-outline'
 }
 
 const padronVotaron = computed(() => padron.value.filter(p => p.votó).length)
 const padronParticipacion = computed(() => (padronVotaron.value / padron.value.length * 100) || 0)
 
 const obtenerNombreCompleto = (usuario) => {
+  if (!usuario) return 'Sin nombre'
   const partes = [usuario.nombres, usuario.apellido_paterno, usuario.apellido_materno].filter(p => p && p.trim())
   return partes.join(' ') || 'Sin nombre'
 }
@@ -635,12 +643,15 @@ function exportarExcel() {
     const wb = XLSX.utils.book_new()
 
     // Hoja 1: Padrón
-    const padronData = padron.value.map(p => ({
-      'Nombre': obtenerNombreCompleto(p.usuario),
-      'DNI': p.usuario?.numero_dni || '',
-      'Estado': p.votó ? 'Votó' : 'Pendiente',
-      'Fecha Voto': p.votó ? formatFecha(p.fecha_voto) : ''
-    }))
+    const padronData = padron.value.map(p => {
+      if (!p) return null
+      return {
+        'Nombre': `${p.nombres || ''} ${p.apellido_paterno || ''} ${p.apellido_materno || ''}`.trim() || 'Sin nombre',
+        'DNI': p.numero_dni || '',
+        'Estado': p.votó ? 'Votó' : 'Pendiente',
+        'Fecha Voto': p.votó && p.fecha_voto ? formatFecha(p.fecha_voto) : ''
+      }
+    }).filter(row => row !== null)
     const ws1 = XLSX.utils.json_to_sheet(padronData)
     XLSX.utils.book_append_sheet(wb, ws1, 'Padrón')
 
@@ -679,7 +690,8 @@ function exportarExcel() {
     alert.value = { visible: true, type: 'success', message: 'Excel exportado correctamente' }
   } catch (err) {
     console.error('Error exportando Excel:', err)
-    alert.value = { visible: true, type: 'error', message: 'Error al exportar Excel' }
+    const mensaje = err?.message || 'Error desconocido al exportar Excel'
+    alert.value = { visible: true, type: 'error', message: `Error al exportar Excel: ${mensaje}` }
   }
 }
 
@@ -737,10 +749,11 @@ onMounted(() => {
 <style scoped>
 .detalle-container {
   padding: 24px;
-  background: white;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
   border-radius: 12px;
   max-width: 1400px;
   margin: 0 auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .header-detalle {
@@ -749,6 +762,8 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 24px;
   gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f4ff;
 }
 
 .header-left {
@@ -771,13 +786,14 @@ onMounted(() => {
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .back-btn:hover {
-  background: #16a34a;
+  background: #4f46e5;
   color: white;
-  border-color: #16a34a;
+  border-color: #4f46e5;
+  transform: translateX(-2px);
 }
 
 .header-left h2 {
@@ -795,59 +811,84 @@ onMounted(() => {
 
 .header-right {
   display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.header-acciones {
+  display: flex;
   gap: 8px;
   align-items: center;
 }
 
 .estado-badge,
 .tipo-badge {
-  display: inline-block;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.estado-badge ion-icon,
+.tipo-badge ion-icon {
+  font-size: 16px;
 }
 
 .estado-borrador {
   background: #f3f4f6;
   color: #6b7280;
+  border: 1px solid #d1d5db;
 }
 
 .estado-activo {
   background: #dcfce7;
   color: #166534;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 0 8px rgba(22, 163, 74, 0.1);
 }
 
 .estado-cerrado {
   background: #fee2e2;
   color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 .tipo-cargo {
   background: #dbeafe;
   color: #1e40af;
+  border: 1px solid #bfdbfe;
 }
 
 .tipo-acuerdo {
   background: #fef3c7;
   color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
 .btn-cambiar-estado {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
-  background: #4f46e5;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
 }
 
 .btn-cambiar-estado:hover {
-  background: #4338ca;
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
 }
 
 .alert {
@@ -920,18 +961,28 @@ onMounted(() => {
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.3s;
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tab-btn:hover {
   color: #4f46e5;
+  background: #f0f4ff;
+  border-radius: 6px 6px 0 0;
 }
 
 .tab-btn.tab-active {
   color: #4f46e5;
   border-bottom-color: #4f46e5;
+  background: #f0f4ff;
+}
+
+.tab-btn ion-icon {
+  font-size: 18px;
 }
 
 .tab-content {
@@ -950,6 +1001,8 @@ onMounted(() => {
 /* PANELES */
 .panel {
   background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .panel-header {
@@ -1047,8 +1100,8 @@ onMounted(() => {
 }
 
 .btn-agregar {
-  padding: 8px 16px;
-  background: #4f46e5;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -1057,11 +1110,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
 }
 
 .btn-agregar:hover:not(:disabled) {
-  background: #4338ca;
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn-agregar:disabled {
@@ -1103,6 +1159,13 @@ onMounted(() => {
   gap: 4px;
   font-size: 12px;
   color: #16a34a;
+  background: #f0fdf4;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.usuario-badge ion-icon {
+  font-size: 14px;
 }
 
 .desc-opcion {
@@ -1167,8 +1230,8 @@ onMounted(() => {
 }
 
 .btn-importar {
-  padding: 8px 16px;
-  background: #4f46e5;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -1178,10 +1241,14 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
 }
 
 .btn-importar:hover {
-  background: #4338ca;
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
 }
 
 .padron-stats {
@@ -1259,32 +1326,43 @@ onMounted(() => {
 }
 
 .chip {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.chip ion-icon {
+  font-size: 14px;
 }
 
 .chip.votó {
   background: #dcfce7;
   color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 .chip.pendiente {
   background: #fee2e2;
   color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 .chip.valido {
   background: #dcfce7;
   color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 .chip.impugnado {
   background: #fef3c7;
   color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
 /* RESULTADOS */
@@ -1302,12 +1380,19 @@ onMounted(() => {
 
 .stat-card {
   padding: 16px;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
   border-radius: 8px;
-  border-left: 3px solid #4f46e5;
+  border-left: 4px solid #4f46e5;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .stat-label {
@@ -1373,40 +1458,43 @@ onMounted(() => {
   font-size: 13px;
 }
 
-.exportacion-botones {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .btn-exportar {
-  padding: 8px 16px;
+  padding: 8px 14px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
+  gap: 5px;
+  transition: all 0.3s;
+  font-size: 12px;
 }
 
 .btn-exportar.excel {
-  background: #dcfce7;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
   color: #166534;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
 }
 
 .btn-exportar.excel:hover {
-  background: #bbf7d0;
+  background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  transform: translateY(-2px);
 }
 
 .btn-exportar.pdf {
-  background: #fee2e2;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   color: #991b1b;
+  border: 1px solid #fecaca;
+  box-shadow: 0 2px 8px rgba(153, 27, 27, 0.1);
 }
 
 .btn-exportar.pdf:hover {
-  background: #fecaca;
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  box-shadow: 0 4px 12px rgba(153, 27, 27, 0.2);
+  transform: translateY(-2px);
 }
 
 /* VOTOS */

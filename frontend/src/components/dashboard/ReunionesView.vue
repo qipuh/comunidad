@@ -191,18 +191,37 @@
             <ion-icon name="people-outline"></ion-icon>
             <span>{{ reunionSeleccionada.total_asistentes }} asistentes</span>
           </div>
+          <div v-if="estadisticasReporte?.estadisticas" class="stats-header">
+            <div class="stat-item">
+              <span class="label">Participación:</span>
+              <span class="valor">{{ estadisticasReporte.estadisticas.porcentaje_asistencia }}%</span>
+            </div>
+            <button class="btn-primary btn-small" @click="exportarExcel">
+              <ion-icon name="download-outline"></ion-icon>
+              Excel
+            </button>
+          </div>
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
           <button
-            v-for="tab in ['asistencia', 'asistentes', 'reporte']"
-            :key="tab"
-            :class="{ active: tabActivo === tab }"
-            @click="tabActivo = tab"
+            :class="{ active: tabActivo === 'asistencia' }"
+            @click="tabActivo = 'asistencia'"
             class="tab-btn"
+            title="Registrar asistencia"
           >
-            {{ tab.charAt(0).toUpperCase() + tab.slice(1) }}
+            <ion-icon name="qr-code-outline"></ion-icon>
+            <span>Asistencia</span>
+          </button>
+          <button
+            :class="{ active: tabActivo === 'asistentes' }"
+            @click="tabActivo = 'asistentes'"
+            class="tab-btn"
+            title="Ver asistentes"
+          >
+            <ion-icon name="people-outline"></ion-icon>
+            <span>Asistentes</span>
           </button>
         </div>
 
@@ -210,7 +229,7 @@
         <div class="tab-content">
           <!-- Tab Asistencia -->
           <div v-if="tabActivo === 'asistencia'" class="tab-pane">
-            <div v-if="!mostrandoScanQR && !mostrandoScanFacial" class="botones-asistencia">
+            <div v-if="!mostrandoScanQR && !mostrandoScanFacial && !mostrandoScanManual" class="botones-asistencia">
               <button class="btn-grande" @click="iniciarScanQR">
                 <ion-icon name="qr-code-outline"></ion-icon>
                 Escanear QR
@@ -218,6 +237,10 @@
               <button class="btn-grande" @click="iniciarScanFacial">
                 <ion-icon name="camera-outline"></ion-icon>
                 Reconocimiento Facial
+              </button>
+              <button class="btn-grande" @click="iniciarScanManual">
+                <ion-icon name="person-add-outline"></ion-icon>
+                Registrar Manual
               </button>
 
               <!-- Cambiar estado -->
@@ -267,71 +290,120 @@
                 Cancelar
               </button>
             </div>
+
+            <!-- Panel Manual -->
+            <div v-if="mostrandoScanManual" class="panel-escaneo">
+              <h3>Registrar Asistencia Manual</h3>
+              <input
+                v-model="busquedaManual"
+                @input="buscarUsuariosManual"
+                type="text"
+                placeholder="Buscar por nombre o DNI..."
+                class="input-busqueda"
+              />
+              <div v-if="usuariosSugeridos.length > 0" class="sugerencias-manual">
+                <div
+                  v-for="u in usuariosSugeridos"
+                  :key="u.id"
+                  @click="seleccionarUsuario(u)"
+                  class="sugerencia-item"
+                >
+                  <span class="nombre">{{ u.nombre_completo || `${u.nombres} ${u.apellido_paterno}` }}</span>
+                  <small>{{ u.numero_dni }}</small>
+                </div>
+              </div>
+              <div v-if="usuarioSeleccionado && !resultadoManual" class="usuario-confirmacion">
+                <p class="nombre-confirm">{{ usuarioSeleccionado.nombre_completo }}</p>
+                <p class="dni-confirm">{{ usuarioSeleccionado.numero_dni }}</p>
+                <button @click="confirmarManual" class="btn-primary">Registrar</button>
+                <button @click="usuarioSeleccionado = null" class="btn-secondary">Cambiar</button>
+              </div>
+              <div v-if="resultadoManual" :class="['resultado', resultadoManual.success ? 'exito' : 'error']">
+                <ion-icon :name="resultadoManual.success ? 'checkmark-circle-outline' : 'close-circle-outline'"></ion-icon>
+                <p v-if="resultadoManual.success">
+                  {{ resultadoManual.asistencia.nombre_completo }} registrado
+                </p>
+                <p v-else>{{ resultadoManual.error }}</p>
+                <button @click="finalizarEscaneoManual" class="btn-secondary">Cerrar</button>
+              </div>
+              <button @click="cancelarScanManual" class="btn-secondary" v-if="!resultadoManual && !usuarioSeleccionado">
+                Cancelar
+              </button>
+            </div>
           </div>
 
           <!-- Tab Asistentes -->
           <div v-if="tabActivo === 'asistentes'" class="tab-pane">
-            <h3>Asistentes Registrados</h3>
-            <p class="stats">{{ asistentes.length }} de {{ estadisticasReporte?.estadisticas?.total_permitidos || 0 }} presentes</p>
-            <div class="asistentes-list">
-              <div v-for="asistente in asistentes" :key="asistente.usuario_id" class="asistente-item">
-                <div class="avatar" v-if="asistente.foto_url">
-                  <img :src="asistente.foto_url" :alt="asistente.nombre_completo" />
+            <h3>Asistentes</h3>
+
+            <!-- Sub-tabs -->
+            <div class="tabs-reporte">
+              <button
+                :class="{ active: tabAsistentesActivo === 'asistentes' }"
+                @click="tabAsistentesActivo = 'asistentes'"
+                class="tab-report-btn"
+              >
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                <span>Registrados</span>
+              </button>
+              <button
+                :class="{ active: tabAsistentesActivo === 'inasistentes' }"
+                @click="tabAsistentesActivo = 'inasistentes'"
+                class="tab-report-btn"
+              >
+                <ion-icon name="close-circle-outline"></ion-icon>
+                <span>Faltaron</span>
+              </button>
+            </div>
+
+            <!-- Sub-tab: Asistentes -->
+            <div v-if="tabAsistentesActivo === 'asistentes'" class="tab-report-content">
+              <p class="stats">{{ asistentes.length }} presentes</p>
+              <div class="asistentes-list" v-if="asistentes.length">
+                <div v-for="asistente in asistentes" :key="asistente.usuario_id" class="asistente-item" :data-metodo="asistente.metodo_registro">
+                  <div class="avatar" v-if="asistente.foto_url">
+                    <img :src="asistente.foto_url" :alt="asistente.nombre_completo" />
+                  </div>
+                  <div class="info">
+                    <p class="nombre">{{ asistente.nombre_completo }}</p>
+                    <p class="dni">{{ asistente.numero_dni }}</p>
+                    <p class="hora">{{ formatearHora(asistente.fecha_hora_registro) }}</p>
+                  </div>
+                  <span class="badge metodo" :class="'metodo-' + asistente.metodo_registro">
+                    {{ asistente.metodo_registro }}
+                  </span>
+                  <button
+                    class="btn-icon btn-danger"
+                    @click="removerAsistente(asistente.usuario_id)"
+                    v-if="usuarioActual?.rol === 'admin'"
+                    title="Remover"
+                  >
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
                 </div>
-                <div class="info">
-                  <p class="nombre">{{ asistente.nombre_completo }}</p>
-                  <p class="dni">{{ asistente.numero_dni }}</p>
-                  <p class="hora">{{ formatearHora(asistente.fecha_hora_registro) }}</p>
-                </div>
-                <span class="badge metodo" :class="'metodo-' + asistente.metodo_registro">
-                  {{ asistente.metodo_registro }}
-                </span>
-                <button
-                  class="btn-icon btn-danger"
-                  @click="removerAsistente(asistente.usuario_id)"
-                  v-if="usuarioActual?.rol === 'admin'"
-                  title="Remover"
-                >
-                  <ion-icon name="trash-outline"></ion-icon>
-                </button>
               </div>
+              <p v-else class="sin-datos">No hay asistentes registrados</p>
+            </div>
+
+            <!-- Sub-tab: Inasistentes -->
+            <div v-if="tabAsistentesActivo === 'inasistentes'" class="tab-report-content">
+              <p class="stats" v-if="estadisticasReporte?.inasistentes">{{ estadisticasReporte.inasistentes.length }} faltaron</p>
+              <div class="inasistentes-list" v-if="estadisticasReporte?.inasistentes?.length">
+                <div v-for="inasistente in estadisticasReporte.inasistentes" :key="inasistente.numero_dni" class="inasistente-item">
+                  <div class="info">
+                    <p class="nombre">{{ inasistente.nombre_completo }}</p>
+                    <p class="dni">{{ inasistente.numero_dni }}</p>
+                    <p class="email" v-if="inasistente.email">{{ inasistente.email }}</p>
+                  </div>
+                  <span class="badge estado" :class="'estado-' + inasistente.estado">
+                    {{ inasistente.estado }}
+                  </span>
+                </div>
+              </div>
+              <p v-else class="sin-datos">No hay inasistentes</p>
             </div>
           </div>
 
-          <!-- Tab Reporte -->
-          <div v-if="tabActivo === 'reporte'" class="tab-pane">
-            <h3>Reporte de Asistencia</h3>
-
-            <div class="stats-reporte" v-if="estadisticasReporte">
-              <div class="stat">
-                <span class="label">Asistentes:</span>
-                <span class="valor">{{ estadisticasReporte.estadisticas.total_asistentes }}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Inasistentes:</span>
-                <span class="valor">{{ estadisticasReporte.estadisticas.total_inasistentes }}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Porcentaje:</span>
-                <span class="valor">{{ estadisticasReporte.estadisticas.porcentaje_asistencia }}%</span>
-              </div>
-            </div>
-
-            <button class="btn-primary" @click="exportarExcel" v-if="estadisticasReporte">
-              <ion-icon name="download-outline"></ion-icon>
-              Descargar Excel
-            </button>
-
-            <!-- Inasistentes -->
-            <h4>Inasistentes</h4>
-            <div class="inasistentes-list" v-if="estadisticasReporte?.inasistentes">
-              <div v-for="inasistente in estadisticasReporte.inasistentes" :key="inasistente.numero_dni" class="inasistente-item">
-                <p class="nombre">{{ inasistente.nombre_completo }}</p>
-                <p class="dni">{{ inasistente.numero_dni }}</p>
-              </div>
-            </div>
-            <p v-else class="sin-datos">No hay inasistentes</p>
-          </div>
         </div>
       </div>
     </div>
@@ -347,6 +419,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import reunionesService from '@/services/reuniones.service'
 import authService from '@/services/auth.service'
+import { usuariosService } from '@/services/usuarios.service'
 import jsQR from 'jsqr'
 import * as XLSX from 'xlsx'
 
@@ -357,20 +430,27 @@ const usuarioActual = ref(null)
 const mostrarModalReunion = ref(false)
 const editandoReunion = ref(false)
 const tabActivo = ref('asistencia')
+const tabAsistentesActivo = ref('asistentes')
 const filtroEstado = ref('')
 const filtroTipo = ref('')
 
 // Asistencia
 const mostrandoScanQR = ref(false)
 const mostrandoScanFacial = ref(false)
+const mostrandoScanManual = ref(false)
 const videoQR = ref(null)
 const videoFacial = ref(null)
 const canvasQR = ref(null)
 const resultadoQR = ref(null)
 const resultadoFacial = ref(null)
+const resultadoManual = ref(null)
 const asistentes = ref([])
 const estadisticasReporte = ref(null)
 const nuevoEstado = ref('en_curso')
+const busquedaManual = ref('')
+const usuariosSugeridos = ref([])
+const usuarioSeleccionado = ref(null)
+let debounceTimer = null
 
 // Formulario
 const formReunion = ref({
@@ -490,14 +570,22 @@ const cerrarSidebar = () => {
   reunionSeleccionada.value = null
   mostrandoScanQR.value = false
   mostrandoScanFacial.value = false
+  mostrandoScanManual.value = false
   resultadoQR.value = null
   resultadoFacial.value = null
+  resultadoManual.value = null
+  busquedaManual.value = ''
+  usuariosSugeridos.value = []
+  usuarioSeleccionado.value = null
 }
 
 const cargarAsistentes = async () => {
   try {
     const data = await reunionesService.listarAsistentes(reunionSeleccionada.value.id)
     asistentes.value = data
+    if (reunionSeleccionada.value) {
+      reunionSeleccionada.value.total_asistentes = data.length
+    }
   } catch (error) {
     mostrarAlert('Error cargando asistentes', 'error')
   }
@@ -549,14 +637,20 @@ const iniciarScanQR = async () => {
     }
   } catch (error) {
     mostrandoScanQR.value = false
-    const mensajeError = error.name === 'NotAllowedError'
-      ? 'Permiso denegado. Permite el acceso a la cámara en los ajustes del navegador'
-      : error.name === 'NotFoundError'
-      ? 'Cámara no encontrada. Verifica que tu dispositivo tenga cámara'
-      : `Error de cámara: ${error.message}`
+    let mensajeError = ''
+
+    if (error.name === 'NotAllowedError') {
+      mensajeError = 'Permiso denegado. Permite el acceso a la cámara:\n1. Si viste un popup, haz clic en "Permitir"\n2. Si no viste popup, verifica los ajustes de permisos del navegador\n3. Intenta recargar la página'
+    } else if (error.name === 'NotFoundError') {
+      mensajeError = 'No se encontró cámara. Verifica que tu dispositivo tenga una cámara conectada y disponible'
+    } else if (error.name === 'NotReadableError') {
+      mensajeError = 'La cámara está en uso. Cierra otras aplicaciones que usen la cámara e intenta de nuevo'
+    } else {
+      mensajeError = `Error al acceder a la cámara: ${error.message}`
+    }
 
     mostrarAlert(mensajeError, 'error')
-    console.error('Error accediendo a cámara:', error)
+    console.error('Error accediendo a cámara QR:', error)
   }
 }
 
@@ -648,14 +742,20 @@ const iniciarScanFacial = async () => {
     }
   } catch (error) {
     mostrandoScanFacial.value = false
-    const mensajeError = error.name === 'NotAllowedError'
-      ? 'Permiso denegado. Permite el acceso a la cámara en los ajustes del navegador'
-      : error.name === 'NotFoundError'
-      ? 'Cámara no encontrada. Verifica que tu dispositivo tenga cámara'
-      : `Error de cámara: ${error.message}`
+    let mensajeError = ''
+
+    if (error.name === 'NotAllowedError') {
+      mensajeError = 'Permiso denegado. Permite el acceso a la cámara:\n1. Si viste un popup, haz clic en "Permitir"\n2. Si no viste popup, verifica los ajustes de permisos del navegador\n3. Intenta recargar la página'
+    } else if (error.name === 'NotFoundError') {
+      mensajeError = 'No se encontró cámara. Verifica que tu dispositivo tenga una cámara conectada y disponible'
+    } else if (error.name === 'NotReadableError') {
+      mensajeError = 'La cámara está en uso. Cierra otras aplicaciones que usen la cámara e intenta de nuevo'
+    } else {
+      mensajeError = `Error al acceder a la cámara: ${error.message}`
+    }
 
     mostrarAlert(mensajeError, 'error')
-    console.error('Error accediendo a cámara:', error)
+    console.error('Error accediendo a cámara facial:', error)
   }
 }
 
@@ -725,6 +825,76 @@ const detenerScanFacial = () => {
   if (videoFacial.value && videoFacial.value.srcObject) {
     videoFacial.value.srcObject.getTracks().forEach(track => track.stop())
   }
+}
+
+// Manual Registration
+const iniciarScanManual = () => {
+  mostrandoScanManual.value = true
+  resultadoManual.value = null
+  busquedaManual.value = ''
+  usuariosSugeridos.value = []
+  usuarioSeleccionado.value = null
+}
+
+const buscarUsuariosManual = async () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(async () => {
+    if (!busquedaManual.value.trim()) {
+      usuariosSugeridos.value = []
+      return
+    }
+    try {
+      const resp = await usuariosService.buscarPorNombre(busquedaManual.value)
+      const usuarios = resp.data || []
+      const registrados = new Set(asistentes.value.map(a => a.usuario_id))
+      usuariosSugeridos.value = usuarios.filter(u => !registrados.has(u.id)).slice(0, 10)
+    } catch (error) {
+      console.error('Error buscando usuarios:', error)
+    }
+  }, 300)
+}
+
+const seleccionarUsuario = (u) => {
+  usuarioSeleccionado.value = u
+  usuariosSugeridos.value = []
+  busquedaManual.value = ''
+}
+
+const confirmarManual = async () => {
+  try {
+    const resultado = await reunionesService.registrarAsistenciaManual(
+      reunionSeleccionada.value.id,
+      usuarioSeleccionado.value.id
+    )
+    resultadoManual.value = resultado
+    if (resultado.success) {
+      cargarAsistentes()
+      cargarReporte()
+    }
+  } catch (error) {
+    resultadoManual.value = {
+      success: false,
+      error: error.response?.data?.detail || 'Error registrando asistencia'
+    }
+  }
+}
+
+const cancelarScanManual = () => {
+  detenerScanManual()
+  mostrandoScanManual.value = false
+}
+
+const finalizarEscaneoManual = () => {
+  detenerScanManual()
+  mostrandoScanManual.value = false
+  resultadoManual.value = null
+  busquedaManual.value = ''
+  usuariosSugeridos.value = []
+  usuarioSeleccionado.value = null
+}
+
+const detenerScanManual = () => {
+  clearTimeout(debounceTimer)
 }
 
 const removerAsistente = async (usuarioId) => {
@@ -1075,6 +1245,7 @@ watch([filtroEstado, filtroTipo], () => {
 .hero-content h2 {
   margin: 0 0 12px 0;
   font-size: 24px;
+  color: #000;
 }
 
 .badges {
@@ -1099,21 +1270,57 @@ watch([filtroEstado, filtroTipo], () => {
   display: flex;
   gap: 20px;
   padding: 20px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
+  border-bottom: 2px solid #e5e7eb;
+  flex-wrap: wrap;
 }
 
 .info-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #374151;
+  color: #1f2937;
   font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .info-item ion-icon {
   color: #4f46e5;
   font-size: 18px;
+  flex-shrink: 0;
+}
+
+.stats-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-left: auto;
+  padding-left: 12px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stat-item .label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.stat-item .valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4f46e5;
 }
 
 .tabs {
@@ -1131,11 +1338,31 @@ watch([filtroEstado, filtroTipo], () => {
   font-weight: 500;
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.tab-btn ion-icon {
+  font-size: 18px;
+}
+
+.tab-btn span {
+  display: none;
 }
 
 .tab-btn.active {
   color: #4f46e5;
   border-bottom-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.05);
+}
+
+@media (min-width: 640px) {
+  .tab-btn span {
+    display: inline;
+  }
 }
 
 .tab-content {
@@ -1148,34 +1375,155 @@ watch([filtroEstado, filtroTipo], () => {
   color: #1f2937;
 }
 
+.reporte-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.reporte-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.reporte-header h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tabs-reporte {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+.tab-report-btn {
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 13px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tab-report-btn ion-icon {
+  font-size: 16px;
+}
+
+.tab-report-btn.active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.tab-report-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.inasistente-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+  transition: all 0.2s;
+}
+
+.inasistente-item:hover {
+  background: #fef2f2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.inasistente-item .info {
+  flex: 1;
+}
+
+.inasistente-item .info .email {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.badge.estado {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.estado-activo {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.estado-inactivo {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.estado-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .botones-asistencia {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
 .btn-grande {
   padding: 20px;
-  background: #4f46e5;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 .btn-grande:hover {
-  background: #4338ca;
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+.btn-grande:active {
+  transform: translateY(0);
 }
 
 .btn-grande ion-icon {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .cambiar-estado {
@@ -1250,9 +1598,28 @@ watch([filtroEstado, filtroTipo], () => {
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: #f9fafb;
+  background: white;
   border-radius: 8px;
   align-items: center;
+  border-left: 4px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.asistente-item:hover {
+  background: #f9fafb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.asistente-item[data-metodo="qr"] {
+  border-left-color: #3b82f6;
+}
+
+.asistente-item[data-metodo="facial"] {
+  border-left-color: #8b5cf6;
+}
+
+.asistente-item[data-metodo="manual"] {
+  border-left-color: #10b981;
 }
 
 .avatar {
@@ -1298,6 +1665,90 @@ watch([filtroEstado, filtroTipo], () => {
 .metodo-facial { background: #e0e7ff; color: #3730a3; }
 .metodo-manual { background: #f3e8ff; color: #581c87; }
 
+.input-busqueda {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.input-busqueda:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.sugerencias-manual {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.sugerencia-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sugerencia-item:last-child {
+  border-bottom: none;
+}
+
+.sugerencia-item:hover {
+  background: #f8fafc;
+}
+
+.sugerencia-item .nombre {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.sugerencia-item small {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.usuario-confirmacion {
+  background: #f0f4ff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  text-align: center;
+  border-left: 4px solid #4f46e5;
+}
+
+.usuario-confirmacion .nombre-confirm {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.usuario-confirmacion .dni-confirm {
+  margin: 0 0 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.usuario-confirmacion .btn-primary,
+.usuario-confirmacion .btn-secondary {
+  margin-right: 8px;
+}
+
+.resultado {
+  animation: pulseExito 0.5s ease;
+}
+
 .stats,
 .stats-reporte {
   color: #6b7280;
@@ -1313,23 +1764,32 @@ watch([filtroEstado, filtroTipo], () => {
 }
 
 .stat {
-  background: #f9fafb;
-  padding: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
+  padding: 16px;
   border-radius: 8px;
   text-align: center;
+  border-left: 4px solid #4f46e5;
+  transition: all 0.2s;
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
 }
 
 .stat .label {
   display: block;
   color: #6b7280;
-  font-size: 13px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 .stat .valor {
   display: block;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: #4f46e5;
 }
 
@@ -1398,6 +1858,11 @@ watch([filtroEstado, filtroTipo], () => {
   to { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes pulseExito {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 .alert-success {
   background: #dcfce7;
   color: #166534;
@@ -1419,7 +1884,11 @@ watch([filtroEstado, filtroTipo], () => {
   }
 
   .botones-asistencia {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .botones-asistencia .cambiar-estado {
+    grid-column: 1 / -1;
   }
 
   .sidebar {
@@ -1429,6 +1898,65 @@ watch([filtroEstado, filtroTipo], () => {
 
   .stats-reporte {
     grid-template-columns: 1fr;
+  }
+
+  .info-rapida {
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .stats-header {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid #e5e7eb;
+    padding-top: 12px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tab-btn {
+    padding: 10px 8px;
+  }
+
+  .tab-btn span {
+    display: none !important;
+  }
+
+  .reporte-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reporte-header h3 {
+    margin-bottom: 12px;
+  }
+
+  .reporte-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabs-reporte {
+    gap: 4px;
+  }
+
+  .tab-report-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .tab-report-btn span {
+    display: none;
+  }
+
+  .inasistente-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inasistente-item .info {
+    width: 100%;
   }
 }
 </style>

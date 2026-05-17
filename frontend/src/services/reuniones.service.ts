@@ -85,6 +85,16 @@ export const reunionesService = {
     }
   },
 
+  async registrarAsistenciaManual(reunionId: number, usuarioId: number) {
+    try {
+      const response = await api.post(`${REUNIONES_ENDPOINT}/${reunionId}/asistencia/manual`, { usuario_id: usuarioId })
+      return response.data
+    } catch (error) {
+      console.error('Error registrando asistencia manual:', error)
+      throw error
+    }
+  },
+
   async listarAsistentes(reunionId: number) {
     try {
       const response = await api.get(`${REUNIONES_ENDPOINT}/${reunionId}/asistentes`)

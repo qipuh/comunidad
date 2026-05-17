@@ -45,7 +45,7 @@ class ValidacionesService {
         }
       }
 
-      const response = await api.post('/validaciones/consultar-dni', { dni })
+      const response = await api.post('/validaciones/consultar-dni/', { dni })
       return response.data
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || 'Error al consultar RENIEC'
@@ -74,7 +74,7 @@ class ValidacionesService {
         }
       }
 
-      const response = await api.post('/validaciones/consultar-ruc', { ruc })
+      const response = await api.post('/validaciones/consultar-ruc/', { ruc })
       return response.data
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || 'Error al consultar Facturiza'

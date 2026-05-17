@@ -19,14 +19,15 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://localhost:8080"
-).split(",") + ["*"]
+    "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:8080"
+).split(",")
 
 # Crear aplicación FastAPI
 app = FastAPI(
     title="API Comunidad",
     description="Sistema de gestión comunitaria con configuración dinámica",
-    version="1.0.0"
+    version="1.0.0",
+    redirect_slashes=True
 )
 
 # Configurar CORS
@@ -40,6 +41,7 @@ app.add_middleware(
 
 # Servir uploads de fotos
 os.makedirs("uploads/usuarios", exist_ok=True)
+os.makedirs("uploads/elecciones/votos", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ════════════════════════════════════════════════════════════════
@@ -53,9 +55,13 @@ try:
     from app.routes.usuarios import router as usuarios_router
     from app.routes.auth import router as auth_router
     from app.routes.cobranza import router as cobranza_router
+    from app.routes.elecciones import router as elecciones_router
+    from app.routes.reuniones import router as reuniones_router
+    from app.routes.dashboard import router as dashboard_router
     logger.info("✅ Rutas importadas correctamente")
 except Exception as e:
-    logger.warning(f"⚠️ Error importando rutas: {e}")
+    logger.error(f"❌ Error importando rutas: {type(e).__name__}: {e}", exc_info=True)
+    raise
 
 # ════════════════════════════════════════════════════════════════
 # REGISTRAR RUTAS
@@ -68,6 +74,9 @@ try:
     app.include_router(factiliza_router, tags=["Factiliza"])
     app.include_router(usuarios_router, tags=["Usuarios"])
     app.include_router(cobranza_router, tags=["Cobranza"])
+    app.include_router(elecciones_router, tags=["Elecciones"])
+    app.include_router(reuniones_router, tags=["Reuniones"])
+    app.include_router(dashboard_router, tags=["Dashboard"])
     logger.info("✅ Rutas registradas en la aplicación")
 except Exception as e:
     logger.error(f"ERROR registrando rutas: {type(e).__name__}: {e}", exc_info=True)
@@ -138,6 +147,12 @@ app.openapi = custom_openapi
 async def startup_event():
     """Evento al iniciar la aplicación"""
     logger.info("🚀 Iniciando API Comunidad...")
+    try:
+        from app.db.database import init_db
+        init_db()
+        logger.info("✅ Base de datos inicializada")
+    except Exception as e:
+        logger.error(f"❌ Error inicializando BD: {e}", exc_info=True)
     logger.info("✅ Base de datos conectada")
     logger.info("✅ Rutas cargadas")
     logger.info("✅ Sistema listo para recibir peticiones")
@@ -153,11 +168,11 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("🌐 Iniciando servidor en http://0.0.0.0:8000")
+    logger.info("Iniciando servidor en http://127.0.0.1:4242")
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
-        port=8080,
+        host="127.0.0.1",
+        port=4242,
         reload=True,
         log_level="info"
     )

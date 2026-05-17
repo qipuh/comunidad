@@ -24,6 +24,7 @@ class EstadoEnum(str, enum.Enum):
     ACTIVO = "activo"
     INACTIVO = "inactivo"
     PENDIENTE = "pendiente"
+    FALLECIDO = "fallecido"
 
 
 class Usuario(Base):
@@ -53,6 +54,7 @@ class Usuario(Base):
     departamento = Column(String(100), nullable=True)
     provincia = Column(String(100), nullable=True)
     distrito = Column(String(100), nullable=True)
+    anexo = Column(String(100), nullable=True)
 
     # Fotos para reconocimiento facial
     foto_url = Column(String(500), nullable=True)
@@ -66,6 +68,9 @@ class Usuario(Base):
     # Estado
     rol = Column(String(50), default="user")
     estado = Column(String(50), default="activo")
+
+    # Cobranza
+    fecha_inicio_cobranza = Column(DateTime, nullable=True)
 
     # Auditoría
     created_at = Column(DateTime, default=datetime.utcnow)

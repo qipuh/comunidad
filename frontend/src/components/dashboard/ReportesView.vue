@@ -102,7 +102,7 @@ const reportesRecientes = ref([
 
 <style scoped>
 .reportes-container {
-  padding: 20px;
+  padding: 0;
 }
 
 .view-header {
@@ -134,13 +134,12 @@ const reportesRecientes = ref([
   border-radius: 12px;
   padding: 24px;
   text-align: center;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s;
 }
 
 .reporte-card:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
 }
 
 .reporte-icon {
@@ -205,8 +204,8 @@ const reportesRecientes = ref([
 }
 
 .btn-secondary:hover {
-  background: #e0e7ff;
-  border-color: #4f46e5;
+  background: #eef2ff;
+  border-color: #6366f1;
 }
 
 .btn-secondary ion-icon {
@@ -217,7 +216,7 @@ const reportesRecientes = ref([
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
 }
 
 .reportes-table-section h3 {

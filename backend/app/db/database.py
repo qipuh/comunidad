@@ -39,7 +39,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 from app.models.configuracion import Base
 
 # Import all models to register them with Base
-from app.models import factiliza
+from app.models import factiliza, usuario, cobranza, eleccion, reunion
 
 
 def get_db() -> Generator:

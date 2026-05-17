@@ -26,11 +26,16 @@ export const authService = {
     await api.post('/auth/logout').catch(() => {})
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_usuario')
+    sessionStorage.removeItem('auth_token')
+    sessionStorage.removeItem('auth_usuario')
   },
 
   guardarSesion(token: string, usuario: Usuario) {
+    console.log('[AuthService.guardarSesion] Saving token:', token.substring(0, 20) + '...')
     localStorage.setItem('auth_token', token)
     localStorage.setItem('auth_usuario', JSON.stringify(usuario))
+    console.log('[AuthService.guardarSesion] localStorage.getItem("auth_token"):', localStorage.getItem('auth_token')?.substring(0, 20))
+    console.log('[AuthService.guardarSesion] All localStorage keys:', Object.keys(localStorage))
   },
 
   obtenerUsuario(): Usuario | null {
@@ -39,7 +44,7 @@ export const authService = {
   },
 
   estaAutenticado(): boolean {
-    return !!localStorage.getItem('auth_token')
+    return !!(localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token'))
   }
 }
 

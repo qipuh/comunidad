@@ -3,10 +3,14 @@
     <div class="login-container">
       <!-- Logo / Header -->
       <div class="login-header">
+        <button class="btn-volver" @click="emit('volver')">
+          <ion-icon name="arrow-back-outline"></ion-icon> Volver al sitio web
+        </button>
         <div class="logo-circle">
-          <ion-icon name="people"></ion-icon>
+          <img v-if="marca.logo_url" :src="marca.logo_url" :alt="marca.nombre_pagina" class="logo-image" />
+          <ion-icon v-else name="people"></ion-icon>
         </div>
-        <h1>Sistema Comunidad</h1>
+        <h1>{{ marca.nombre_pagina || 'Comunidad' }}</h1>
         <p>Ingresa tus credenciales para continuar</p>
       </div>
 
@@ -129,8 +133,10 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import authService from '@/services/auth.service'
+import { useMarca } from '@/composables/useMarca'
 
-const emit = defineEmits(['autenticado'])
+const emit = defineEmits(['autenticado', 'volver'])
+const marca = useMarca()
 
 const modo = ref<'password' | 'facial'>('password')
 const cargando = ref(false)
@@ -154,10 +160,17 @@ const iniciarSesion = async () => {
   cargando.value = true
   mensaje.value = null
   try {
+    console.log('[Login] Starting login...')
     const result = await authService.login(credenciales.value.username, credenciales.value.password)
+    console.log('[Login] Login result received:', { token: result.token ? result.token.substring(0, 20) + '...' : 'null', usuario: result.usuario.nombre_completo })
     authService.guardarSesion(result.token, result.usuario)
+    const savedToken = localStorage.getItem('auth_token')
+    console.log('[Login] After guardarSesion - localStorage.getItem("auth_token"):', savedToken ? savedToken.substring(0, 20) + '...' : 'NULL')
     mensaje.value = { tipo: 'success', texto: `Bienvenido, ${result.usuario.nombre_completo}` }
-    setTimeout(() => emit('autenticado', result.usuario), 800)
+    setTimeout(() => {
+      console.log('[Login] Before emit autenticado - localStorage has token?', !!localStorage.getItem('auth_token'))
+      emit('autenticado', result.usuario)
+    }, 800)
   } catch (error: any) {
     mensaje.value = { tipo: 'error', texto: error.response?.data?.detail || 'Credenciales incorrectas' }
   } finally {
@@ -240,6 +253,23 @@ onUnmounted(() => {
   margin-bottom: 2rem;
 }
 
+.btn-volver {
+  display: block;
+  margin: 0 auto 16px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+
+.btn-volver:hover {
+  color: white;
+}
+
 .logo-circle {
   width: 72px;
   height: 72px;
@@ -251,6 +281,14 @@ onUnmounted(() => {
   margin: 0 auto 1rem;
   font-size: 2rem;
   color: white;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  padding: 8px;
 }
 
 .login-header h1 {

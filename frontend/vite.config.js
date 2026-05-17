@@ -14,15 +14,20 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'vue': 'vue/dist/vue.esm-bundler.js'
     }
   },
   server: {
-    port: 5173,
-    host: 'localhost',
+    middlewareMode: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:4242',
+        changeOrigin: true,
+        rewrite: (path) => path
+      },
+      '/uploads': {
+        target: 'http://localhost:4242',
         changeOrigin: true,
         rewrite: (path) => path
       }

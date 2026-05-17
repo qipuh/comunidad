@@ -2,63 +2,204 @@
   <div class="usuarios-container">
     <!-- Vista Lista -->
     <div v-if="!showModal" class="vista-lista">
-      <div class="view-header">
-        <div class="header-content">
-          <h2>Gestión de Usuarios</h2>
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="search-bar">
+            <ion-icon name="search-outline"></ion-icon>
+            <input v-model="busqueda" type="text" placeholder="Buscar por nombre, DNI o teléfono...">
+          </div>
+          <div class="filtros-inline">
+            <select v-model="filtroEstado" class="filtro-select">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+            <select v-model="filtroRol" class="filtro-select">
+              <option value="">Todos los roles</option>
+              <option value="usuario">Usuario</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button v-if="filtroEstado || filtroRol" @click="limpiarFiltros()" class="btn-limpiar-filtros">
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </button>
+          </div>
+        </div>
+        <div class="toolbar-right">
           <button @click="abrirModalNuevoUsuario" class="btn-primary">
-            <ion-icon name="add-circle-outline"></ion-icon>
+            <ion-icon name="person-add-outline"></ion-icon>
             Nuevo Usuario
           </button>
-        </div>
-
-        <div class="search-bar">
-          <ion-icon name="search-outline"></ion-icon>
-          <input v-model="busqueda" type="text" placeholder="Buscar usuarios...">
+          <button @click="$refs.importarArchivo.click()" class="btn-secondary">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+            Importar
+          </button>
+          <input
+            ref="importarArchivo"
+            type="file"
+            accept=".xlsx,.xls"
+            @change="manejarImportarExcel"
+            style="display: none"
+          >
         </div>
       </div>
 
       <!-- Alert -->
       <div v-if="mensajeAlerta" :class="['alert', tipoAlerta]">
         <ion-icon :name="tipoAlerta === 'success' ? 'checkmark-circle' : 'alert-circle'"></ion-icon>
-        {{ mensajeAlerta }}
+        <span>{{ mensajeAlerta }}</span>
       </div>
 
       <!-- Tabla de Usuarios -->
-      <div class="usuarios-table">
-        <table>
+      <div class="tabla-card">
+        <div v-if="usuariosFiltrados.length === 0" class="empty-state">
+          <ion-icon name="people-outline"></ion-icon>
+          <h3>No hay usuarios</h3>
+          <p>{{ usuarios.length === 0 ? 'Crea tu primer usuario para comenzar' : 'No coincide con los filtros aplicados' }}</p>
+        </div>
+        <table v-else>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>DNI</th>
-              <th>Teléfono</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style="width: 28%;">Nombre</th>
+              <th style="width: 12%;">DNI</th>
+              <th style="width: 12%;">Teléfono</th>
+              <th style="width: 10%;">Rol</th>
+              <th style="width: 10%;">Estado</th>
+              <th style="width: 12%;">Carnet</th>
+              <th style="width: 16%;">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="usuarios.length === 0">
-              <td colspan="6" class="sin-datos">No hay usuarios registrados</td>
-            </tr>
-            <tr v-for="user in usuariosFiltrados" :key="user.id">
-              <td>{{ user.nombre_completo }}</td>
-              <td>{{ user.numero_dni }}</td>
-              <td>{{ user.telefono }}</td>
-              <td>{{ user.rol }}</td>
+            <tr v-for="user in usuariosFiltrados" :key="user.id" class="tabla-row">
+              <td class="nombre-cell">
+                <div class="avatar-placeholder">{{ user.nombre_completo.charAt(0).toUpperCase() }}</div>
+                <span>{{ user.nombre_completo }}</span>
+              </td>
+              <td><span class="codigo-badge">{{ user.numero_dni }}</span></td>
+              <td>{{ user.telefono || '—' }}</td>
+              <td>
+                <span :class="['role-badge', user.rol]">
+                  {{ user.rol === 'admin' ? 'Administrador' : 'Usuario' }}
+                </span>
+              </td>
               <td>
                 <span :class="['status-badge', user.estado]">{{ user.estado }}</span>
               </td>
-              <td class="actions">
-                <button @click="editarUsuario(user)" class="btn-icon" title="Editar">
-                  <ion-icon name="create-outline"></ion-icon>
-                </button>
-                <button @click="confirmarEliminar(user)" class="btn-icon" title="Eliminar">
-                  <ion-icon name="trash-outline"></ion-icon>
-                </button>
+              <td class="carnet-cell">
+                <router-link :to="`/carnets?usuario=${user.id}`" class="btn-carnet-link" title="Ver carnet del usuario">
+                  <ion-icon name="card-outline"></ion-icon>
+                  <span class="carnet-numero">{{ numeroCarnet(user) }}</span>
+                </router-link>
+              </td>
+              <td class="actions-cell">
+                <div class="actions-buttons">
+                  <router-link :to="`/usuarios/${user.id}`" class="btn-action-icon view" title="Ver perfil">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </router-link>
+                  <button @click="abrirCobranzaSidebar(user)" class="btn-action-icon cobranza" title="Ver cobranza">
+                    <ion-icon name="receipt-outline"></ion-icon>
+                  </button>
+                  <button @click="editarUsuario(user)" class="btn-action-icon edit" title="Editar usuario">
+                    <ion-icon name="pencil-outline"></ion-icon>
+                  </button>
+                  <button @click="confirmarEliminar(user)" class="btn-action-icon delete" title="Eliminar usuario">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Sidebar Cobranza -->
+      <div v-if="usuarioCobranzaSeleccionado" class="sidebar-overlay" @click.self="usuarioCobranzaSeleccionado = null">
+        <div class="sidebar-content">
+          <div class="sidebar-header">
+            <div>
+              <h3>Cobranza - {{ usuarioCobranzaSeleccionado.nombre_completo }}</h3>
+              <p class="sidebar-subtitle">DNI: {{ usuarioCobranzaSeleccionado.numero_dni }}</p>
+            </div>
+            <button @click="usuarioCobranzaSeleccionado = null" class="btn-close-sidebar">
+              <ion-icon name="close-outline"></ion-icon>
+            </button>
+          </div>
+
+          <div class="sidebar-body">
+            <!-- Estadísticas -->
+            <div class="stats-grid">
+              <div class="stat-card-sidebar">
+                <div class="stat-icon">
+                  <ion-icon name="receipt-outline"></ion-icon>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Pendientes</span>
+                  <span class="stat-number">{{ cuotasPendientes.length }}</span>
+                </div>
+              </div>
+              <div class="stat-card-sidebar">
+                <div class="stat-icon alert">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Adeudado</span>
+                  <span class="stat-number">{{ formatearMoneda(totalAdeudado) }}</span>
+                </div>
+              </div>
+              <div class="stat-card-sidebar">
+                <div class="stat-icon success">
+                  <ion-icon name="checkmark-done-outline"></ion-icon>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Pagadas</span>
+                  <span class="stat-number">{{ cuotasPagadas.length }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cuotas Pendientes Section -->
+            <div class="cobranza-section">
+              <h4>Cuotas Pendientes ({{ cuotasPendientes.length }})</h4>
+              <div v-if="cuotasPendientes.length === 0" class="empty-section">
+                <ion-icon name="document-outline"></ion-icon>
+                <p>Sin cuotas pendientes</p>
+              </div>
+              <div v-else class="cuotas-list">
+                <div v-for="cuota in cuotasPendientes.slice(0, 5)" :key="cuota.id" class="cuota-item">
+                  <div class="cuota-header">
+                    <span class="cuota-concepto">{{ cuota.concepto }}</span>
+                    <span class="cuota-monto">{{ formatearMoneda(cuota.monto) }}</span>
+                  </div>
+                  <div class="cuota-fecha">Vence: {{ formatarFecha(cuota.fecha_vencimiento) }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operaciones Aprobadas Section -->
+            <div class="cobranza-section">
+              <h4>Operaciones Aprobadas ({{ operacionesAprobadas.length }})</h4>
+              <div v-if="operacionesAprobadas.length === 0" class="empty-section">
+                <ion-icon name="swap-horizontal-outline"></ion-icon>
+                <p>Sin operaciones aprobadas</p>
+              </div>
+              <div v-else class="operaciones-list">
+                <div v-for="op in operacionesAprobadas.slice(0, 5)" :key="op.id" class="operacion-item">
+                  <div class="op-header">
+                    <span class="op-concepto">{{ op.concepto }}</span>
+                    <span class="op-monto">{{ formatearMoneda(op.monto) }}</span>
+                  </div>
+                  <div class="op-detalles">
+                    <span :class="['op-metodo', formatoMetodo(op.metodo_pago).clase]">
+                      {{ formatoMetodo(op.metodo_pago).nombre }}
+                    </span>
+                    <span class="op-fecha">{{ formatarFecha(op.fecha_pagada) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Modal Confirmación Eliminar -->
@@ -76,6 +217,92 @@
               {{ eliminando ? 'Eliminando...' : 'Eliminar' }}
             </button>
             <button @click="usuarioAEliminar = null" class="btn-outline">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Previsualización de Importación -->
+      <div v-if="mostrarModalPreview" class="modal-overlay-full" @click.self="cerrarPreview">
+        <div class="modal-contenedor" style="max-width: 1000px;">
+          <div class="modal-header">
+            <div>
+              <h2>Previsualización de Importación</h2>
+              <p class="preview-resumen">
+                <span class="badge badge-validos">✅ {{ resumenImport.validos }} válidos</span>
+                <span class="badge badge-duplicados">⚠️ {{ resumenImport.duplicados }} duplicados</span>
+                <span class="badge badge-errores">❌ {{ resumenImport.errores }} errores</span>
+              </p>
+            </div>
+            <button @click="cerrarPreview" class="btn-close">
+              <ion-icon name="close-outline"></ion-icon>
+            </button>
+          </div>
+
+          <div class="modal-body-scroll">
+            <!-- Tabla de filas -->
+            <div class="preview-tabla">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Fila</th>
+                    <th style="width: 60px;">
+                      <input
+                        type="checkbox"
+                        :checked="todosSeleccionados"
+                        @change="alternarTodos"
+                        title="Seleccionar/deseleccionar todos"
+                      >
+                    </th>
+                    <th>Nombre Completo</th>
+                    <th>DNI</th>
+                    <th>Sexo</th>
+                    <th>F. Nacimiento</th>
+                    <th style="width: 150px;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="fila in filasPreview" :key="fila.fila" :class="['fila-' + fila.estado]">
+                    <td class="fila-num">{{ fila.fila }}</td>
+                    <td class="checkbox-cell">
+                      <input
+                        v-if="fila.estado !== 'error'"
+                        type="checkbox"
+                        :checked="filasSeleccionadas.has(fila.fila)"
+                        @change="toggleFila(fila.fila)"
+                        :disabled="fila.estado === 'error'"
+                      >
+                    </td>
+                    <td>{{ fila.datos.nombre_completo }}</td>
+                    <td class="dni">{{ fila.datos.dni }}</td>
+                    <td>{{ fila.datos.sexo }}</td>
+                    <td>{{ fila.datos.fecha_nacimiento || '-' }}</td>
+                    <td class="estado-cell">
+                      <span v-if="fila.estado === 'valido'" class="badge-estado valido">
+                        ✅ Válido
+                      </span>
+                      <span v-else-if="fila.estado === 'duplicado'" class="badge-estado duplicado">
+                        ⚠️ Ya existe
+                      </span>
+                      <span v-else class="badge-estado error" :title="fila.motivo">
+                        ❌ {{ fila.motivo }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button @click="cerrarPreview" class="btn-outline">Cancelar</button>
+            <button
+              @click="confirmarImportacion"
+              class="btn-primary"
+              :disabled="filasSeleccionadas.size === 0 || importando"
+            >
+              <ion-icon name="download-outline"></ion-icon>
+              {{ importando ? 'Importando...' : `Importar seleccionados (${filasSeleccionadas.size})` }}
+            </button>
           </div>
         </div>
       </div>
@@ -285,6 +512,60 @@
               </select>
             </div>
           </div>
+
+          <!-- Sección Asignación de Conceptos (solo si rol es usuario) -->
+          <div v-if="formulario.rol === 'usuario' || formulario.rol === 'user'" class="seccion">
+            <h3>6. Asignación de Conceptos de Pago</h3>
+            <p class="texto-ayuda">Asigna los conceptos de pago que aplican a este usuario. Las cuotas se generarán automáticamente desde la fecha de inicio.</p>
+
+            <div class="form-group">
+              <label>Fecha de Inicio de Afiliación/Cobranza *</label>
+              <input v-model="formulario.fecha_inicio_cobranza" type="date">
+              <small class="help-text">Se generarán cuotas desde esta fecha hasta hoy</small>
+            </div>
+
+            <!-- Cuotas (se asignan automáticamente) -->
+            <div class="conceptos-seccion">
+              <h4>Cuotas (Recurrentes)</h4>
+              <p class="texto-ayuda-pequeño">Se asignarán automáticamente al usuario</p>
+              <div class="conceptos-lista">
+                <div v-for="concepto in conceptosCuota" :key="concepto.id" class="concepto-item">
+                  <label class="checkbox-concepto">
+                    <input type="checkbox" :checked="true" disabled>
+                    <div class="concepto-info">
+                      <strong>{{ concepto.nombre }}</strong>
+                      <span class="concepto-monto">{{ formatearMoneda(concepto.monto) }}</span>
+                      <span class="concepto-recurrencia">Cada {{ concepto.recurrencia }}</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Multas y Derechos (seleccionables) -->
+            <div class="conceptos-seccion">
+              <h4>Multas y Derechos (Una sola vez)</h4>
+              <div v-if="conceptosMulDer.length === 0" class="sin-conceptos">
+                <p>No hay conceptos disponibles</p>
+              </div>
+              <div v-else class="conceptos-lista">
+                <div v-for="concepto in conceptosMulDer" :key="concepto.id" class="concepto-item">
+                  <label class="checkbox-concepto">
+                    <input
+                      type="checkbox"
+                      :value="concepto.id"
+                      v-model="formulario.conceptos_asignados"
+                    >
+                    <div class="concepto-info">
+                      <strong>{{ concepto.nombre }}</strong>
+                      <span class="concepto-monto">{{ formatearMoneda(concepto.monto) }}</span>
+                      <span class="concepto-tipo">{{ concepto.tipo }}</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -307,12 +588,20 @@
 import { ref, computed, onMounted } from 'vue'
 import usuariosService from '@/services/usuarios.service'
 import factilizaService from '@/services/factiliza.service'
+import * as XLSX from 'xlsx'
+
+const formatearMoneda = (monto) => {
+  return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto)
+}
 
 const usuarios = ref([])
 const busqueda = ref('')
 const showModal = ref(false)
 const usuarioEditando = ref(null)
 const usuarioAEliminar = ref(null)
+const usuarioCobranzaSeleccionado = ref(null)
+const cuotasCobranza = ref([])
+const operacionesCobranza = ref([])
 const guardando = ref(false)
 const eliminando = ref(false)
 const consultandoDNI = ref(false)
@@ -321,6 +610,14 @@ const datosFactilizaCargados = ref(false)
 const mensajeAlerta = ref('')
 const tipoAlerta = ref('success')
 const mensajeDNI = ref(null)
+const conceptos = ref([])
+const mostrarModalPreview = ref(false)
+const filasPreview = ref([])
+const filasSeleccionadas = ref(new Set())
+const resumenImport = ref({ validos: 0, duplicados: 0, errores: 0 })
+const importando = ref(false)
+const filtroEstado = ref('')
+const filtroRol = ref('')
 
 const formulario = ref({
   numero_dni: '',
@@ -339,7 +636,9 @@ const formulario = ref({
   usar_reconocimiento_facial: false,
   foto_frontal: null,
   foto_lateral_izq: null,
-  foto_lateral_der: null
+  foto_lateral_der: null,
+  fecha_inicio_cobranza: new Date().toISOString().split('T')[0],
+  conceptos_asignados: []
 })
 
 const previews = ref({
@@ -348,13 +647,24 @@ const previews = ref({
   lateral_der: null
 })
 
+const conceptosCuota = computed(() => {
+  return conceptos.value.filter(c => c.tipo === 'cuota')
+})
+
+const conceptosMulDer = computed(() => {
+  return conceptos.value.filter(c => c.tipo === 'multa' || c.tipo === 'derecho')
+})
+
 const usuariosFiltrados = computed(() => {
-  if (!busqueda.value) return usuarios.value
-  return usuarios.value.filter(u =>
-    u.nombre_completo.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-    u.numero_dni.includes(busqueda.value) ||
-    (u.telefono && u.telefono.includes(busqueda.value))
-  )
+  return usuarios.value.filter(u => {
+    const matchBusqueda = !busqueda.value ||
+      u.nombre_completo.toLowerCase().includes(busqueda.value.toLowerCase()) ||
+      u.numero_dni.includes(busqueda.value) ||
+      (u.telefono && u.telefono.includes(busqueda.value))
+    const matchEstado = !filtroEstado.value || u.estado === filtroEstado.value
+    const matchRol = !filtroRol.value || u.rol === filtroRol.value
+    return matchBusqueda && matchEstado && matchRol
+  })
 })
 
 const formularioValido = computed(() => {
@@ -366,9 +676,52 @@ const formularioValido = computed(() => {
   return true
 })
 
+const todosSeleccionados = computed(() => {
+  if (filasPreview.value.length === 0) return false
+  const filasSeleccionables = filasPreview.value.filter(f => f.estado !== 'error')
+  return filasSeleccionables.length > 0 && filasSeleccionables.every(f => filasSeleccionadas.value.has(f.fila))
+})
+
+const cuotasDelUsuario = computed(() => {
+  if (!usuarioCobranzaSeleccionado.value) return []
+  return cuotasCobranza.value.filter(c => c.usuario_id === usuarioCobranzaSeleccionado.value.id)
+})
+
+const cuotasPendientes = computed(() => {
+  return cuotasDelUsuario.value.filter(c => c.estado && c.estado.toLowerCase() === 'pendiente')
+})
+
+const cuotasPagadas = computed(() => {
+  return cuotasDelUsuario.value.filter(c => c.estado && c.estado.toLowerCase() === 'pagada')
+})
+
+const totalAdeudado = computed(() => {
+  return cuotasPendientes.value.reduce((sum, c) => sum + (parseFloat(c.monto) || 0), 0)
+})
+
+const operacionesDelUsuario = computed(() => {
+  if (!usuarioCobranzaSeleccionado.value) return []
+  return operacionesCobranza.value.filter(o => o.usuario_id === usuarioCobranzaSeleccionado.value.id)
+})
+
+const operacionesAprobadas = computed(() => {
+  return operacionesDelUsuario.value.filter(o => o.estado && o.estado.toLowerCase() === 'aprobado')
+})
+
 onMounted(async () => {
   await cargarUsuarios()
+  await cargarConceptos()
 })
+
+const cargarConceptos = async () => {
+  try {
+    const res = await fetch('/api/cobranza/conceptos/')
+    const data = await res.json()
+    conceptos.value = data.data || []
+  } catch (error) {
+    console.error('Error cargando conceptos:', error)
+  }
+}
 
 const cargarUsuarios = async () => {
   cargando.value = true
@@ -453,6 +806,13 @@ const abrirModalNuevoUsuario = () => {
 
 const editarUsuario = (usuario) => {
   usuarioEditando.value = usuario
+
+  // Formatear fecha_inicio_cobranza para el input date
+  let fechaInicio = new Date().toISOString().split('T')[0]
+  if (usuario.fecha_inicio_cobranza) {
+    fechaInicio = usuario.fecha_inicio_cobranza.split('T')[0]
+  }
+
   formulario.value = {
     numero_dni: usuario.numero_dni,
     nombre_completo: usuario.nombre_completo,
@@ -468,6 +828,8 @@ const editarUsuario = (usuario) => {
     rol: usuario.rol,
     estado: usuario.estado,
     usar_reconocimiento_facial: usuario.usar_reconocimiento_facial || false,
+    fecha_inicio_cobranza: fechaInicio,
+    conceptos_asignados: [],
     foto_frontal: null,
     foto_lateral_izq: null,
     foto_lateral_der: null
@@ -514,6 +876,14 @@ const guardarUsuario = async () => {
     formData.append('estado', formulario.value.estado)
     formData.append('usar_reconocimiento_facial', formulario.value.usar_reconocimiento_facial ? 'true' : 'false')
 
+    // Campos de cobranza
+    if (formulario.value.fecha_inicio_cobranza) {
+      formData.append('fecha_inicio_cobranza', formulario.value.fecha_inicio_cobranza)
+    }
+    if (formulario.value.conceptos_asignados && formulario.value.conceptos_asignados.length > 0) {
+      formData.append('conceptos_asignados', JSON.stringify(formulario.value.conceptos_asignados))
+    }
+
     if (formulario.value.foto_frontal) {
       formData.append('foto_frontal', formulario.value.foto_frontal)
     }
@@ -524,12 +894,31 @@ const guardarUsuario = async () => {
       formData.append('foto_lateral_der', formulario.value.foto_lateral_der)
     }
 
+    let usuarioId
     if (usuarioEditando.value) {
       await usuariosService.actualizarUsuario(usuarioEditando.value.id, formData)
+      usuarioId = usuarioEditando.value.id
       mensajeAlerta.value = 'Usuario actualizado exitosamente'
     } else {
-      await usuariosService.crearUsuario(formData)
+      const res = await usuariosService.crearUsuario(formData)
+      usuarioId = res.data.id
       mensajeAlerta.value = 'Usuario creado exitosamente'
+    }
+
+    // Asignar conceptos de cobranza si es usuario
+    if (formulario.value.rol === 'usuario' || formulario.value.rol === 'user') {
+      try {
+        await fetch('/api/cobranza/asignar-conceptos/' + usuarioId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fecha_inicio_cobranza: formulario.value.fecha_inicio_cobranza,
+            conceptos_multas_derechos: formulario.value.conceptos_asignados || []
+          })
+        })
+      } catch (error) {
+        console.error('Error asignando conceptos:', error)
+      }
     }
 
     tipoAlerta.value = 'success'
@@ -598,33 +987,242 @@ const resetFormulario = () => {
   datosFactilizaCargados.value = false
   mensajeDNI.value = null
 }
+
+const manejarImportarExcel = async (event) => {
+  const archivo = event.target.files[0]
+  if (!archivo) return
+
+  try {
+    const formData = new FormData()
+    formData.append('archivo', archivo)
+
+    // Llamar al endpoint de preview
+    const respuesta = await fetch('/api/usuarios/preview-excel', {
+      method: 'POST',
+      body: formData
+    })
+
+    const datos = await respuesta.json()
+
+    if (!respuesta.ok) {
+      mensajeAlerta.value = datos.detail || 'Error leyendo archivo'
+      tipoAlerta.value = 'error'
+      event.target.value = ''
+      return
+    }
+
+    // Cargar preview
+    filasPreview.value = datos.filas
+    resumenImport.value = datos.resumen
+
+    // Pre-seleccionar todos los válidos
+    filasSeleccionadas.value = new Set()
+    datos.filas.forEach(fila => {
+      if (fila.estado === 'valido') {
+        filasSeleccionadas.value.add(fila.fila)
+      }
+    })
+
+    // Mostrar modal de preview
+    mostrarModalPreview.value = true
+
+    // Limpiar input
+    event.target.value = ''
+  } catch (error) {
+    mensajeAlerta.value = 'Error al leer archivo: ' + error.message
+    tipoAlerta.value = 'error'
+    event.target.value = ''
+  }
+}
+
+const toggleFila = (numeroFila) => {
+  if (filasSeleccionadas.value.has(numeroFila)) {
+    filasSeleccionadas.value.delete(numeroFila)
+  } else {
+    filasSeleccionadas.value.add(numeroFila)
+  }
+}
+
+const alternarTodos = () => {
+  const filasSeleccionables = filasPreview.value.filter(f => f.estado !== 'error')
+
+  if (todosSeleccionados.value) {
+    // Deseleccionar todos
+    filasSeleccionables.forEach(f => filasSeleccionadas.value.delete(f.fila))
+  } else {
+    // Seleccionar todos
+    filasSeleccionables.forEach(f => filasSeleccionadas.value.add(f.fila))
+  }
+}
+
+const cerrarPreview = () => {
+  mostrarModalPreview.value = false
+  filasPreview.value = []
+  filasSeleccionadas.value = new Set()
+}
+
+const confirmarImportacion = async () => {
+  if (filasSeleccionadas.value.size === 0) {
+    mensajeAlerta.value = 'Selecciona al menos un usuario para importar'
+    tipoAlerta.value = 'error'
+    return
+  }
+
+  importando.value = true
+  try {
+    // Preparar datos a importar
+    const usuariosAImportar = filasPreview.value
+      .filter(f => filasSeleccionadas.value.has(f.fila))
+      .map(f => f.datos)
+
+    console.log('Enviando usuarios a importar:', usuariosAImportar)
+
+    const respuesta = await fetch('/api/usuarios/importar-confirmado', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuarios: usuariosAImportar })
+    })
+
+    console.log('Respuesta status:', respuesta.status)
+    console.log('Respuesta ok:', respuesta.ok)
+
+    const datos = await respuesta.json()
+    console.log('Datos recibidos:', datos)
+
+    if (!respuesta.ok) {
+      mensajeAlerta.value = datos.detail || 'Error importando'
+      tipoAlerta.value = 'error'
+      console.error('Error en respuesta:', datos)
+      return
+    }
+
+    // Mostrar resultado
+    const cantidadImportados = datos.usuarios_creados ? datos.usuarios_creados.length : 0
+    if (datos.errores && datos.errores.length > 0) {
+      console.log('Errores en importación:', datos.errores)
+      console.log('Primeros 5 errores:', datos.errores.slice(0, 5))
+    }
+
+    if (cantidadImportados > 0) {
+      mensajeAlerta.value = `✅ ${cantidadImportados} usuarios importados exitosamente`
+      tipoAlerta.value = 'success'
+    } else {
+      mensajeAlerta.value = `❌ No se importó ningún usuario. Errores: ${datos.errores && datos.errores.length > 0 ? datos.errores[0] : 'desconocido'}`
+      tipoAlerta.value = 'error'
+    }
+    console.log('Resultado final:', cantidadImportados)
+
+    // Cerrar modal y recargar
+    cerrarPreview()
+    await cargarUsuarios()
+  } catch (error) {
+    console.error('Error en confirmarImportacion:', error)
+    mensajeAlerta.value = 'Error al importar: ' + error.message
+    tipoAlerta.value = 'error'
+  } finally {
+    importando.value = false
+  }
+}
+
+const numeroCarnet = (user) => {
+  return String(user.id).padStart(3, '0') + (user.numero_dni || '')
+}
+
+const limpiarFiltros = () => {
+  filtroEstado.value = ''
+  filtroRol.value = ''
+}
+
+const abrirCobranzaSidebar = async (usuario) => {
+  console.log('Abriendo cobranza para:', usuario)
+  usuarioCobranzaSeleccionado.value = usuario
+
+  try {
+    // Cargar cuotas - endpoint toma usuario_id como parámetro de ruta
+    console.log('Cargando cuotas desde:', `/api/cobranza/cuotas/${usuario.id}`)
+    const resCuotas = await fetch(`/api/cobranza/cuotas/${usuario.id}`)
+    console.log('Respuesta cuotas:', resCuotas.status)
+    if (resCuotas.ok) {
+      const dataCuotas = await resCuotas.json()
+      console.log('Cuotas cargadas:', dataCuotas)
+      cuotasCobranza.value = dataCuotas.data || []
+    } else {
+      console.warn('Error en cuotas:', resCuotas.statusText)
+    }
+
+    // Cargar operaciones/pagos
+    console.log('Cargando pagos...')
+    const resOps = await fetch('/api/cobranza/pagos')
+    console.log('Respuesta pagos:', resOps.status)
+    if (resOps.ok) {
+      const dataOps = await resOps.json()
+      console.log('Pagos cargados:', dataOps)
+      operacionesCobranza.value = (dataOps.data || []).filter(o => o.usuario_id === usuario.id)
+    } else {
+      console.warn('Error en pagos:', resOps.statusText)
+    }
+  } catch (error) {
+    console.error('Error cargando cobranza:', error)
+  }
+}
+
+const formatarFecha = (fecha) => {
+  if (!fecha) return '—'
+  return new Date(fecha).toLocaleDateString('es-PE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
+const formatoMetodo = (metodo) => {
+  const mapeo = {
+    'efectivo': { nombre: 'Efectivo', clase: 'metodo-efectivo' },
+    'transferencia': { nombre: 'Transferencia', clase: 'metodo-transferencia' },
+    'deposito': { nombre: 'Depósito', clase: 'metodo-deposito' },
+    'billetera': { nombre: 'Billetera', clase: 'metodo-billetera' }
+  }
+  return mapeo[metodo?.toLowerCase()] || { nombre: metodo, clase: 'metodo-otro' }
+}
 </script>
 
 <style scoped>
 .usuarios-container {
-  padding: 20px;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .vista-lista {
-  /* estilos para tabla */
-}
-
-/* HEADER */
-.view-header {
-  margin-bottom: 32px;
-}
-
-.header-content {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
 }
 
-.header-content h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+  min-width: 300px;
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .btn-primary {
@@ -632,18 +1230,20 @@ const resetFormulario = () => {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: #4f46e5;
+  background: #6366f1;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
   font-size: 14px;
+  white-space: nowrap;
+  font-family: inherit;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #4338ca;
+  background: #4f46e5;
 }
 
 .btn-primary:disabled {
@@ -655,20 +1255,54 @@ const resetFormulario = () => {
   font-size: 18px;
 }
 
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: white;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.btn-secondary ion-icon {
+  font-size: 18px;
+}
+
+/* SEARCH BAR */
 .search-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
   background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  max-width: 300px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 250px;
+  transition: all 0.2s;
+}
+
+.search-bar:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .search-bar ion-icon {
   font-size: 18px;
-  color: #64748b;
+  color: #9ca3af;
 }
 
 .search-bar input {
@@ -676,88 +1310,219 @@ const resetFormulario = () => {
   border: none;
   outline: none;
   font-size: 14px;
-  color: #1e293b;
+  color: #1f2937;
+  background: transparent;
 }
 
-/* ALERT */
-.alert {
+.search-bar input::placeholder {
+  color: #d1d5db;
+}
+
+/* FILTROS INLINE */
+.filtros-inline {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
+}
+
+.filtro-select {
+  padding: 9px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  background: white;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s;
   font-weight: 500;
 }
 
-.alert.success {
-  background: #dcfce7;
-  color: #166534;
+.filtro-select:hover {
+  border-color: #4f46e5;
+  background: #f9f5ff;
 }
 
-.alert.error {
-  background: #fee2e2;
-  color: #991b1b;
+.filtro-select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.btn-limpiar-filtros {
+  padding: 9px 12px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.btn-limpiar-filtros:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* TABLA CARD */
+.tabla-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #9ca3af;
+}
+
+.empty-state ion-icon {
+  font-size: 64px;
+  color: #d1d5db;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
 }
 
 /* TABLA */
-.usuarios-table {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 thead {
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 th {
   padding: 16px;
   text-align: left;
   font-weight: 600;
-  color: #64748b;
-  font-size: 13px;
+  color: #6b7280;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.tabla-row {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+
+.tabla-row:hover {
+  background: #f9fafb;
+}
+
+.tabla-row:last-child {
+  border-bottom: none;
+}
+
 td {
   padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #1e293b;
+  color: #1f2937;
   font-size: 14px;
+  vertical-align: middle;
 }
 
-tbody tr:hover {
-  background: #f8fafc;
+/* NOMBRE CELL */
+.nombre-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.sin-datos {
-  text-align: center;
-  color: #94a3b8;
-  font-style: italic;
+.nombre-cell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.codigo-badge {
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-badge.admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.role-badge.usuario {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.role-badge.editor {
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   text-transform: capitalize;
 }
 
 .status-badge.activo {
-  background: #dcfce7;
-  color: #166534;
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .status-badge.inactivo {
@@ -765,29 +1530,146 @@ tbody tr:hover {
   color: #991b1b;
 }
 
-.actions {
+.status-badge.pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* CARNET CELL */
+.carnet-cell {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.btn-icon {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 4px;
+.btn-carnet-link {
   display: flex;
   align-items: center;
-  transition: color 0.2s;
+  gap: 6px;
+  color: #4f46e5;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #ede9fe;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
 }
 
-.btn-icon:hover {
+.btn-carnet-link:hover {
+  background: #ddd6fe;
+  color: #4338ca;
+}
+
+.btn-carnet-link ion-icon {
+  font-size: 16px;
+}
+
+.carnet-numero {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+/* ACTIONS CELL */
+.actions-cell {
+  padding: 12px 16px;
+  text-align: center;
+  width: 16%;
+}
+
+.actions-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action-icon {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  min-width: 36px;
+  height: 36px;
+  text-decoration: none;
+}
+
+.btn-action-icon.view {
+  color: #6366f1;
+}
+
+.btn-action-icon.view:hover {
+  background: #eef2ff;
   color: #4f46e5;
 }
 
-.btn-icon ion-icon {
-  font-size: 18px;
+.btn-action-icon.edit {
+  color: #6366f1;
 }
+
+.btn-action-icon.edit:hover {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+.btn-action-icon.delete {
+  color: #ef4444;
+}
+
+.btn-action-icon.delete:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ALERT */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-left: 4px solid #10b981;
+}
+
+.alert.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+.alert ion-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
 
 /* MODAL */
 .modal-overlay-full {
@@ -807,7 +1689,7 @@ tbody tr:hover {
 .modal-contenedor {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   max-width: 700px;
   width: 100%;
   max-height: 90vh;
@@ -1119,6 +2001,225 @@ tbody tr:hover {
   margin-top: 8px;
 }
 
+/* Conceptos de Pago */
+.conceptos-seccion {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.conceptos-seccion h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.texto-ayuda-pequeño {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+}
+
+.conceptos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.concepto-item {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fafbfc;
+}
+
+.checkbox-concepto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox-concepto input {
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.concepto-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.concepto-info strong {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.concepto-monto {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.concepto-recurrencia,
+.concepto-tipo {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.sin-conceptos {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.help-text {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Preview Modal */
+.preview-resumen {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-validos {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-duplicados {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-errores {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.preview-tabla {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.preview-tabla table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.preview-tabla thead {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.preview-tabla th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-tabla td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.preview-tabla tbody tr:hover {
+  background: #f8fafc;
+}
+
+.preview-tabla .fila-valido {
+  background: #f0fdf4;
+}
+
+.preview-tabla .fila-duplicado {
+  background: #fffbeb;
+}
+
+.preview-tabla .fila-error {
+  background: #fef2f2;
+}
+
+.preview-tabla .fila-num {
+  text-align: center;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.preview-tabla .checkbox-cell {
+  text-align: center;
+  padding: 8px 12px;
+}
+
+.preview-tabla .checkbox-cell input {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.preview-tabla .dni {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.preview-tabla .estado-cell {
+  text-align: center;
+}
+
+.badge-estado {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.badge-estado.valido {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-estado.duplicado {
+  background: #fef3c7;
+  color: #92400e;
+  cursor: help;
+}
+
+.badge-estado.error {
+  background: #fee2e2;
+  color: #991b1b;
+  cursor: help;
+}
+
 /* Modal confirmación eliminar */
 .modal-overlay {
   position: fixed;
@@ -1141,26 +2242,444 @@ tbody tr:hover {
   width: 90%;
 }
 
-@media (max-width: 768px) {
-  /* Header */
-  .header-content {
+/* SIDEBAR COBRANZA */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1002;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { background: rgba(0, 0, 0, 0); }
+  to { background: rgba(0, 0, 0, 0.5); }
+}
+
+.sidebar-content {
+  background: white;
+  width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebar-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sidebar-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.btn-close-sidebar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-close-sidebar:hover {
+  color: #1e293b;
+}
+
+.btn-close-sidebar ion-icon {
+  font-size: 20px;
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.stat-card-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.stat-card-sidebar .stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #4f46e5;
+}
+
+.stat-card-sidebar .stat-icon.alert {
+  color: #f59e0b;
+}
+
+.stat-card-sidebar .stat-icon.success {
+  color: #10b981;
+}
+
+.stat-card-sidebar .stat-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card-sidebar .stat-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.cobranza-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cobranza-section h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.empty-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.empty-section ion-icon {
+  font-size: 32px;
+  color: #cbd5e1;
+}
+
+.empty-section p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* CUOTAS LIST */
+.cuotas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cuota-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px;
+  background: #fafbfc;
+  font-size: 13px;
+}
+
+.cuota-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.cuota-concepto {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 12px;
+  flex: 1;
+}
+
+.cuota-monto {
+  font-weight: 700;
+  color: #4f46e5;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cuota-fecha {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.cuota-estado {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.cuota-estado.pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.cuota-estado.pagada {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cuota-estado.vencida {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cuota-detalles {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.cuota-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuota-dato .label {
+  color: #94a3b8;
+}
+
+.cuota-dato .valor {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* OPERACIONES LIST */
+.operaciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.operacion-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafbfc;
+}
+
+.op-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.op-concepto {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.op-monto {
+  font-weight: 700;
+  color: #4f46e5;
+  font-size: 13px;
+}
+
+.op-detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.op-metodo {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 11px;
+}
+
+.op-metodo.metodo-efectivo {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.op-metodo.metodo-transferencia {
+  background: #bfdbfe;
+  color: #1e40af;
+}
+
+.op-metodo.metodo-deposito {
+  background: #fbcfe8;
+  color: #831843;
+}
+
+.op-metodo.metodo-billetera {
+  background: #d8b4fe;
+  color: #581c87;
+}
+
+.op-metodo.metodo-otro {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.op-fecha {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.btn-action-icon.cobranza {
+  color: #8b5cf6;
+}
+
+.btn-action-icon.cobranza:hover {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+@media (max-width: 1024px) {
+  .toolbar {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: stretch;
   }
-  .header-content h2 { font-size: 18px; }
-  .btn-primary { width: 100%; justify-content: center; }
-  .search-bar { max-width: 100%; }
+
+  .toolbar-left {
+    flex-direction: column;
+  }
+
+  .toolbar-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .toolbar-right button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .vista-lista {
+    padding: 16px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+  }
+
+  .toolbar-left {
+    width: 100%;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .filtros-inline {
+    width: 100%;
+  }
+
+  .filtro-select {
+    flex: 1;
+  }
+
+  .toolbar-right {
+    width: 100%;
+  }
+
+  .toolbar-right button {
+    flex: 1;
+  }
 
   /* Tabla: scroll horizontal */
-  .usuarios-table {
+  .tabla-card {
     overflow-x: auto;
   }
-  table { min-width: 520px; }
-  th, td { padding: 10px 12px; font-size: 13px; }
+
+  table {
+    min-width: 600px;
+  }
+
+  th, td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .nombre-cell {
+    gap: 8px;
+  }
+
+  .avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .btn-carnet-link {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .carnet-numero {
+    display: none;
+  }
 
   /* Modal ocupa toda la pantalla */
-  .modal-overlay-full { padding: 0; align-items: flex-end; }
+  .modal-overlay-full {
+    padding: 0;
+    align-items: flex-end;
+  }
+
   .modal-contenedor {
     max-width: 100%;
     border-radius: 16px 16px 0 0;
@@ -1170,7 +2689,46 @@ tbody tr:hover {
   /* Grids del formulario en 1 columna */
   .fotos-grid,
   .grid-2,
-  .grid-3 { grid-template-columns: 1fr; }
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .vista-lista {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .toolbar-left {
+    flex-direction: column;
+  }
+
+  .search-bar {
+    padding: 8px 12px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  th, td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .actions-cell {
+    gap: 4px;
+  }
+
+  .btn-action-icon {
+    padding: 6px 8px;
+    font-size: 14px;
+    min-width: 32px;
+    height: 32px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1178,5 +2736,16 @@ tbody tr:hover {
   .modal-header { padding: 14px 16px; }
   .modal-body-scroll { padding: 14px 16px; }
   .seccion { margin-bottom: 20px; padding-bottom: 20px; }
+
+  .sidebar-content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-content {
+    width: 100%;
+    max-width: 420px;
+  }
 }
 </style>

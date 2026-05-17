@@ -75,7 +75,7 @@ const campos = ref([
 
 <style scoped>
 .configuracion-container {
-  padding: 20px;
+  padding: 0;
 }
 
 .view-header {
@@ -99,17 +99,18 @@ const campos = ref([
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: #4f46e5;
+  background: #6366f1;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  font-family: inherit;
 }
 
 .btn-primary:hover {
-  background: #4338ca;
+  background: #4f46e5;
 }
 
 .btn-primary ion-icon {
@@ -127,13 +128,12 @@ const campos = ref([
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s;
 }
 
 .campo-card:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
 }
 
 .campo-header {

@@ -1,12 +1,12 @@
 import api from './api'
 
-const FACTILIZA_ENDPOINT = '/integraciones/factiliza'
+const FACTILIZA_ENDPOINT = '/integraciones/factiliza/'
 
 export const factilizaService = {
   // Obtener configuración de Factiliza
   async getConfig() {
     try {
-      const response = await api.get(`${FACTILIZA_ENDPOINT}/config`)
+      const response = await api.get(`${FACTILIZA_ENDPOINT}config`)
       return response.data
     } catch (error) {
       console.error('Error obteniendo configuración de Factiliza:', error)
@@ -22,7 +22,7 @@ export const factilizaService = {
     max_reintentos?: number
   }) {
     try {
-      const response = await api.post(`${FACTILIZA_ENDPOINT}/config`, config)
+      const response = await api.post(`${FACTILIZA_ENDPOINT}config`, config)
       return response.data
     } catch (error) {
       console.error('Error actualizando configuración de Factiliza:', error)
@@ -33,7 +33,7 @@ export const factilizaService = {
   // Consultar DNI y obtener datos de persona
   async consultarDNI(numero_dni: string) {
     try {
-      const response = await api.post(`${FACTILIZA_ENDPOINT}/consultar-dni`, {
+      const response = await api.post(`${FACTILIZA_ENDPOINT}consultar-dni`, {
         numero_dni
       })
       return response.data
@@ -52,7 +52,7 @@ export const factilizaService = {
     offset?: number
   }) {
     try {
-      const response = await api.get(`${FACTILIZA_ENDPOINT}/historial`, { params: filtros })
+      const response = await api.get(`${FACTILIZA_ENDPOINT}historial`, { params: filtros })
       return response.data
     } catch (error) {
       console.error('Error obteniendo historial:', error)
@@ -63,7 +63,7 @@ export const factilizaService = {
   // Obtener detalles de una consulta anterior
   async obtenerConsulta(id_consulta: number) {
     try {
-      const response = await api.get(`${FACTILIZA_ENDPOINT}/consultas/${id_consulta}`)
+      const response = await api.get(`${FACTILIZA_ENDPOINT}consultas/${id_consulta}`)
       return response.data
     } catch (error) {
       console.error('Error obteniendo consulta:', error)
@@ -74,7 +74,7 @@ export const factilizaService = {
   // Probar conexión
   async testConexion() {
     try {
-      const response = await api.get(`${FACTILIZA_ENDPOINT}/test`)
+      const response = await api.get(`${FACTILIZA_ENDPOINT}test`)
       return response.data
     } catch (error) {
       console.error('Error en prueba de conexión:', error)
@@ -85,7 +85,7 @@ export const factilizaService = {
   // Obtener estadísticas de consultas
   async getEstadisticas() {
     try {
-      const response = await api.get(`${FACTILIZA_ENDPOINT}/estadisticas`)
+      const response = await api.get(`${FACTILIZA_ENDPOINT}estadisticas`)
       return response.data
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error)

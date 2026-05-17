@@ -241,3 +241,61 @@ class CampoUsuario(Base):
         "ConsultaExterna",
         foreign_keys=[consulta_externa_id]
     )
+
+
+class ConfiguracionCarnet(Base):
+    """
+    Configuración visual del carnet comunero.
+
+    Almacena:
+    - Textos del carnet (nombre comunidad, subtítulo, resolución)
+    - URLs de imágenes (bandera anverso, escudo reverso, fondos)
+    """
+    __tablename__ = "configuracion_carnet"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Textos del carnet
+    nombre_comunidad = Column(String(200), default="COMUNIDAD CAMPESINA", nullable=False)
+    subtitulo = Column(String(200), default="TUMILACA, POCATA, COSCORE Y TALA", nullable=False)
+    resolucion = Column(String(200), default="RESOLUCIÓN SUPREMA 07 SET 1949", nullable=False)
+
+    # Imágenes configurables
+    bandera_url = Column(String(500), nullable=True)      # Logo/bandera anverso (top-left)
+    escudo_url = Column(String(500), nullable=True)       # Escudo reverso (top-left)
+    fondo_anverso_url = Column(String(500), nullable=True)  # Fondo paisaje anverso
+    fondo_reverso_url = Column(String(500), nullable=True)  # Fondo reverso
+
+    # Auditoría
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ConfiguracionMarca(Base):
+    """
+    Configuración de marca blanca (white label).
+    Solo existe un registro (id=1).
+
+    Almacena:
+    - Nombre y subtítulo de la organización
+    - Logo y favicon personalizados
+    - Color primario de la aplicación
+    """
+    __tablename__ = "configuracion_marca"
+
+    id = Column(Integer, primary_key=True, default=1, index=True)
+
+    # Textos
+    nombre_pagina = Column(String(100), default="Comunidad", nullable=False)
+    subtitulo = Column(String(200), default="Sistema de Gestión", nullable=False)
+    nombre_corto = Column(String(20), default="COM", nullable=False)
+
+    # Imágenes
+    logo_url = Column(String(500), nullable=True)
+    favicon_url = Column(String(500), nullable=True)
+
+    # Tema
+    color_primario = Column(String(20), default="#4f46e5", nullable=False)
+
+    # Auditoría
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

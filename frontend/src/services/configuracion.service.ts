@@ -53,7 +53,7 @@ class ConfiguracionService {
    */
   async obtenerCampos(): Promise<ConfiguracionCampo[]> {
     try {
-      const response = await api.get('/admin/configuracion/campos')
+      const response = await api.get('/admin/configuracion/campos/')
       return response.data
     } catch (error) {
       console.error('Error obteniendo campos:', error)
@@ -66,7 +66,7 @@ class ConfiguracionService {
    */
   async crearCampo(campo: Partial<ConfiguracionCampo>): Promise<any> {
     try {
-      const response = await api.post('/admin/configuracion/campos', campo)
+      const response = await api.post('/admin/configuracion/campos/', campo)
       return response.data
     } catch (error) {
       console.error('Error creando campo:', error)
@@ -105,7 +105,7 @@ class ConfiguracionService {
    */
   async obtenerIntegraciones(): Promise<IntegracionAPI[]> {
     try {
-      const response = await api.get('/admin/integraciones-api')
+      const response = await api.get('/admin/integraciones-api/')
       return response.data
     } catch (error) {
       console.error('Error obteniendo integraciones:', error)
@@ -118,7 +118,7 @@ class ConfiguracionService {
    */
   async crearIntegracion(integracion: Partial<IntegracionAPI>): Promise<any> {
     try {
-      const response = await api.post('/admin/integraciones-api', integracion)
+      const response = await api.post('/admin/integraciones-api/', integracion)
       return response.data
     } catch (error) {
       console.error('Error creando integración:', error)
@@ -170,7 +170,7 @@ class ConfiguracionService {
    */
   async obtenerEstadisticas(): Promise<any> {
     try {
-      const response = await api.get('/admin/estadisticas/consultas')
+      const response = await api.get('/admin/estadisticas/consultas/')
       return response.data
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error)

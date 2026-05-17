@@ -19,7 +19,7 @@ export const usuariosService = {
   // Obtener un usuario por ID
   async obtenerUsuario(usuarioId: number) {
     try {
-      const response = await api.get(`${USUARIOS_ENDPOINT}/${usuarioId}`)
+      const response = await api.get(`/usuarios/${usuarioId}`)
       return response.data
     } catch (error) {
       console.error('Error obteniendo usuario:', error)
@@ -41,7 +41,7 @@ export const usuariosService = {
   // Actualizar usuario
   async actualizarUsuario(usuarioId: number, datos: FormData) {
     try {
-      const response = await api.put(`${USUARIOS_ENDPOINT}/${usuarioId}`, datos)
+      const response = await api.put(`/usuarios/${usuarioId}`, datos)
       return response.data
     } catch (error) {
       console.error('Error actualizando usuario:', error)
@@ -52,7 +52,7 @@ export const usuariosService = {
   // Eliminar usuario
   async eliminarUsuario(usuarioId: number) {
     try {
-      const response = await api.delete(`${USUARIOS_ENDPOINT}/${usuarioId}`)
+      const response = await api.delete(`/usuarios/${usuarioId}`)
       return response.data
     } catch (error) {
       console.error('Error eliminando usuario:', error)
@@ -63,7 +63,7 @@ export const usuariosService = {
   // Buscar usuario por email
   async buscarPorEmail(email: string) {
     try {
-      const response = await api.get(`${USUARIOS_ENDPOINT}/buscar/por-email`, {
+      const response = await api.get(`/usuarios/buscar/por-email`, {
         params: { email }
       })
       return response.data
@@ -76,7 +76,7 @@ export const usuariosService = {
   // Obtener estadísticas
   async obtenerEstadisticas() {
     try {
-      const response = await api.get(`${USUARIOS_ENDPOINT}/estadisticas/total`)
+      const response = await api.get(`/usuarios/estadisticas/total`)
       return response.data
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error)

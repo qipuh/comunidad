@@ -22,11 +22,16 @@ from datetime import datetime
 
 from app.db.database import get_db
 from app.models.configuracion import (
-    ConfiguracionCampo, IntegracionAPI, ConsultaExterna,
+    ConfiguracionCampo, IntegracionAPI, ConsultaExterna, ConfiguracionMarca,
     TipoDatoEnum, TipoAPIEnum, AuthTypeEnum
 )
 from app.services.integracion_api_service import IntegracionAPIService
 from app.models.usuario import Usuario, RolEnum
+from app.utils.auth import get_current_user
+from fastapi import UploadFile, File, Query
+from datetime import datetime as dt
+import os
+import secrets
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -466,3 +471,273 @@ async def estadisticas_consultas(
 
 # Importar func para query
 from sqlalchemy import func
+
+
+# ============================================================================
+# ENDPOINTS: CONFIGURACIÓN DEL CARNET COMUNERO
+# ============================================================================
+
+from app.models.configuracion import ConfiguracionCarnet
+from fastapi import File, UploadFile, Query
+from pathlib import Path
+from datetime import datetime as dt
+import os
+
+
+class ConfiguracionCarnetResponse(BaseModel):
+    """Schema para respuesta de configuración del carnet"""
+    nombre_comunidad: str
+    subtitulo: str
+    resolucion: str
+    bandera_url: Optional[str] = None
+    escudo_url: Optional[str] = None
+    fondo_anverso_url: Optional[str] = None
+    fondo_reverso_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/configuracion/carnet")
+async def obtener_config_carnet(db: Session = Depends(get_db)):
+    """
+    Obtener configuración actual del carnet (público, sin autenticación).
+    Si no existe, devuelve valores por defecto.
+    """
+    config = db.query(ConfiguracionCarnet).first()
+
+    if not config:
+        # Crear registro por defecto
+        config = ConfiguracionCarnet()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+
+    return {
+        "nombre_comunidad": config.nombre_comunidad,
+        "subtitulo": config.subtitulo,
+        "resolucion": config.resolucion,
+        "bandera_url": config.bandera_url,
+        "escudo_url": config.escudo_url,
+        "fondo_anverso_url": config.fondo_anverso_url,
+        "fondo_reverso_url": config.fondo_reverso_url
+    }
+
+
+@router.put("/configuracion/carnet")
+async def actualizar_config_carnet(
+    nombre_comunidad: str = Query(...),
+    subtitulo: str = Query(...),
+    resolucion: str = Query(...),
+    db: Session = Depends(get_db),
+    admin = Depends(requiere_admin)
+):
+    """
+    Actualizar textos de la configuración del carnet.
+    """
+    config = db.query(ConfiguracionCarnet).first()
+
+    if not config:
+        config = ConfiguracionCarnet()
+        db.add(config)
+
+    config.nombre_comunidad = nombre_comunidad
+    config.subtitulo = subtitulo
+    config.resolucion = resolucion
+    config.updated_at = dt.utcnow()
+
+    db.commit()
+    db.refresh(config)
+
+    return {
+        "success": True,
+        "mensaje": "Configuración actualizada"
+    }
+
+
+@router.post("/configuracion/carnet/upload")
+async def upload_imagen_carnet(
+    tipo: str = Query(..., description="bandera | escudo | fondo_anverso | fondo_reverso"),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin = Depends(requiere_admin)
+):
+    """
+    Subir imagen para el carnet.
+    tipo: bandera (anverso top-left), escudo (reverso), fondo_anverso, fondo_reverso
+    """
+    tipos_validos = ["bandera", "escudo", "fondo_anverso", "fondo_reverso"]
+    if tipo not in tipos_validos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Tipo inválido. Use: {', '.join(tipos_validos)}"
+        )
+
+    # Crear directorio si no existe
+    upload_dir = Path("uploads/comunidad")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Guardar archivo
+    file_content = await file.read()
+    file_extension = Path(file.filename).suffix if file.filename else ".jpg"
+    filename = f"{tipo}_{int(dt.utcnow().timestamp())}{file_extension}"
+    file_path = upload_dir / filename
+
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+    # Actualizar config
+    config = db.query(ConfiguracionCarnet).first()
+    if not config:
+        config = ConfiguracionCarnet()
+        db.add(config)
+
+    # Mapear tipo a campo
+    campo_map = {
+        "bandera": "bandera_url",
+        "escudo": "escudo_url",
+        "fondo_anverso": "fondo_anverso_url",
+        "fondo_reverso": "fondo_reverso_url"
+    }
+
+    url_relativa = f"/uploads/comunidad/{filename}"
+    setattr(config, campo_map[tipo], url_relativa)
+    config.updated_at = dt.utcnow()
+
+    db.commit()
+    db.refresh(config)
+
+    return {
+        "success": True,
+        "tipo": tipo,
+        "url": url_relativa,
+        "mensaje": f"Imagen {tipo} subida exitosamente"
+    }
+
+
+# ============================================================================
+# ENDPOINTS MARCA BLANCA (WHITE LABEL)
+# ============================================================================
+
+@router.get("/configuracion/marca")
+async def obtener_marca(db: Session = Depends(get_db)):
+    """Obtiene configuración de marca blanca (público, sin autenticación)"""
+    config = db.query(ConfiguracionMarca).filter_by(id=1).first()
+
+    if not config:
+        # Retornar defaults
+        return {
+            "id": 1,
+            "nombre_pagina": "Comunidad",
+            "subtitulo": "Sistema de Gestión",
+            "nombre_corto": "COM",
+            "logo_url": None,
+            "favicon_url": None,
+            "color_primario": "#4f46e5"
+        }
+
+    return {
+        "id": config.id,
+        "nombre_pagina": config.nombre_pagina,
+        "subtitulo": config.subtitulo,
+        "nombre_corto": config.nombre_corto,
+        "logo_url": config.logo_url,
+        "favicon_url": config.favicon_url,
+        "color_primario": config.color_primario
+    }
+
+
+class MarcaUpdate(BaseModel):
+    nombre_pagina: Optional[str] = None
+    subtitulo: Optional[str] = None
+    nombre_corto: Optional[str] = None
+    color_primario: Optional[str] = None
+
+
+@router.put("/configuracion/marca")
+async def actualizar_marca(
+    datos: MarcaUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Actualiza configuración de marca blanca (admin only)"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin puede actualizar marca")
+
+    config = db.query(ConfiguracionMarca).filter_by(id=1).first()
+
+    if not config:
+        config = ConfiguracionMarca(id=1)
+        db.add(config)
+
+    if datos.nombre_pagina:
+        config.nombre_pagina = datos.nombre_pagina
+    if datos.subtitulo:
+        config.subtitulo = datos.subtitulo
+    if datos.nombre_corto:
+        config.nombre_corto = datos.nombre_corto
+    if datos.color_primario:
+        config.color_primario = datos.color_primario
+
+    config.updated_at = dt.utcnow()
+    db.commit()
+    db.refresh(config)
+
+    return {
+        "success": True,
+        "id": config.id,
+        "nombre_pagina": config.nombre_pagina,
+        "subtitulo": config.subtitulo,
+        "nombre_corto": config.nombre_corto,
+        "color_primario": config.color_primario
+    }
+
+
+@router.post("/configuracion/marca/upload")
+async def subir_marca_imagen(
+    tipo: str = Query(..., description="logo o favicon"),
+    file: UploadFile = File(...),
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Sube logo o favicon (admin only)"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin puede subir imágenes")
+
+    if tipo not in ["logo", "favicon"]:
+        raise HTTPException(status_code=400, detail="Tipo debe ser 'logo' o 'favicon'")
+
+    # Crear directorio si no existe
+    os.makedirs("uploads/marca", exist_ok=True)
+
+    # Guardar archivo
+    file_content = await file.read()
+    filename = f"{tipo}_{secrets.token_hex(8)}{os.path.splitext(file.filename)[1]}"
+    file_path = f"uploads/marca/{filename}"
+
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+    # Actualizar config
+    config = db.query(ConfiguracionMarca).filter_by(id=1).first()
+    if not config:
+        config = ConfiguracionMarca(id=1)
+        db.add(config)
+
+    url_relativa = f"/uploads/marca/{filename}"
+
+    if tipo == "logo":
+        config.logo_url = url_relativa
+    elif tipo == "favicon":
+        config.favicon_url = url_relativa
+
+    config.updated_at = dt.utcnow()
+    db.commit()
+    db.refresh(config)
+
+    return {
+        "success": True,
+        "tipo": tipo,
+        "url": url_relativa,
+        "mensaje": f"{tipo.capitalize()} subido exitosamente"
+    }

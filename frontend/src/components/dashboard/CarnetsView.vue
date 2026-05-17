@@ -2094,7 +2094,7 @@ export default {
   width: fit-content;
   position: absolute;
   top: 20px;
-  left: 20px;
+  left: 50px;
 }
 
 .siglas {

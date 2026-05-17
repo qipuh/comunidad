@@ -1730,15 +1730,15 @@ export default {
 }
 
 .firma-imagen {
-  max-height: 40px;
-  max-width: 80px;
+  max-height: 55px;
+  max-width: 110px;
   margin-bottom: 15px;
   object-fit: contain;
 }
 
 .firma-imagen img {
-  max-height: 40px;
-  max-width: 80px;
+  max-height: 55px;
+  max-width: 110px;
   object-fit: contain;
 }
 
@@ -2182,7 +2182,7 @@ export default {
 
 .firma-placeholder {
   width: 100%;
-  height: 35px;
+  height: 50px;
   border-bottom: 1px dashed #999;
   margin-bottom: 15px;
   opacity: 0.6;

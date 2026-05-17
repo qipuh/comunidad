@@ -714,11 +714,14 @@ export default {
           await generarQR(usuario, `qr-canvas-${usuario.id}`)
           await new Promise(r => setTimeout(r, 150))
 
-          const anversoEl = document.getElementById(`carnet-anverso-${usuario.id}`)
-          if (!anversoEl) continue
+          const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
+          if (!carnetEl) {
+            console.warn(`Carnet para usuario ${usuario.id} no encontrado, omitiendo...`)
+            continue
+          }
 
-          // Capturar el carnet anverso
-          const carnetCanvas = await html2canvas(anversoEl, { scale: 2, useCORS: true })
+          // Capturar el carnet completo
+          const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true, allowTaint: true })
           const carnetImg = carnetCanvas.toDataURL('image/png')
 
           // Agregar imagen a la página actual (completa)

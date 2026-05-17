@@ -114,7 +114,7 @@ def save_upload_file(file: UploadFile, filename_prefix: str, usuario_id: int) ->
 # Rutas CRUD
 @router.get("/")
 async def listar_usuarios(
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=10000),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):

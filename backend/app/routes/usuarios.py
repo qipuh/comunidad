@@ -293,6 +293,89 @@ async def crear_usuario(
     }
 
 
+@router.get("/buscar")
+async def buscar_usuarios(
+    query: str = Query(..., min_length=1),
+    db: Session = Depends(get_db)
+):
+    """Buscar usuarios por nombres, apellido_paterno o apellido_materno"""
+    from sqlalchemy import or_
+
+    search_term = f"%{query}%"
+    usuarios = db.query(Usuario).filter(
+        or_(
+            Usuario.nombres.ilike(search_term),
+            Usuario.apellido_paterno.ilike(search_term),
+            Usuario.apellido_materno.ilike(search_term)
+        )
+    ).order_by(Usuario.apellido_paterno, Usuario.apellido_materno, Usuario.nombres).limit(50).all()
+
+    data = []
+    for u in usuarios:
+        data.append({
+            "id": u.id,
+            "nombres": u.nombres,
+            "apellido_paterno": u.apellido_paterno,
+            "apellido_materno": u.apellido_materno,
+            "nombre_completo": u.nombre_completo,
+            "numero_dni": u.numero_dni,
+            "email": u.email,
+            "rol": u.rol,
+            "estado": u.estado
+        })
+
+    return {
+        "success": True,
+        "count": len(usuarios),
+        "data": data
+    }
+
+
+@router.get("/buscar/por-email")
+async def buscar_por_email(
+    email: str,
+    db: Session = Depends(get_db)
+):
+    """Buscar usuario por email"""
+    usuario = db.query(Usuario).filter(Usuario.email == email).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return {
+        "success": True,
+        "data": {
+            "id": usuario.id,
+            "email": usuario.email,
+            "username": usuario.username,
+            "nombres": usuario.nombres,
+            "apellido_paterno": usuario.apellido_paterno,
+            "apellido_materno": usuario.apellido_materno,
+            "nombre_completo": usuario.nombre_completo,
+            "rol": usuario.rol,
+            "estado": usuario.estado
+        }
+    }
+
+
+@router.get("/estadisticas/total")
+async def obtener_estadisticas(db: Session = Depends(get_db)):
+    """Obtener estadísticas de usuarios"""
+    total_usuarios = db.query(Usuario).count()
+    usuarios_activos = db.query(Usuario).filter(Usuario.estado == "activo").count()
+    usuarios_inactivos = db.query(Usuario).filter(Usuario.estado == "inactivo").count()
+
+    return {
+        "success": True,
+        "data": {
+            "total_usuarios": total_usuarios,
+            "usuarios_activos": usuarios_activos,
+            "usuarios_inactivos": usuarios_inactivos,
+            "porcentaje_activos": (usuarios_activos / total_usuarios * 100) if total_usuarios > 0 else 0
+        }
+    }
+
+
 @router.get("/{usuario_id}")
 async def obtener_usuario(
     usuario_id: int,
@@ -490,51 +573,6 @@ async def eliminar_usuario(
     return {
         "success": True,
         "message": "Usuario eliminado exitosamente"
-    }
-
-
-@router.get("/buscar/por-email")
-async def buscar_por_email(
-    email: str,
-    db: Session = Depends(get_db)
-):
-    """Buscar usuario por email"""
-    usuario = db.query(Usuario).filter(Usuario.email == email).first()
-
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    return {
-        "success": True,
-        "data": {
-            "id": usuario.id,
-            "email": usuario.email,
-            "username": usuario.username,
-            "nombres": usuario.nombres,
-            "apellido_paterno": usuario.apellido_paterno,
-            "apellido_materno": usuario.apellido_materno,
-            "nombre_completo": usuario.nombre_completo,
-            "rol": usuario.rol,
-            "estado": usuario.estado
-        }
-    }
-
-
-@router.get("/estadisticas/total")
-async def obtener_estadisticas(db: Session = Depends(get_db)):
-    """Obtener estadísticas de usuarios"""
-    total_usuarios = db.query(Usuario).count()
-    usuarios_activos = db.query(Usuario).filter(Usuario.estado == "activo").count()
-    usuarios_inactivos = db.query(Usuario).filter(Usuario.estado == "inactivo").count()
-
-    return {
-        "success": True,
-        "data": {
-            "total_usuarios": total_usuarios,
-            "usuarios_activos": usuarios_activos,
-            "usuarios_inactivos": usuarios_inactivos,
-            "porcentaje_activos": (usuarios_activos / total_usuarios * 100) if total_usuarios > 0 else 0
-        }
     }
 
 

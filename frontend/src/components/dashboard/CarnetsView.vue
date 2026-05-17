@@ -307,12 +307,14 @@
 
               <div class="num-carnet-container">
                 <div class="etiqueta-carnet">N° CARNET</div>
-                <div class="num-carnet">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                <div style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
               </div>
 
               <div class="info-bloque">
-                <div class="foto-placeholder">
-                  <img v-if="usuarioSeleccionado.foto_frontal" :src="usuarioSeleccionado.foto_frontal" class="foto-img">
+                <div class="foto-section">
+                  <div class="foto-placeholder">
+                    <img v-if="usuarioSeleccionado.foto_frontal" :src="usuarioSeleccionado.foto_frontal" class="foto-img">
+                  </div>
                   <div class="texto-foto">CARNET COMUNERO</div>
                 </div>
 
@@ -345,14 +347,16 @@
                     <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span>Secretario</span>
+                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Secretario CC-TPCT</span>
+                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">F. Paripanca R</span>
                 </div>
                 <div class="firma-box">
                   <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
                     <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span>Presidente</span>
+                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Presidente CC-TPCT</span>
+                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">M. García N.</span>
                 </div>
               </div>
             </div>
@@ -368,34 +372,37 @@
               </div>
 
               <div class="footer-derecho">
-                <div class="qr-container">
-                  <canvas :id="`qr-canvas-completo-${usuarioSeleccionado.id}`" class="qr-placeholder"></canvas>
-                  <div class="qr-codigo">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                <div class="qr-row">
+                  <div class="qr-container">
+                    <canvas :id="`qr-canvas-completo-${usuarioSeleccionado.id}`" class="qr-placeholder"></canvas>
+                    <div class="qr-codigo">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                  </div>
+
+                  <div class="metadatos-qr">
+                    <div class="meta-item">
+                      <span class="m-etiqueta">Número de DNI</span>
+                      <span class="m-valor">{{ usuarioSeleccionado.numero_dni }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <span class="m-etiqueta">Categoría</span>
+                      <span class="m-valor-destacado">COMUNERO(A)</span>
+                    </div>
+                    <div class="meta-item">
+                      <span class="m-etiqueta">Fecha de Nacimiento</span>
+                      <span class="m-valor">{{ usuarioSeleccionado.fecha_nacimiento || '-' }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <span class="m-etiqueta">Anexo que Pertenece</span>
+                      <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div class="metadatos-derecha">
-                  <div class="meta-item">
-                    <span class="m-etiqueta">Número de DNI</span>
-                    <span class="m-valor">{{ usuarioSeleccionado.numero_dni }}</span>
-                  </div>
-                  <div class="meta-item">
-                    <span class="m-etiqueta">Categoría</span>
-                    <span class="m-valor-destacado">COMUNERO(A)</span>
-                  </div>
-                  <div class="meta-item">
-                    <span class="m-etiqueta">Fecha de Nacimiento</span>
-                    <span class="m-valor">{{ usuarioSeleccionado.fecha_nacimiento || '-' }}</span>
-                  </div>
-                  <div class="meta-item">
-                    <span class="m-etiqueta">Anexo que Pertenece</span>
-                    <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
-                  </div>
-                  <div v-if="configCarnet.url_qr" class="qr-url-container">
-                    <div class="qr-url-wrapper">
-                      <div class="qr-url-label">Día, Página Web:</div>
-                      <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
-                      <div class="qr-url-text">{{ configCarnet.url_qr }}</div>
-                    </div>
+                <div v-if="configCarnet.url_qr" class="qr-url-row">
+                  <div class="qr-url-wrapper">
+                    <div class="qr-url-label">Página Web:</div>
+                    <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
+                    <div class="qr-url-text">{{ configCarnet.url_qr }}</div>
                   </div>
                 </div>
               </div>
@@ -612,17 +619,13 @@ export default {
 
     const generarQR = async (usuario, canvasId) => {
       if (!usuario) return
-      const qrData = {
-        dni: usuario.numero_dni,
-        nombre: usuario.nombre_completo,
-        carnet: obtenerNumeroCarnet(usuario)
-      }
+      const qrData = obtenerNumeroCarnet(usuario)
       try {
         setTimeout(async () => {
           const canvas = document.getElementById(canvasId)
           if (canvas) {
-            await QRCode.toCanvas(canvas, JSON.stringify(qrData), {
-              width: 150,
+            await QRCode.toCanvas(canvas, qrData, {
+              width: 120,
               margin: 1,
               color: { dark: '#000000', light: '#FFFFFF' }
             })
@@ -1104,7 +1107,7 @@ export default {
   width: 8%;
   aspect-ratio: 2.5;
   background: linear-gradient(to bottom, #ffeb3b 50%, #e53935 50%);
-  border: 0.5px solid #d32f2f;
+  /*border: 0.5px solid #d32f2f;*/
   flex-shrink: 0;
   border-radius: 1px;
 }
@@ -1352,7 +1355,7 @@ export default {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.65);
+  background: transparent;
   z-index: 0;
   pointer-events: none;
 }
@@ -1886,7 +1889,7 @@ export default {
 .bandera-placeholder {
   width: 65px;
   height: 40px;
-  border: 1px solid #d32f2f;
+  /*border: 1px solid #d32f2f;*/
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
@@ -1932,6 +1935,7 @@ export default {
   font-weight: 600;
   color: #0d0d0d;
   letter-spacing: 0.5px;
+  z-index: 9999999999999999999;
 }
 
 .num-carnet {
@@ -1941,6 +1945,8 @@ export default {
   margin-top: 2px;
   letter-spacing: 0.2px;
   font-family: 'Courier New', monospace;
+  background-color: #fff;
+  padding: 3px 3px 0;
 }
 
 .info-bloque {
@@ -1949,17 +1955,20 @@ export default {
   margin-top: 5px;
 }
 
+.foto-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .foto-placeholder {
   width: 108px;
   height: 135px;
   border: 1px solid #000000;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding-bottom: 4px;
   background: #f5f5f5;
   overflow: hidden;
+  position: relative;
 }
 
 .foto-img {
@@ -1976,9 +1985,8 @@ export default {
   font-weight: 700;
   color: #000;
   letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
   line-height: 1.2;
+  text-align: center;
 }
 
 .datos-personales {
@@ -2074,7 +2082,7 @@ export default {
 
 /* LADO DERECHO (REVERSO) */
 .lado-derecho {
-  padding: 20px 40px;
+  padding: 20px 20px;
 }
 
 .header-derecho {
@@ -2082,7 +2090,9 @@ export default {
   flex-direction: column;
   align-items: center;
   width: fit-content;
-  margin-left: 15px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
 }
 
 .siglas {
@@ -2114,12 +2124,18 @@ export default {
 
 .footer-derecho {
   display: flex;
-  align-items: flex-end;
-  gap: 25px;
+  flex-direction: column;
+  gap: 12px;
   position: absolute;
   bottom: 20px;
-  left: 40px;
-  right: 40px;
+  left: 20px;
+  right: 20px;
+}
+
+.qr-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
 }
 
 .qr-container {
@@ -2127,11 +2143,12 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .qr-placeholder {
-  width: 110px;
-  height: 110px;
+  width: 88px;
+  height: 88px;
   border: 1px solid #000;
   background-color: #f5f5f5;
   display: flex;
@@ -2142,11 +2159,20 @@ export default {
 }
 
 .qr-codigo {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #0d0d0d;
   letter-spacing: 0.3px;
   font-family: 'Courier New', monospace;
+  text-align: center;
+  width: 88px;
+}
+
+.metadatos-qr {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
 }
 
 .metadatos-derecha {
@@ -2156,6 +2182,16 @@ export default {
   row-gap: 14px;
   flex-grow: 1;
   padding-bottom: 8px;
+}
+
+.qr-url-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  bottom: 20px;
+  right: 0;
 }
 
 .meta-item {
@@ -2201,7 +2237,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .qr-url-label {
@@ -2210,18 +2247,22 @@ export default {
   color: #333;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .qr-url {
-  width: 60px !important;
-  height: 60px !important;
+  width: 90px !important;
+  height: 90px !important;
+  padding:3px;
+  border: 1px solid #000;
+  background-color: #f5f5f5;
 }
 
 .qr-url-text {
-  font-size: 5px;
+  font-size: 7pt;
   font-weight: 500;
   color: #555;
-  max-width: 65px;
+  max-width: 165px;
   word-break: break-all;
   text-align: center;
   line-height: 1;

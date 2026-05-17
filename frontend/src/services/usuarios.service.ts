@@ -60,6 +60,19 @@ export const usuariosService = {
     }
   },
 
+  // Buscar usuarios por nombre
+  async buscarPorNombre(query: string) {
+    try {
+      const response = await api.get(`/usuarios/buscar`, {
+        params: { query }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error buscando usuario por nombre:', error)
+      throw error
+    }
+  },
+
   // Buscar usuario por email
   async buscarPorEmail(email: string) {
     try {

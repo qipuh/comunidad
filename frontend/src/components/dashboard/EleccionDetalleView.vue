@@ -52,8 +52,8 @@
                 @click="agregarOpcionDesdeUsuario(u)"
               >
                 <div class="usuario-info">
-                  <strong>{{ u.nombre_completo }}</strong>
-                  <small>{{ u.email }}</small>
+                  <strong>{{ obtenerNombreCompleto(u) }}</strong>
+                  <small>{{ u.numero_dni }}</small>
                 </div>
               </div>
             </div>
@@ -92,10 +92,10 @@
           >
             <div class="opcion-info">
               <strong>{{ op.nombre }}</strong>
-              <p v-if="op.descripcion" class="desc-opcion">{{ op.descripcion }}</p>
               <small v-if="op.usuario_id" class="usuario-badge">
-                👤 Candidato registrado
+                <ion-icon name="id-card-outline"></ion-icon> {{ op.descripcion }}
               </small>
+              <p v-else-if="op.descripcion" class="desc-opcion">{{ op.descripcion }}</p>
             </div>
             <div class="opcion-votos">
               <span class="votos-count">{{ op.votos || 0 }} votos</span>
@@ -214,6 +214,11 @@ const calcularPorcentaje = (votos, total) => {
   return Math.round((votos / total) * 100)
 }
 
+const obtenerNombreCompleto = (usuario) => {
+  const partes = [usuario.nombres, usuario.apellido_paterno, usuario.apellido_materno].filter(p => p && p.trim())
+  return partes.join(' ') || 'Sin nombre'
+}
+
 async function cargarDetalle() {
   try {
     eleccion.value = await eleccionesService.obtenerEleccion(eleccionId)
@@ -229,18 +234,12 @@ async function buscarUsuarios() {
   }
 
   try {
-    const respuesta = await usuariosService.listarUsuarios()
-    // El backend devuelve un objeto con data, no un array directo
+    const respuesta = await usuariosService.buscarPorNombre(busquedaUsuario.value)
     const usuarios = Array.isArray(respuesta) ? respuesta : (respuesta?.data || [])
 
-    // Filtrar por búsqueda
-    const filtrados = usuarios.filter(u =>
-      u.nombre_completo?.toLowerCase().includes(busquedaUsuario.value.toLowerCase()) ||
-      u.email?.toLowerCase().includes(busquedaUsuario.value.toLowerCase())
-    )
     // Filtrar usuarios que ya son candidatos
     const usuarioIds = new Set(eleccion.value?.opciones?.map(o => o.usuario_id) || [])
-    usuariosSugeridos.value = filtrados.filter(u => !usuarioIds.has(u.id)).slice(0, 5)
+    usuariosSugeridos.value = usuarios.filter(u => !usuarioIds.has(u.id))
   } catch (err) {
     console.error('Error buscando usuarios:', err)
   }
@@ -248,8 +247,8 @@ async function buscarUsuarios() {
 
 async function agregarOpcionDesdeUsuario(usuario) {
   const opcion = {
-    nombre: usuario.nombre_completo,
-    descripcion: usuario.email,
+    nombre: obtenerNombreCompleto(usuario),
+    descripcion: usuario.numero_dni,
     usuario_id: usuario.id,
     orden: (eleccion.value?.opciones?.length || 0) + 1,
   }

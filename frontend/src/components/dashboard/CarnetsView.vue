@@ -6,10 +6,6 @@
         <ion-icon name="settings-outline"></ion-icon>
         Configurar carnet
       </button>
-      <button class="btn-togglear-vista" @click="vistaPreview = !vistaPreview">
-        <ion-icon :name="vistaPreview ? 'eye-outline' : 'grid-outline'"></ion-icon>
-        {{ vistaPreview ? 'Vista Individual' : 'Vista Previsualización' }}
-      </button>
       <button class="btn-exportar-todos" @click="exportarTodosPDF">
         <ion-icon name="download-outline"></ion-icon>
         Exportar todos (PDF)
@@ -261,148 +257,8 @@
       </div>
     </div>
 
-    <!-- Vista de Previsualización (Mismo diseño que Vista Individual) -->
-    <div v-if="vistaPreview" class="carnet-preview-container">
-      <div class="carnet-preview-grid">
-        <div v-for="usuario in usuarios" :key="usuario.id" class="carnet-preview-item">
-          <div :id="`carnet-preview-${usuario.id}`" class="carnet-container">
-          <!-- ANVERSO -->
-          <div :id="`preview-anverso-${usuario.id}`" class="carnet-card anverso">
-            <!-- Fondo -->
-            <img v-if="configCarnet.fondo_anverso_url" :src="configCarnet.fondo_anverso_url" class="carnet-fondo">
-            <div v-else class="carnet-fondo-default"></div>
-
-            <!-- Contenido del anverso -->
-            <div class="carnet-content">
-              <!-- Top section: Logo + Título + N° Carnet -->
-              <div class="carnet-top">
-                <div class="carnet-logo-section">
-                  <img v-if="configCarnet.bandera_url" :src="configCarnet.bandera_url" class="carnet-logo">
-                  <div v-else class="carnet-logo-placeholder"></div>
-                </div>
-
-                <div class="carnet-title">
-                  <div class="titulo-principal">{{ configCarnet.nombre_comunidad }}</div>
-                  <div class="titulo-subtitulo">{{ configCarnet.subtitulo }}</div>
-                  <div class="titulo-resolucion">{{ configCarnet.resolucion }}</div>
-                </div>
-
-                <div class="carnet-numero">
-                  <div class="label-numero">N° CARNET</div>
-                  <div class="valor-numero">{{ obtenerNumeroCarnet(usuario) }}</div>
-                </div>
-              </div>
-
-              <!-- Body: Foto + Datos -->
-              <div class="carnet-body">
-                <div class="foto-section">
-                  <div class="foto-box">
-                    <img v-if="usuario.foto_frontal" :src="usuario.foto_frontal" class="foto-usuario">
-                    <div v-else class="foto-placeholder">SIN FOTO</div>
-                  </div>
-                  <div class="foto-label">CARNET COMUNERO</div>
-                </div>
-
-                <div class="datos-section">
-                  <div class="dato-line">
-                    <span class="dato-label">APELLIDOS:</span>
-                    <span class="dato-valor">{{ obtenerApellidos(usuario) }}</span>
-                  </div>
-                  <div class="dato-line">
-                    <span class="dato-label">NOMBRES:</span>
-                    <span class="dato-valor">{{ obtenerNombres(usuario) }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Footer: Fechas y firmas -->
-              <div class="carnet-footer">
-                <div class="fechas-section">
-                  <div class="fecha-item">
-                    <span class="fecha-label">Fecha de Emisión</span>
-                    <span class="fecha-valor">{{ obtenerFechaEmision() }}</span>
-                  </div>
-                  <div class="fecha-item">
-                    <span class="fecha-label">Fecha de Caducidad</span>
-                    <span class="fecha-valor">{{ obtenerFechaCaducidad() }}</span>
-                  </div>
-                </div>
-
-                <div class="firmas-section">
-                  <div class="firma-item">
-                    <div v-if="configCarnet.firma_secretario_url" class="firma-imagen">
-                      <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
-                    </div>
-                    <div v-else class="firma-placeholder">_______________</div>
-                    <span>SECRETARIO</span>
-                  </div>
-                  <div class="firma-item">
-                    <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
-                      <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
-                    </div>
-                    <div v-else class="firma-placeholder">_______________</div>
-                    <span>PRESIDENTE</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- REVERSO -->
-          <div :id="`preview-reverso-${usuario.id}`" class="carnet-card reverso">
-            <!-- Fondo -->
-            <img v-if="configCarnet.fondo_reverso_url" :src="configCarnet.fondo_reverso_url" class="carnet-fondo">
-            <div v-else class="carnet-fondo-default"></div>
-
-            <!-- Contenido del reverso -->
-            <div class="carnet-content">
-              <!-- QR + Escudo izquierda -->
-              <div class="reverso-left">
-                <div class="reverso-header">
-                  <div class="reverso-titulo">CC.TPCT</div>
-                  <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo">
-                  <div v-else class="escudo-placeholder"></div>
-                </div>
-
-                <div class="qr-section">
-                  <canvas :id="`preview-qr-canvas-${usuario.id}`" class="qr-canvas"></canvas>
-                </div>
-              </div>
-
-              <!-- Datos derecha -->
-              <div class="reverso-right">
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">N° CARNET:</span>
-                  <span class="dato-reverso-valor">{{ obtenerNumeroCarnet(usuario) }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">DNI:</span>
-                  <span class="dato-reverso-valor">{{ usuario.numero_dni }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">F. NACIMIENTO:</span>
-                  <span class="dato-reverso-valor">{{ usuario.fecha_nacimiento || '-' }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">CATEGORÍA:</span>
-                  <span class="dato-reverso-valor">COMUNERO(A)</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">ANEXO:</span>
-                  <span class="dato-reverso-valor">{{ usuario.anexo || '-' }}</span>
-                </div>
-
-                <div class="numero-carnet-reverso">{{ obtenerNumeroCarnet(usuario) }}</div>
-              </div>
-            </div>
-          </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Vista Individual (Original) -->
-    <div v-else class="carnet-individual-container">
+    <!-- Vista Individual -->
+    <div class="carnet-individual-container">
       <div class="usuarios-panel">
         <div class="search-box">
           <ion-icon name="search-outline"></ion-icon>
@@ -561,7 +417,6 @@ export default {
     const usuarioSeleccionado = ref(null)
     const busqueda = ref('')
     const tabActivo = ref('anverso')
-    const vistaPreview = ref(false)
     const mostrarConfigModal = ref(false)
     const cargando = ref(false)
     const dragOverItem = ref(null)
@@ -891,7 +746,6 @@ export default {
       usuariosFiltrados,
       busqueda,
       tabActivo,
-      vistaPreview,
       mostrarConfigModal,
       cargando,
       dragOverItem,
@@ -1404,33 +1258,6 @@ export default {
   background: #764ba2;
 }
 
-/* VISTA PREVIEW */
-.carnet-preview-container {
-  flex: 1;
-  overflow-y: auto;
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
-  scroll-padding: 20px;
-}
-
-.carnet-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(680px, 1fr));
-  gap: 25px;
-  align-content: start;
-}
-
-.carnet-preview-item {
-  display: grid;
-  grid-template-columns: 140mm 140mm;
-  gap: 0;
-  page-break-after: avoid;
-  page-break-inside: avoid;
-  justify-self: center;
-  margin-bottom: 20px;
-}
-
 /* CARNET COMPLETO - Anverso + Reverso */
 .carnet-completo-viewport {
   display: flex;
@@ -1504,12 +1331,6 @@ export default {
   border-radius: 3mm;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 7px;
-}
-
-.carnet-preview-item .carnet-card {
-  width: 140mm;
-  height: 74mm;
-  font-size: 8.5px;
 }
 
 .carnet-card.individual {
@@ -2332,12 +2153,6 @@ export default {
   .carnet-card {
     box-shadow: none;
     border: 0.5px solid #000;
-  }
-
-  .carnet-preview-item {
-    page-break-after: avoid;
-    page-break-inside: avoid;
-    margin-bottom: 0;
   }
 }
 </style>

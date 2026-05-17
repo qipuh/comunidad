@@ -1423,11 +1423,12 @@ export default {
 
 .carnet-preview-item {
   display: grid;
-  grid-template-columns: 95mm 95mm;
+  grid-template-columns: 140mm 140mm;
   gap: 0;
   page-break-after: avoid;
   page-break-inside: avoid;
   justify-self: center;
+  margin-bottom: 20px;
 }
 
 /* CARNET COMPLETO - Anverso + Reverso */
@@ -1503,6 +1504,12 @@ export default {
   border-radius: 3mm;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 7px;
+}
+
+.carnet-preview-item .carnet-card {
+  width: 140mm;
+  height: 74mm;
+  font-size: 8.5px;
 }
 
 .carnet-card.individual {

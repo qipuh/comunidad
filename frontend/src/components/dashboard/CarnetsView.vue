@@ -391,7 +391,11 @@
                     <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
                   </div>
                   <div v-if="configCarnet.url_qr" class="qr-url-container">
-                    <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
+                    <div class="qr-url-wrapper">
+                      <div class="qr-url-label">Día, Página Web:</div>
+                      <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
+                      <div class="qr-url-text">{{ configCarnet.url_qr }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2190,13 +2194,37 @@ export default {
   grid-column: span 2;
   display: flex;
   justify-content: flex-end;
-  align-items: flex-end;
-  padding-top: 10px;
+  padding-top: 8px;
+}
+
+.qr-url-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.qr-url-label {
+  font-size: 7px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .qr-url {
-  width: 70px !important;
-  height: 70px !important;
+  width: 60px !important;
+  height: 60px !important;
+}
+
+.qr-url-text {
+  font-size: 5px;
+  font-weight: 500;
+  color: #555;
+  max-width: 65px;
+  word-break: break-all;
+  text-align: center;
+  line-height: 1;
 }
 
 @media print {

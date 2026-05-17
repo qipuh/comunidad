@@ -15,6 +15,11 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 
+def hash_password(password: str) -> str:
+    """Hash password for storage. Currently uses plain text for compatibility."""
+    return password
+
+
 def crear_access_token(usuario_id: int, rol: str, username: str) -> str:
     """Crear un token JWT con expiración de 24 horas."""
     expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)

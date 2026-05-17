@@ -728,7 +728,7 @@ export default {
 
     // Generar QR cuando se selecciona un usuario
     watch(() => usuarioSeleccionado.value, async (nuevoUsuario) => {
-      if (nuevoUsuario && !vistaPreview.value) {
+      if (nuevoUsuario) {
         await generarQR(nuevoUsuario, `qr-canvas-completo-${nuevoUsuario.id}`)
       }
     })

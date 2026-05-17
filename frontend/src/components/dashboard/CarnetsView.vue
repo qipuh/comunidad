@@ -243,7 +243,7 @@
 
                 <!-- REVERSO mini -->
                 <div class="lado-derecho-mini">
-                  <div class="siglas-mini">{{ conUsuariot.nombre_corto }}</div>
+                  <div class="siglas-mini">{{ configCarnet.nombre_corto }}</div>
                   <div class="escudo-placeholder-mini">
                     <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo-img-mini">
                     <span v-else>[Escudo]</span>
@@ -329,8 +329,20 @@
                 </div>
 
                 <div class="firmas-section">
-                  <div class="firma-item">_______________<br>SECRETARIO</div>
-                  <div class="firma-item">_______________<br>PRESIDENTE</div>
+                  <div class="firma-item">
+                    <div v-if="configCarnet.firma_secretario_url" class="firma-imagen">
+                      <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
+                    </div>
+                    <div v-else class="firma-placeholder">_______________</div>
+                    <span>SECRETARIO</span>
+                  </div>
+                  <div class="firma-item">
+                    <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
+                      <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
+                    </div>
+                    <div v-else class="firma-placeholder">_______________</div>
+                    <span>PRESIDENTE</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -469,11 +481,17 @@
 
               <div class="firmas-container">
                 <div class="firma-box">
-                  <div class="firma-placeholder">[Firma]</div>
+                  <div v-if="configCarnet.firma_secretario_url" class="firma-imagen">
+                    <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
+                  </div>
+                  <div v-else class="firma-placeholder">[Firma]</div>
                   <span>Secretario</span>
                 </div>
                 <div class="firma-box">
-                  <div class="firma-placeholder">[Firma]</div>
+                  <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
+                    <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
+                  </div>
+                  <div v-else class="firma-placeholder">[Firma]</div>
                   <span>Presidente</span>
                 </div>
               </div>
@@ -556,7 +574,9 @@ export default {
       bandera_url: null,
       escudo_url: null,
       fondo_anverso_url: null,
-      fondo_reverso_url: null
+      fondo_reverso_url: null,
+      firma_secretario_url: null,
+      firma_presidente_url: null
     })
 
     const usuariosFiltrados = computed(() => {
@@ -609,7 +629,9 @@ export default {
           bandera: 'bandera_url',
           escudo: 'escudo_url',
           fondo_anverso: 'fondo_anverso_url',
-          fondo_reverso: 'fondo_reverso_url'
+          fondo_reverso: 'fondo_reverso_url',
+          firma_secretario: 'firma_secretario_url',
+          firma_presidente: 'firma_presidente_url'
         }[tipo]
         configCarnet.value[campo] = uploadResponse.data.url
       } catch (error) {

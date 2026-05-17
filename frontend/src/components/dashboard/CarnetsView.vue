@@ -1729,6 +1729,19 @@ export default {
   line-height: 1.1;
 }
 
+.firma-imagen {
+  max-height: 40px;
+  max-width: 80px;
+  margin-bottom: 15px;
+  object-fit: contain;
+}
+
+.firma-imagen img {
+  max-height: 40px;
+  max-width: 80px;
+  object-fit: contain;
+}
+
 /* REVERSO */
 .carnet-card.reverso .carnet-content {
   display: grid;
@@ -2169,9 +2182,9 @@ export default {
 
 .firma-placeholder {
   width: 100%;
-  height: 45px;
+  height: 35px;
   border-bottom: 1px dashed #999;
-  margin-bottom: 2px;
+  margin-bottom: 15px;
   opacity: 0.6;
   font-size: 10px;
   color: #002699;

@@ -19,7 +19,9 @@ class UsuarioCreateSchema(BaseModel):
     email: str
     username: str
     password: str
-    nombre_completo: str
+    nombres: str
+    apellido_paterno: Optional[str] = None
+    apellido_materno: Optional[str] = None
     numero_dni: str
     telefono: str
     rol: str = "usuario"
@@ -31,7 +33,9 @@ class UsuarioCreateSchema(BaseModel):
 class UsuarioUpdateSchema(BaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
-    nombre_completo: Optional[str] = None
+    nombres: Optional[str] = None
+    apellido_paterno: Optional[str] = None
+    apellido_materno: Optional[str] = None
     numero_dni: Optional[str] = None
     telefono: Optional[str] = None
     fecha_nacimiento: Optional[str] = None
@@ -61,7 +65,9 @@ class UsuarioResponseSchema(BaseModel):
     id: int
     email: str
     username: str
-    nombre_completo: str
+    nombres: Optional[str] = None
+    apellido_paterno: Optional[str] = None
+    apellido_materno: Optional[str] = None
     numero_dni: Optional[str] = None
     telefono: Optional[str] = None
     fecha_nacimiento: Optional[str] = None
@@ -127,7 +133,9 @@ async def listar_usuarios(
                 "id": u.id,
                 "email": u.email,
                 "username": u.username,
-                "nombre_completo": u.nombre_completo,
+                "nombres": u.nombres,
+                "apellido_paterno": u.apellido_paterno,
+                "apellido_materno": u.apellido_materno,
                 "numero_dni": u.numero_dni,
                 "telefono": u.telefono,
                 "fecha_nacimiento": u.fecha_nacimiento,
@@ -160,7 +168,9 @@ async def crear_usuario(
     email: str = Form(None),
     username: str = Form(None),
     password: str = Form(None),
-    nombre_completo: str = Form(...),
+    nombres: str = Form(...),
+    apellido_paterno: str = Form(None),
+    apellido_materno: str = Form(None),
     telefono: str = Form(...),
     fecha_nacimiento: str = Form(None),
     sexo: str = Form(None),
@@ -217,7 +227,9 @@ async def crear_usuario(
         username=username_final,
         password_hash=password_final,
         numero_dni=numero_dni,
-        nombre_completo=nombre_completo,
+        nombres=nombres,
+        apellido_paterno=apellido_paterno,
+        apellido_materno=apellido_materno,
         telefono=telefono,
         fecha_nacimiento=fecha_nacimiento,
         sexo=sexo,
@@ -255,7 +267,9 @@ async def crear_usuario(
             "id": nuevo_usuario.id,
             "email": nuevo_usuario.email,
             "username": nuevo_usuario.username,
-            "nombre_completo": nuevo_usuario.nombre_completo,
+            "nombres": nuevo_usuario.nombres,
+            "apellido_paterno": nuevo_usuario.apellido_paterno,
+            "apellido_materno": nuevo_usuario.apellido_materno,
             "numero_dni": nuevo_usuario.numero_dni,
             "telefono": nuevo_usuario.telefono,
             "rol": nuevo_usuario.rol,
@@ -283,7 +297,9 @@ async def obtener_usuario(
             "id": usuario.id,
             "email": usuario.email,
             "username": usuario.username,
-            "nombre_completo": usuario.nombre_completo,
+            "nombres": usuario.nombres,
+            "apellido_paterno": usuario.apellido_paterno,
+            "apellido_materno": usuario.apellido_materno,
             "numero_dni": usuario.numero_dni,
             "telefono": usuario.telefono,
             "fecha_nacimiento": usuario.fecha_nacimiento,
@@ -314,7 +330,9 @@ async def actualizar_usuario(
     email: Optional[str] = Form(None),
     username: Optional[str] = Form(None),
     password: Optional[str] = Form(None),
-    nombre_completo: Optional[str] = Form(None),
+    nombres: Optional[str] = Form(None),
+    apellido_paterno: Optional[str] = Form(None),
+    apellido_materno: Optional[str] = Form(None),
     numero_dni: Optional[str] = Form(None),
     telefono: Optional[str] = Form(None),
     fecha_nacimiento: Optional[str] = Form(None),
@@ -361,8 +379,12 @@ async def actualizar_usuario(
             raise HTTPException(status_code=400, detail="El DNI ya está registrado")
         usuario.numero_dni = numero_dni
 
-    if nombre_completo:
-        usuario.nombre_completo = nombre_completo
+    if nombres:
+        usuario.nombres = nombres
+    if apellido_paterno:
+        usuario.apellido_paterno = apellido_paterno
+    if apellido_materno:
+        usuario.apellido_materno = apellido_materno
     if telefono:
         usuario.telefono = telefono
     if fecha_nacimiento:
@@ -424,7 +446,9 @@ async def actualizar_usuario(
             "id": usuario.id,
             "email": usuario.email,
             "username": usuario.username,
-            "nombre_completo": usuario.nombre_completo,
+            "nombres": usuario.nombres,
+            "apellido_paterno": usuario.apellido_paterno,
+            "apellido_materno": usuario.apellido_materno,
             "numero_dni": usuario.numero_dni,
             "telefono": usuario.telefono,
             "rol": usuario.rol,
@@ -472,7 +496,9 @@ async def buscar_por_email(
             "id": usuario.id,
             "email": usuario.email,
             "username": usuario.username,
-            "nombre_completo": usuario.nombre_completo,
+            "nombres": usuario.nombres,
+            "apellido_paterno": usuario.apellido_paterno,
+            "apellido_materno": usuario.apellido_materno,
             "rol": usuario.rol,
             "estado": usuario.estado
         }
@@ -593,13 +619,10 @@ async def preview_excel(
                     except:
                         fecha_nac_str = None
 
-                nombre_completo = f"{nombres} {apellido_paterno} {apellido_materno}".strip()
-
                 datos = {
                     "apellido_paterno": str(apellido_paterno).strip(),
                     "apellido_materno": str(apellido_materno).strip(),
                     "nombres": str(nombres).strip(),
-                    "nombre_completo": nombre_completo,
                     "sexo": str(sexo).strip() if sexo else "",
                     "dni": dni,
                     "fecha_nacimiento": fecha_nac_str
@@ -669,12 +692,12 @@ async def importar_confirmado(
                     errores.append(f"Usuario {idx}: DNI {dni} ya registrado")
                     continue
 
-                nombre_completo = f"{nombres} {apellido_paterno} {apellido_materno}".strip()
-
                 # Crear usuario (contraseña = DNI)
                 nuevo_usuario = Usuario(
                     numero_dni=dni,
-                    nombre_completo=nombre_completo,
+                    nombres=nombres,
+                    apellido_paterno=apellido_paterno,
+                    apellido_materno=apellido_materno,
                     email=f"{dni}@comunidad.local",
                     username=dni,
                     password_hash=dni,
@@ -755,8 +778,6 @@ async def importar_excel(
                     errores.append(f"Fila {idx}: DNI {dni} ya registrado")
                     continue
 
-                nombre_completo = f"{nombres} {apellido_paterno} {apellido_materno}".strip()
-
                 fecha_nac_str = None
                 if fecha_nacimiento:
                     try:
@@ -769,7 +790,9 @@ async def importar_excel(
 
                 nuevo_usuario = Usuario(
                     numero_dni=dni,
-                    nombre_completo=nombre_completo,
+                    nombres=nombres,
+                    apellido_paterno=apellido_paterno,
+                    apellido_materno=apellido_materno,
                     email=f"{dni}@comunidad.local",
                     username=dni,
                     password_hash=dni,

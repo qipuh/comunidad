@@ -42,6 +42,8 @@ app.add_middleware(
 # Servir uploads de fotos
 os.makedirs("uploads/usuarios", exist_ok=True)
 os.makedirs("uploads/elecciones/votos", exist_ok=True)
+os.makedirs("uploads/comunidad", exist_ok=True)
+os.makedirs("uploads/marca", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ════════════════════════════════════════════════════════════════

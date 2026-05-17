@@ -18,63 +18,181 @@
 
     <!-- Modal de Configuración -->
     <div v-if="mostrarConfigModal" class="modal-overlay" @click.self="mostrarConfigModal = false">
-      <div class="modal-config">
+      <div class="modal-config-advanced">
         <div class="modal-header">
           <h2>Configurar Carnet Comunero</h2>
           <button class="btn-close" @click="mostrarConfigModal = false">&times;</button>
         </div>
 
-        <div class="modal-body">
-          <!-- Textos -->
-          <div class="config-section">
-            <h3>Textos del Carnet</h3>
-            <div class="form-group">
-              <label>Nombre Comunidad:</label>
-              <input v-model="configCarnet.nombre_comunidad" type="text" class="form-input">
+        <div class="modal-body-advanced">
+          <!-- Panel Izquierdo: Formulario -->
+          <div class="config-panel-form">
+            <!-- Textos -->
+            <div class="config-section">
+              <h3><ion-icon name="document-text-outline"></ion-icon> Textos del Carnet</h3>
+              <div class="form-group">
+                <label>Nombre Comunidad:</label>
+                <input v-model="configCarnet.nombre_comunidad" type="text" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>Subtítulo:</label>
+                <input v-model="configCarnet.subtitulo" type="text" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>Resolución:</label>
+                <input v-model="configCarnet.resolucion" type="text" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>Nombre Corto (Siglas):</label>
+                <input v-model="configCarnet.nombre_corto" type="text" class="form-input" placeholder="CC.TPCT">
+              </div>
             </div>
-            <div class="form-group">
-              <label>Subtítulo:</label>
-              <input v-model="configCarnet.subtitulo" type="text" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Resolución:</label>
-              <input v-model="configCarnet.resolucion" type="text" class="form-input">
+
+            <!-- Imágenes -->
+            <div class="config-section">
+              <h3><ion-icon name="images-outline"></ion-icon> Imágenes del Carnet</h3>
+              <div class="imagenes-grid">
+                <!-- Bandera Anverso -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputBandera"
+                  @dragover.prevent="dragOverItem = 'bandera'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'bandera')"
+                  :class="{ 'drag-over': dragOverItem === 'bandera' }"
+                >
+                  <div class="dropzone-label">Bandera/Logo Anverso</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.bandera_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.bandera_url" alt="Bandera">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-bandera"
+                    type="file"
+                    @change="e => cargarImagen(e, 'bandera')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
+
+                <!-- Escudo Reverso -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputEscudo"
+                  @dragover.prevent="dragOverItem = 'escudo'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'escudo')"
+                  :class="{ 'drag-over': dragOverItem === 'escudo' }"
+                >
+                  <div class="dropzone-label">Escudo Reverso</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.escudo_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.escudo_url" alt="Escudo">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-escudo"
+                    type="file"
+                    @change="e => cargarImagen(e, 'escudo')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
+
+                <!-- Fondo Anverso -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputFondoAnverso"
+                  @dragover.prevent="dragOverItem = 'fondo_anverso'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'fondo_anverso')"
+                  :class="{ 'drag-over': dragOverItem === 'fondo_anverso' }"
+                >
+                  <div class="dropzone-label">Fondo Anverso</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.fondo_anverso_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.fondo_anverso_url" alt="Fondo Anverso">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-fondo-anverso"
+                    type="file"
+                    @change="e => cargarImagen(e, 'fondo_anverso')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
+
+                <!-- Fondo Reverso -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputFondoReverso"
+                  @dragover.prevent="dragOverItem = 'fondo_reverso'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'fondo_reverso')"
+                  :class="{ 'drag-over': dragOverItem === 'fondo_reverso' }"
+                >
+                  <div class="dropzone-label">Fondo Reverso</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.fondo_reverso_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.fondo_reverso_url" alt="Fondo Reverso">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-fondo-reverso"
+                    type="file"
+                    @change="e => cargarImagen(e, 'fondo_reverso')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Imágenes -->
-          <div class="config-section">
-            <h3>Imágenes del Carnet</h3>
+          <!-- Panel Derecho: Previsualización -->
+          <div class="config-panel-preview">
+            <h3><ion-icon name="eye-outline"></ion-icon> Previsualización en Vivo</h3>
+            <div class="preview-carnet-container">
+              <div class="carnet-container-mini">
+                <!-- ANVERSO mini -->
+                <div class="lado-izquierdo-mini">
+                  <div class="header-izquierdo-mini">
+                    <div class="bandera-placeholder-mini">
+                      <img v-if="configCarnet.bandera_url" :src="configCarnet.bandera_url" class="bandera-img-mini">
+                    </div>
+                    <div class="titulo-mini">
+                      <div class="titulo-principal-mini">{{ configCarnet.nombre_comunidad }}</div>
+                      <div class="titulo-subtitulo-mini">{{ configCarnet.resolucion }}</div>
+                    </div>
+                  </div>
+                </div>
 
-            <div class="imagen-upload">
-              <label>Bandera/Logo Anverso:</label>
-              <input type="file" @change="e => cargarImagen(e, 'bandera')" accept="image/*" class="file-input">
-              <div v-if="configCarnet.bandera_url" class="imagen-preview">
-                <img :src="configCarnet.bandera_url" alt="Bandera">
-              </div>
-            </div>
-
-            <div class="imagen-upload">
-              <label>Escudo Reverso:</label>
-              <input type="file" @change="e => cargarImagen(e, 'escudo')" accept="image/*" class="file-input">
-              <div v-if="configCarnet.escudo_url" class="imagen-preview">
-                <img :src="configCarnet.escudo_url" alt="Escudo">
-              </div>
-            </div>
-
-            <div class="imagen-upload">
-              <label>Fondo Anverso:</label>
-              <input type="file" @change="e => cargarImagen(e, 'fondo_anverso')" accept="image/*" class="file-input">
-              <div v-if="configCarnet.fondo_anverso_url" class="imagen-preview">
-                <img :src="configCarnet.fondo_anverso_url" alt="Fondo Anverso">
-              </div>
-            </div>
-
-            <div class="imagen-upload">
-              <label>Fondo Reverso:</label>
-              <input type="file" @change="e => cargarImagen(e, 'fondo_reverso')" accept="image/*" class="file-input">
-              <div v-if="configCarnet.fondo_reverso_url" class="imagen-preview">
-                <img :src="configCarnet.fondo_reverso_url" alt="Fondo Reverso">
+                <!-- REVERSO mini -->
+                <div class="lado-derecho-mini">
+                  <div class="siglas-mini">{{ configCarnet.nombre_corto }}</div>
+                  <div class="escudo-placeholder-mini">
+                    <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo-img-mini">
+                    <span v-else>[Escudo]</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -82,7 +200,7 @@
 
         <div class="modal-footer">
           <button class="btn-secondary" @click="mostrarConfigModal = false">Cancelar</button>
-          <button class="btn-primary" @click="guardarConfiguracion">Guardar</button>
+          <button class="btn-primary" @click="guardarConfiguracion">Guardar Cambios</button>
         </div>
       </div>
     </div>
@@ -243,130 +361,100 @@
       </div>
 
       <div class="carnet-panel" v-if="usuarioSeleccionado">
-        <div class="carnet-tabs">
-          <button
-            class="tab-btn"
-            :class="{ active: tabActivo === 'anverso' }"
-            @click="tabActivo = 'anverso'"
-          >
-            Anverso
-          </button>
-          <button
-            class="tab-btn"
-            :class="{ active: tabActivo === 'reverso' }"
-            @click="tabActivo = 'reverso'"
-          >
-            Reverso
-          </button>
-        </div>
-
-        <div class="carnet-viewport">
-          <!-- ANVERSO individual -->
-          <div v-if="tabActivo === 'anverso'" :id="`carnet-anverso-${usuarioSeleccionado.id}`" class="carnet-card anverso individual">
-            <img v-if="configCarnet.fondo_anverso_url" :src="configCarnet.fondo_anverso_url" class="carnet-fondo">
-            <div v-else class="carnet-fondo-default"></div>
-
-            <div class="carnet-content">
-              <div class="carnet-top">
-                <div class="carnet-logo-section">
-                  <img v-if="configCarnet.bandera_url" :src="configCarnet.bandera_url" class="carnet-logo">
-                  <div v-else class="carnet-logo-placeholder"></div>
+        <div class="carnet-completo-viewport" :id="`carnet-completo-${usuarioSeleccionado.id}`">
+          <div class="carnet-container">
+            <!-- LADO IZQUIERDO (ANVERSO) -->
+            <div class="lado-izquierdo" :style="{ backgroundImage: configCarnet.fondo_anverso_url ? `url(${configCarnet.fondo_anverso_url})` : 'none' }">
+              <div class="header-izquierdo">
+                <div class="bandera-placeholder">
+                  <img v-if="configCarnet.bandera_url" :src="configCarnet.bandera_url" class="bandera-img">
                 </div>
-
-                <div class="carnet-title">
-                  <div class="titulo-principal">{{ configCarnet.nombre_comunidad }}</div>
-                  <div class="titulo-subtitulo">{{ configCarnet.subtitulo }}</div>
-                  <div class="titulo-resolucion">{{ configCarnet.resolucion }}</div>
-                </div>
-
-                <div class="carnet-numero">
-                  <div class="label-numero">N° CARNET</div>
-                  <div class="valor-numero">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                <div>
+                  <div class="titulo-comunidad">{{ configCarnet.nombre_comunidad }}</div>
+                  <div class="sub-resolucion">{{ configCarnet.resolucion }}</div>
                 </div>
               </div>
 
-              <div class="carnet-body">
-                <div class="foto-section">
-                  <div class="foto-box">
-                    <img v-if="usuarioSeleccionado.foto_frontal" :src="usuarioSeleccionado.foto_frontal" class="foto-usuario">
-                    <div v-else class="foto-placeholder">SIN FOTO</div>
-                  </div>
-                  <div class="foto-label">CARNET COMUNERO</div>
+              <div class="num-carnet-container">
+                <div class="etiqueta-carnet">N° CARNET</div>
+                <div class="num-carnet">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+              </div>
+
+              <div class="info-bloque">
+                <div class="foto-placeholder">
+                  <img v-if="usuarioSeleccionado.foto_frontal" :src="usuarioSeleccionado.foto_frontal" class="foto-img">
+                  <div class="texto-foto">CARNET COMUNERO</div>
                 </div>
 
-                <div class="datos-section">
-                  <div class="dato-line">
-                    <span class="dato-label">APELLIDOS:</span>
-                    <span class="dato-valor">{{ obtenerApellidos(usuarioSeleccionado) }}</span>
+                <div class="datos-personales">
+                  <div class="campo">
+                    <span class="etiqueta">APELLIDOS:</span>
+                    <span class="valor">{{ obtenerApellidos(usuarioSeleccionado) }}</span>
                   </div>
-                  <div class="dato-line">
-                    <span class="dato-label">NOMBRES:</span>
-                    <span class="dato-valor">{{ obtenerNombres(usuarioSeleccionado) }}</span>
+                  <div class="campo">
+                    <span class="etiqueta">NOMBRES:</span>
+                    <span class="valor">{{ obtenerNombres(usuarioSeleccionado) }}</span>
+                  </div>
+
+                  <div class="campo-fechas">
+                    <div class="fecha-item">
+                      <span class="f-etiqueta">Fecha de Emisión</span>
+                      <span class="f-valor">{{ obtenerFechaEmision() }}</span>
+                    </div>
+                    <div class="fecha-item">
+                      <span class="f-etiqueta">Fecha de Caducidad</span>
+                      <span class="f-valor">{{ obtenerFechaCaducidad() }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="carnet-footer">
-                <div class="fechas-section">
-                  <div class="fecha-item">
-                    <span class="fecha-label">Fecha de Emisión</span>
-                    <span class="fecha-valor">{{ obtenerFechaEmision() }}</span>
-                  </div>
-                  <div class="fecha-item">
-                    <span class="fecha-label">Fecha de Caducidad</span>
-                    <span class="fecha-valor">{{ obtenerFechaCaducidad() }}</span>
-                  </div>
+              <div class="firmas-container">
+                <div class="firma-box">
+                  <div class="firma-placeholder">[Firma]</div>
+                  <span>Secretario</span>
                 </div>
-
-                <div class="firmas-section">
-                  <div class="firma-item">_______________<br>SECRETARIO</div>
-                  <div class="firma-item">_______________<br>PRESIDENTE</div>
+                <div class="firma-box">
+                  <div class="firma-placeholder">[Firma]</div>
+                  <span>Presidente</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- REVERSO individual -->
-          <div v-else :id="`carnet-reverso-${usuarioSeleccionado.id}`" class="carnet-card reverso individual">
-            <img v-if="configCarnet.fondo_reverso_url" :src="configCarnet.fondo_reverso_url" class="carnet-fondo">
-            <div v-else class="carnet-fondo-default"></div>
-
-            <div class="carnet-content">
-              <div class="reverso-left">
-                <div class="reverso-header">
-                  <div class="reverso-titulo">CC.TPCT</div>
-                  <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo">
-                  <div v-else class="escudo-placeholder"></div>
-                </div>
-
-                <div class="qr-section">
-                  <canvas :id="`qr-canvas-${usuarioSeleccionado.id}`" class="qr-canvas"></canvas>
+            <!-- LADO DERECHO (REVERSO) -->
+            <div class="lado-derecho" :style="{ backgroundImage: configCarnet.fondo_reverso_url ? `url(${configCarnet.fondo_reverso_url})` : 'none' }">
+              <div class="header-derecho">
+                <div class="siglas">{{ configCarnet.nombre_corto || 'CC.TPCT' }}</div>
+                <div class="escudo-placeholder">
+                  <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo-img">
+                  <span v-else>[Escudo]</span>
                 </div>
               </div>
 
-              <div class="reverso-right">
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">N° CARNET:</span>
-                  <span class="dato-reverso-valor">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">DNI:</span>
-                  <span class="dato-reverso-valor">{{ usuarioSeleccionado.numero_dni }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">F. NACIMIENTO:</span>
-                  <span class="dato-reverso-valor">{{ usuarioSeleccionado.fecha_nacimiento || '-' }}</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">CATEGORÍA:</span>
-                  <span class="dato-reverso-valor">COMUNERO(A)</span>
-                </div>
-                <div class="dato-reverso-item">
-                  <span class="dato-reverso-label">ANEXO:</span>
-                  <span class="dato-reverso-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
+              <div class="footer-derecho">
+                <div class="qr-container">
+                  <canvas :id="`qr-canvas-completo-${usuarioSeleccionado.id}`" class="qr-placeholder"></canvas>
+                  <div class="qr-codigo">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
                 </div>
 
-                <div class="numero-carnet-reverso">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                <div class="metadatos-derecha">
+                  <div class="meta-item">
+                    <span class="m-etiqueta">Número de DNI</span>
+                    <span class="m-valor">{{ usuarioSeleccionado.numero_dni }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="m-etiqueta">Categoría</span>
+                    <span class="m-valor-destacado">COMUNERO(A)</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="m-etiqueta">Fecha de Nacimiento</span>
+                    <span class="m-valor">{{ usuarioSeleccionado.fecha_nacimiento || '-' }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="m-etiqueta">Anexo que Pertenece</span>
+                    <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -382,11 +470,12 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
+import api from '@/services/api'
 
 export default {
   name: 'CarnetsView',
@@ -399,11 +488,13 @@ export default {
     const vistaPreview = ref(false)
     const mostrarConfigModal = ref(false)
     const cargando = ref(false)
+    const dragOverItem = ref(null)
 
     const configCarnet = ref({
-      nombre_comunidad: 'COMUNIDAD CAMPESINA',
+      nombre_comunidad: 'Comunidad Campesina Tumilaca, Pocata, Coscore y Tala',
       subtitulo: 'TUMILACA, POCATA, COSCORE Y TALA',
       resolucion: 'RESOLUCIÓN SUPREMA 07 SET 1949',
+      nombre_corto: 'CC.TPCT',
       bandera_url: null,
       escudo_url: null,
       fondo_anverso_url: null,
@@ -422,13 +513,9 @@ export default {
     const cargarUsuarios = async () => {
       try {
         cargando.value = true
-        const response = await fetch('/api/usuarios/?limit=100', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        const data = await response.json()
-        if (data.success) {
-          usuarios.value = data.data
+        const response = await api.get('/usuarios/?limit=100')
+        if (response.data.success) {
+          usuarios.value = response.data.data
           if (usuarios.value.length > 0) {
             usuarioSeleccionado.value = usuarios.value[0]
           }
@@ -442,81 +529,97 @@ export default {
 
     const cargarConfigCarnet = async () => {
       try {
-        const response = await fetch('/api/admin/configuracion/carnet', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        const data = await response.json()
-        configCarnet.value = data
+        const response = await api.get('/admin/configuracion/carnet')
+        console.log('Configuración cargada:', response.data)
+        configCarnet.value = { ...configCarnet.value, ...response.data }
+        console.log('configCarnet actualizado:', configCarnet.value)
       } catch (error) {
         console.error('Error cargando configuración del carnet:', error)
       }
     }
 
-    const cargarImagen = (event, tipo) => {
+    const cargarImagen = async (event, tipo) => {
       const file = event.target.files[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const campo = {
-            bandera: 'bandera_url',
-            escudo: 'escudo_url',
-            fondo_anverso: 'fondo_anverso_url',
-            fondo_reverso: 'fondo_reverso_url'
-          }[tipo]
-          configCarnet.value[campo] = e.target.result
+      if (!file) return
+
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const uploadResponse = await api.post(`/admin/configuracion/carnet/upload?tipo=${tipo}`, formData)
+        const campo = {
+          bandera: 'bandera_url',
+          escudo: 'escudo_url',
+          fondo_anverso: 'fondo_anverso_url',
+          fondo_reverso: 'fondo_reverso_url'
+        }[tipo]
+        configCarnet.value[campo] = uploadResponse.data.url
+      } catch (error) {
+        let errorMsg = 'Error desconocido'
+        if (error.response?.data?.detail) {
+          errorMsg = error.response.data.detail
         }
-        reader.readAsDataURL(file)
+        console.error('Error subiendo imagen:', error)
+        alert(`Error al subir la imagen: ${errorMsg}`)
       }
+    }
+
+    const handleDrop = async (event, tipo) => {
+      const files = event.dataTransfer.files
+      if (files.length > 0) {
+        const file = files[0]
+        // Simular un cambio de input para reutilizar cargarImagen
+        const fakeEvent = { target: { files: [file] } }
+        await cargarImagen(fakeEvent, tipo)
+      }
+      dragOverItem.value = null
+    }
+
+    const clickInputBandera = () => {
+      const input = document.getElementById('input-bandera')
+      if (input) input.click()
+    }
+
+    const clickInputEscudo = () => {
+      const input = document.getElementById('input-escudo')
+      if (input) input.click()
+    }
+
+    const clickInputFondoAnverso = () => {
+      const input = document.getElementById('input-fondo-anverso')
+      if (input) input.click()
+    }
+
+    const clickInputFondoReverso = () => {
+      const input = document.getElementById('input-fondo-reverso')
+      if (input) input.click()
     }
 
     const guardarConfiguracion = async () => {
       try {
         cargando.value = true
 
-        // Guardar textos
-        const params = new URLSearchParams({
+        const params = {
           nombre_comunidad: configCarnet.value.nombre_comunidad,
           subtitulo: configCarnet.value.subtitulo,
-          resolucion: configCarnet.value.resolucion
-        })
-
-        await fetch(`/api/admin/configuracion/carnet?${params}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' }
-        })
-
-        // Guardar imágenes
-        const tipos = ['bandera', 'escudo', 'fondo_anverso', 'fondo_reverso']
-        for (const tipo of tipos) {
-          const inputEl = document.querySelector(`input[accept="image/*"]`)
-          if (inputEl && inputEl.files.length > 0) {
-            const formData = new FormData()
-            formData.append('file', inputEl.files[0])
-
-            const uploadResponse = await fetch(`/api/admin/configuracion/carnet/upload?tipo=${tipo}`, {
-              method: 'POST',
-              body: formData
-            })
-
-            if (uploadResponse.ok) {
-              const uploadData = await uploadResponse.json()
-              const campo = {
-                bandera: 'bandera_url',
-                escudo: 'escudo_url',
-                fondo_anverso: 'fondo_anverso_url',
-                fondo_reverso: 'fondo_reverso_url'
-              }[tipo]
-              configCarnet.value[campo] = uploadData.url
-            }
-          }
+          resolucion: configCarnet.value.resolucion,
+          nombre_corto: configCarnet.value.nombre_corto
         }
 
+        console.log('Guardando configuración:', params)
+
+        const response = await api.put('/admin/configuracion/carnet', null, { params })
         mostrarConfigModal.value = false
         alert('Configuración guardada exitosamente')
       } catch (error) {
+        let errorMsg = 'Error desconocido'
+        if (error.response?.data?.detail) {
+          errorMsg = error.response.data.detail
+        } else if (error.response?.data) {
+          errorMsg = JSON.stringify(error.response.data)
+        }
         console.error('Error guardando configuración:', error)
-        alert('Error al guardar configuración')
+        alert(`Error al guardar configuración: ${errorMsg}`)
       } finally {
         cargando.value = false
       }
@@ -528,18 +631,14 @@ export default {
     }
 
     const obtenerApellidos = (usuario) => {
-      const nombre = usuario.nombre_completo || ''
-      const partes = nombre.split(' ')
-      if (partes.length >= 2) {
-        return partes.slice(1).join(' ').toUpperCase()
-      }
-      return nombre.toUpperCase()
+      const apellidos = [usuario.apellido_paterno, usuario.apellido_materno]
+        .filter(a => a && a.trim())
+        .join(' ')
+      return apellidos.toUpperCase()
     }
 
     const obtenerNombres = (usuario) => {
-      const nombre = usuario.nombre_completo || ''
-      const partes = nombre.split(' ')
-      return (partes[0] || '').toUpperCase()
+      return (usuario.nombres || '').toUpperCase()
     }
 
     const obtenerFechaEmision = () => {
@@ -581,31 +680,25 @@ export default {
 
       try {
         cargando.value = true
-        await generarQR(usuarioSeleccionado.value, `qr-canvas-${usuarioSeleccionado.value.id}`)
+        await generarQR(usuarioSeleccionado.value, `qr-canvas-completo-${usuarioSeleccionado.value.id}`)
         await new Promise(r => setTimeout(r, 200))
 
-        const anversoEl = document.getElementById(`carnet-anverso-${usuarioSeleccionado.value.id}`)
-        const reversoEl = document.getElementById(`carnet-reverso-${usuarioSeleccionado.value.id}`)
+        const carnetEl = document.getElementById(`carnet-completo-${usuarioSeleccionado.value.id}`)
 
-        if (!anversoEl || !reversoEl) {
-          console.error('No se encontraron elementos del carnet')
+        if (!carnetEl) {
+          console.error('No se encontró el elemento del carnet')
           return
         }
 
         const pdf = new jsPDF({
           orientation: 'landscape',
           unit: 'mm',
-          format: [95.6, 50]
+          format: [254, 144]
         })
 
-        const anversoCanvas = await html2canvas(anversoEl, { scale: 2, useCORS: true })
-        const anversoImg = anversoCanvas.toDataURL('image/png')
-        pdf.addImage(anversoImg, 'PNG', 0, 0, 95.6, 50)
-
-        pdf.addPage([95.6, 50], 'landscape')
-        const reversoCanvas = await html2canvas(reversoEl, { scale: 2, useCORS: true })
-        const reversoImg = reversoCanvas.toDataURL('image/png')
-        pdf.addImage(reversoImg, 'PNG', 0, 0, 95.6, 50)
+        const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true })
+        const carnetImg = carnetCanvas.toDataURL('image/png')
+        pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
 
         pdf.save(`carnet-${usuarioSeleccionado.value.numero_dni}.pdf`)
       } catch (error) {
@@ -688,6 +781,20 @@ export default {
       }
     })
 
+    // Generar QR cuando se selecciona un usuario
+    watch(() => usuarioSeleccionado.value, async (nuevoUsuario) => {
+      if (nuevoUsuario && !vistaPreview.value) {
+        await generarQR(nuevoUsuario, `qr-canvas-completo-${nuevoUsuario.id}`)
+      }
+    })
+
+    // Recargar configuración cuando se abre la modal
+    watch(() => mostrarConfigModal.value, async (estaAbierta) => {
+      if (estaAbierta) {
+        await cargarConfigCarnet()
+      }
+    })
+
     return {
       usuarios,
       usuarioSeleccionado,
@@ -697,9 +804,15 @@ export default {
       vistaPreview,
       mostrarConfigModal,
       cargando,
+      dragOverItem,
       configCarnet,
       cargarImagen,
+      handleDrop,
       guardarConfiguracion,
+      clickInputBandera,
+      clickInputEscudo,
+      clickInputFondoAnverso,
+      clickInputFondoReverso,
       obtenerNumeroCarnet,
       obtenerApellidos,
       obtenerNombres,
@@ -818,6 +931,25 @@ export default {
   margin: 0 0 15px 0;
   font-size: 14px;
   color: #333;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-section h3 ion-icon {
+  font-size: 18px;
+  color: #667eea;
+}
+
+.config-section:first-child {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.config-section:first-child h3 {
+  grid-column: 1 / -1;
 }
 
 .form-group {
@@ -875,6 +1007,311 @@ export default {
   gap: 10px;
 }
 
+/* MODAL CONFIGURACIÓN AVANZADA */
+.modal-config-advanced {
+  background: white;
+  border-radius: 8px;
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body-advanced {
+  display: grid;
+  grid-template-columns: 1fr 40%;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.config-panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.config-panel-preview {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: fit-content;
+  position: sticky;
+  top: 0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.config-panel-preview h3 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-panel-preview h3 ion-icon {
+  font-size: 16px;
+  color: #667eea;
+}
+
+.preview-carnet-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.carnet-container-mini {
+  width: 100%;
+  aspect-ratio: 5.06 / 1.44;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  display: flex;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+.carnet-container-mini::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background-color: #cccccc;
+}
+
+.lado-izquierdo-mini, .lado-derecho-mini {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  padding: 2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.5vw;
+}
+
+.header-izquierdo-mini {
+  display: flex;
+  align-items: center;
+  gap: 2%;
+  width: 95%;
+  font-size: 0.6vw;
+}
+
+.bandera-placeholder-mini {
+  width: 8%;
+  aspect-ratio: 2.5;
+  background: linear-gradient(to bottom, #ffeb3b 50%, #e53935 50%);
+  border: 0.5px solid #d32f2f;
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+.bandera-img-mini {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.titulo-mini {
+  flex: 1;
+  line-height: 1.15;
+  padding: 0 2%;
+}
+
+.titulo-principal-mini {
+  font-weight: 700;
+  font-size: 0.55vw;
+}
+
+.titulo-subtitulo-mini {
+  font-size: 0.45vw;
+  color: #666;
+}
+
+.lado-derecho-mini {
+  justify-content: space-around;
+  gap: 3%;
+}
+
+.siglas-mini {
+  font-weight: 700;
+  font-size: 0.55vw;
+}
+
+.escudo-placeholder-mini {
+  width: 8%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.35vw;
+  color: #999;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.escudo-img-mini {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.imagen-upload-group {
+  /*border: 1px solid #dee2e6;*/
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /*background: #f8f9fa;*/
+}
+
+.imagen-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.imagen-preview-small {
+  width: 60px;
+  height: 60px;
+  /*border: 1px solid #dee2e6;*/
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.imagen-preview-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* DRAG AND DROP IMAGES */
+.imagenes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.imagen-dropzone {
+  border: 2px dashed #667eea;
+  border-radius: 6px;
+  padding: 10px;
+  background: #f8f9ff;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  min-height: 100px;
+}
+
+.imagen-dropzone:hover {
+  border-color: #764ba2;
+  background: #f0eeff;
+}
+
+.imagen-dropzone.drag-over {
+  border-color: #764ba2;
+  background: #e8e0ff;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+  transform: scale(1.02);
+}
+
+.dropzone-content {
+  cursor: pointer;
+}
+
+.dropzone-content:hover .dropzone-placeholder {
+  color: #667eea;
+}
+
+.dropzone-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.dropzone-icon {
+  font-size: 28px;
+  color: #667eea;
+}
+
+.dropzone-text {
+  font-weight: 600;
+  color: #333;
+  font-size: 11px;
+}
+
+.dropzone-hint {
+  font-size: 9px;
+  color: #999;
+  text-align: center;
+}
+
+.imagen-preview-grande {
+  width: 100%;
+  max-height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imagen-preview-grande img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.btn-change {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.imagen-dropzone:hover .btn-change {
+  opacity: 1;
+}
+
+.btn-change:hover {
+  background: #764ba2;
+}
+
 /* VISTA PREVIEW */
 .carnet-preview-container {
   flex: 1;
@@ -882,12 +1319,14 @@ export default {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 20px;
+  scroll-padding: 20px;
 }
 
 .carnet-preview-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(680px, 1fr));
+  gap: 25px;
+  align-content: start;
 }
 
 .carnet-preview-item {
@@ -896,9 +1335,73 @@ export default {
   gap: 0;
   page-break-after: avoid;
   page-break-inside: avoid;
+  justify-self: center;
 }
 
-/* CARNET CARD - 9.5cm × 5cm */
+/* CARNET COMPLETO - Anverso + Reverso */
+.carnet-completo-viewport {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 20px;
+  overflow: auto;
+}
+
+.carnet-container {
+  width: 1012px;
+  height: 288px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  display: flex;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+.carnet-container::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background-color: #cccccc;
+  z-index: 10;
+}
+
+
+.lado-izquierdo, .lado-derecho {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  padding: 20px 25px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+.lado-izquierdo::before, .lado-derecho::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.65);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lado-izquierdo > *, .lado-derecho > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* CARNET CARD - 9.5cm × 5cm (para vista previsualización) */
 .carnet-card {
   position: relative;
   width: 95mm;
@@ -969,8 +1472,8 @@ export default {
 .carnet-logo-placeholder {
   width: 100%;
   height: 10mm;
-  background: #e9ecef;
-  border: 1px solid #dee2e6;
+  /*background: #e9ecef;
+  border: 1px solid #dee2e6;*/
 }
 
 .carnet-title {
@@ -1172,8 +1675,6 @@ export default {
 .escudo-placeholder {
   width: 12mm;
   height: 12mm;
-  background: #e9ecef;
-  border: 1px solid #dee2e6;
 }
 
 .qr-section {
@@ -1237,6 +1738,7 @@ export default {
   border-radius: 8px;
   padding: 15px;
   border: 1px solid #e9ecef;
+  min-height: 0;
 }
 
 .search-box {
@@ -1267,15 +1769,15 @@ export default {
 .usuario-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 8px 10px;
   background: white;
   border: 1px solid #dee2e6;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .usuario-item:hover {
@@ -1290,8 +1792,8 @@ export default {
 }
 
 .usuario-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -1339,6 +1841,7 @@ export default {
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 20px;
+  min-height: 0;
 }
 
 .carnet-tabs {
@@ -1372,7 +1875,8 @@ export default {
   background: #f8f9fa;
   border-radius: 6px;
   padding: 20px;
-  min-height: 300px;
+  min-height: 450px;
+  overflow: auto;
 }
 
 .btn-exportar-individual {
@@ -1395,6 +1899,321 @@ export default {
 .btn-exportar-individual:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* LADO IZQUIERDO (ANVERSO) */
+.header-izquierdo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bandera-placeholder {
+  width: 65px;
+  height: 40px;
+  border: 1px solid #d32f2f;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #ffeb3b 50%, #e53935 50%);
+}
+
+.bandera-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.titulo-comunidad {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0d0d0d;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
+  max-width: 220px;
+  word-wrap: break-word;
+  white-space: normal;
+  margin-top:-4px;
+}
+
+.sub-resolucion {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #444;
+  margin-top: 2px;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+.num-carnet-container {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  text-align: right;
+}
+
+.etiqueta-carnet {
+  font-size: 8px;
+  font-weight: 600;
+  color: #0d0d0d;
+  letter-spacing: 0.5px;
+}
+
+.num-carnet {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d0d0d;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+  font-family: 'Courier New', monospace;
+}
+
+.info-bloque {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+}
+
+.foto-placeholder {
+  width: 108px;
+  height: 135px;
+  border: 1px solid #000000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 4px;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.texto-foto {
+  font-size: 7px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
+  line-height: 1.2;
+}
+
+.datos-personales {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+}
+
+.campo .etiqueta {
+  font-size: 8.5px;
+  color: #666666;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.campo .valor {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d0d0d;
+  text-transform: uppercase;
+  margin-top: 1px;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+}
+
+.campo-fechas {
+  margin-top: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fecha-item .f-etiqueta {
+  font-size: 10px;
+  font-weight: 600;
+  color: #616161;
+}
+
+.fecha-item .f-valor {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0d0d0d;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+}
+
+.firmas-container {
+  position: absolute;
+  bottom: 12px;
+  right: 25px;
+  display: flex;
+  gap: 40px;
+}
+
+.firma-box {
+  width: 75px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.firma-placeholder {
+  width: 100%;
+  height: 45px;
+  border-bottom: 1px dashed #999;
+  margin-bottom: 2px;
+  opacity: 0.6;
+  font-size: 10px;
+  color: #002699;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+}
+
+.firma-box span {
+  font-size: 8px;
+  font-weight: 600;
+  color: #222;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+/* LADO DERECHO (REVERSO) */
+.lado-derecho {
+  padding: 20px 40px;
+}
+
+.header-derecho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  margin-left: 15px;
+}
+
+.siglas {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d0d0d;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  font-family: 'Courier New', monospace;
+}
+
+.escudo-placeholder {
+  width: 55px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #777;
+  text-align: center;
+  overflow: hidden;
+}
+
+.escudo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.footer-derecho {
+  display: flex;
+  align-items: flex-end;
+  gap: 25px;
+  position: absolute;
+  bottom: 20px;
+  left: 40px;
+  right: 40px;
+}
+
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.qr-placeholder {
+  width: 110px;
+  height: 110px;
+  border: 1px solid #000;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 10px;
+}
+
+.qr-codigo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0d0d0d;
+  letter-spacing: 0.3px;
+  font-family: 'Courier New', monospace;
+}
+
+.metadatos-derecha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 35px;
+  row-gap: 14px;
+  flex-grow: 1;
+  padding-bottom: 8px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-item .m-etiqueta {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #666666;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.meta-item .m-valor {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d0d0d;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+}
+
+.meta-item .m-valor-destacado {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d0d0d;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
 }
 
 @media print {

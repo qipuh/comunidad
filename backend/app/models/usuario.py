@@ -41,11 +41,15 @@ class Usuario(Base):
     username = Column(String(100), unique=True, nullable=False, index=True)
     numero_dni = Column(String(20), unique=True, nullable=True, index=True)
 
+    # Perfil - Nombres y Apellidos
+    nombres = Column(String(255), nullable=True)
+    apellido_paterno = Column(String(255), nullable=True)
+    apellido_materno = Column(String(255), nullable=True)
+
     # Autenticación
     password_hash = Column(String(255), nullable=False)
 
-    # Perfil
-    nombre_completo = Column(String(255), nullable=True)
+    # Datos Personales
     telefono = Column(String(20), nullable=True)
     fecha_nacimiento = Column(String(10), nullable=True)
     sexo = Column(String(50), nullable=True)

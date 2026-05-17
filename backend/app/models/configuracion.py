@@ -259,6 +259,7 @@ class ConfiguracionCarnet(Base):
     nombre_comunidad = Column(String(200), default="COMUNIDAD CAMPESINA", nullable=False)
     subtitulo = Column(String(200), default="TUMILACA, POCATA, COSCORE Y TALA", nullable=False)
     resolucion = Column(String(200), default="RESOLUCIÓN SUPREMA 07 SET 1949", nullable=False)
+    nombre_corto = Column(String(20), default="CC.TPCT", nullable=False)
 
     # Imágenes configurables
     bandera_url = Column(String(500), nullable=True)      # Logo/bandera anverso (top-left)

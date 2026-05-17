@@ -30,7 +30,7 @@
         <div class="ecoser-hero">
           <div class="ecoser-badge">Empresa Comunal</div>
           <h2>🌿 ECOSER</h2>
-          <p>Brazo operativo y económico de la Comunidad Campesina TPCT, orientado a la prestación de servicios y generación de oportunidades laborales para los comuneros.</p>
+          <p>Brazo operativo y económico de la Comunidad Campesina TPCT, orientado a la prestación de servicios y generación de oportunidades laborales para los Usuarios.</p>
         </div>
         <div class="ecoser-grid">
           <div class="eco-col">
@@ -90,16 +90,16 @@ const { navegar } = useWebNav()
 
 const lineas = [
   { icon: 'leaf-outline', titulo: 'Desarrollo productivo', desc: 'Impulso a las actividades agrícolas y pecuarias como base de la economía familiar comunal.' },
-  { icon: 'construct-outline', titulo: 'Infraestructura comunal', desc: 'Mejoramiento y construcción de obras de infraestructura para los comuneros y sus familias.' },
-  { icon: 'people-outline', titulo: 'Fortalecimiento organizacional', desc: 'Capacitación, asesoría y desarrollo de capacidades para líderes y comuneros.' },
-  { icon: 'briefcase-outline', titulo: 'Generación de empleo local', desc: 'Creación de oportunidades laborales para los comuneros dentro del territorio.' },
+  { icon: 'construct-outline', titulo: 'Infraestructura comunal', desc: 'Mejoramiento y construcción de obras de infraestructura para los Usuarios y sus familias.' },
+  { icon: 'people-outline', titulo: 'Fortalecimiento organizacional', desc: 'Capacitación, asesoría y desarrollo de capacidades para líderes y Usuarios.' },
+  { icon: 'briefcase-outline', titulo: 'Generación de empleo local', desc: 'Creación de oportunidades laborales para los Usuarios dentro del territorio.' },
 ]
 
 const objetivos = [
-  'Generar empleo local para los comuneros',
+  'Generar empleo local para los Usuarios',
   'Brindar servicios a empresas públicas y privadas',
   'Fortalecer la economía comunal',
-  'Promover la participación de los comuneros',
+  'Promover la participación de los Usuarios',
 ]
 
 const ventajas = [
@@ -111,7 +111,7 @@ const ventajas = [
 
 const servicios = [
   { icon: 'car-outline', nombre: 'Alquiler de camionetas', desc: 'Flota de vehículos para transporte de personal y equipos en zonas de difícil acceso del distrito de Torata.', img: 'https://images.unsplash.com/photo-1536704271660-d219aa1bd6eb?w=600&q=80' },
-  { icon: 'people-outline', nombre: 'Provisión de mano de obra', desc: 'Personal comunero capacitado para labores de campo, construcción y operaciones en general.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
+  { icon: 'people-outline', nombre: 'Provisión de mano de obra', desc: 'Personal Usuario capacitado para labores de campo, construcción y operaciones en general.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
   { icon: 'cube-outline', nombre: 'Apoyo logístico', desc: 'Soporte integral en operaciones, abastecimiento y coordinación logística en el territorio comunal.', img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80' },
   { icon: 'settings-outline', nombre: 'Servicios diversos', desc: 'Atención a requerimientos específicos de empresas e instituciones que operan en la zona de influencia.', img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=600&q=80' },
 ]

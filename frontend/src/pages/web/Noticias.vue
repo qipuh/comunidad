@@ -94,7 +94,7 @@ const noticias = [
   {
     id: 1, tipo: 'asamblea', tipoLabel: 'Asamblea', destacada: true,
     titulo: 'Asamblea General Ordinaria – Marzo 2026',
-    resumen: 'Se realizó la asamblea ordinaria con la participación de más de 120 comuneros. Se aprobaron los estados financieros del ejercicio 2025 y el plan de trabajo para el presente año.',
+    resumen: 'Se realizó la asamblea ordinaria con la participación de más de 120 Usuarios. Se aprobaron los estados financieros del ejercicio 2025 y el plan de trabajo para el presente año.',
     fecha: '15 de marzo, 2026',
     img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=700&q=80',
   },
@@ -108,14 +108,14 @@ const noticias = [
   {
     id: 3, tipo: 'ecoser', tipoLabel: 'ECOSER',
     titulo: 'ECOSER firma convenio de servicios con empresa minera',
-    resumen: 'La empresa comunal ECOSER ha suscrito un nuevo contrato de prestación de servicios logísticos y provisión de personal, generando 25 puestos de trabajo para comuneros.',
+    resumen: 'La empresa comunal ECOSER ha suscrito un nuevo contrato de prestación de servicios logísticos y provisión de personal, generando 25 puestos de trabajo para Usuarios.',
     fecha: '10 de febrero, 2026',
     img: 'https://images.unsplash.com/photo-1550290129-41b39a6fdfe8?w=700&q=80',
   },
   {
     id: 4, tipo: 'asamblea', tipoLabel: 'Asamblea',
     titulo: 'Convocatoria a Asamblea Extraordinaria',
-    resumen: 'La Junta Directiva convoca a todos los comuneros a una asamblea extraordinaria para tratar temas de interés colectivo relacionados con el territorio comunal.',
+    resumen: 'La Junta Directiva convoca a todos los Usuarios a una asamblea extraordinaria para tratar temas de interés colectivo relacionados con el territorio comunal.',
     fecha: '5 de enero, 2026',
     img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=700&q=80',
   },

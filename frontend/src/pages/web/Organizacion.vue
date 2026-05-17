@@ -5,14 +5,14 @@
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="business-outline"></ion-icon> Organización</span>
         <h1>Organización Comunal</h1>
-        <p>Gobierno democrático y participativo al servicio de los comuneros</p>
+        <p>Gobierno democrático y participativo al servicio de los Usuarios</p>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
         <div class="intro-org">
-          <p>La Comunidad Campesina TPCT cuenta con una estructura organizativa basada en principios democráticos y participativos, donde la <strong>Asamblea General de Comuneros</strong> constituye la máxima instancia de decisión.</p>
+          <p>La Comunidad Campesina TPCT cuenta con una estructura organizativa basada en principios democráticos y participativos, donde la <strong>Asamblea General de Usuarios</strong> constituye la máxima instancia de decisión.</p>
         </div>
 
         <!-- Junta Directiva -->
@@ -29,7 +29,7 @@
           <div class="pres-info">
             <span class="pres-cargo">Presidente</span>
             <h2>Marcos Santos García Nina</h2>
-            <p>Presidente de la Comunidad Campesina de Tumilaca, Pocata, Coscore y Tala para el período 2024–2026. Comprometido con la defensa del territorio y el desarrollo integral de los comuneros.</p>
+            <p>Presidente de la Comunidad Campesina de Tumilaca, Pocata, Coscore y Tala para el período 2024–2026. Comprometido con la defensa del territorio y el desarrollo integral de los Usuarios.</p>
             <div class="pres-badges">
               <span><ion-icon name="location-outline"></ion-icon> Torata, Moquegua</span>
               <span><ion-icon name="calendar-outline"></ion-icon> Período 2024–2026</span>
@@ -60,7 +60,7 @@
           <div class="comision-desc">
             <ion-icon name="people-circle-outline"></ion-icon>
             <h3>Función</h3>
-            <p>Encargada de representar a la comunidad en procesos de diálogo y negociación con entidades públicas y privadas, velando por los intereses colectivos de los comuneros.</p>
+            <p>Encargada de representar a la comunidad en procesos de diálogo y negociación con entidades públicas y privadas, velando por los intereses colectivos de los Usuarios.</p>
           </div>
           <div class="comision-miembros">
             <h3>Integrantes</h3>
@@ -102,8 +102,8 @@
       <div class="container">
         <div class="asamblea-box">
           <ion-icon name="people-outline"></ion-icon>
-          <h2>Asamblea General de Comuneros</h2>
-          <p>La Asamblea General es la máxima autoridad de la comunidad. Todos los comuneros debidamente inscritos participan con voz y voto en la toma de decisiones trascendentales.</p>
+          <h2>Asamblea General de Usuarios</h2>
+          <p>La Asamblea General es la máxima autoridad de la comunidad. Todos los Usuarios debidamente inscritos participan con voz y voto en la toma de decisiones trascendentales.</p>
         </div>
       </div>
     </section>

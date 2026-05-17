@@ -21,7 +21,7 @@
             <p>Está conformada por los anexos de <strong>Tumilaca, Pocata, Coscore y Tala</strong>, territorios que mantienen una profunda relación con la tierra y una identidad cultural sólida.</p>
           </div>
           <div class="historia-imgs">
-            <img src="https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=700&q=80" alt="Comuneros peruanos" class="hi-main" />
+            <img src="https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=700&q=80" alt="Usuarios peruanos" class="hi-main" />
             <div class="hi-stats">
               <div class="hi-stat" v-for="s in hitos" :key="s.label">
                 <strong>{{ s.value }}</strong>
@@ -91,9 +91,9 @@ const hitos = [
 ]
 
 const valores = [
-  { icon: 'eye-outline', nombre: 'Transparencia', desc: 'Gestión abierta y honesta con nuestros comuneros.' },
+  { icon: 'eye-outline', nombre: 'Transparencia', desc: 'Gestión abierta y honesta con nuestros Usuarios.' },
   { icon: 'heart-outline', nombre: 'Solidaridad', desc: 'Apoyo mutuo como base de nuestra organización.' },
-  { icon: 'thumbs-up-outline', nombre: 'Respeto', desc: 'Reconocemos la dignidad de cada comunero y familia.' },
+  { icon: 'thumbs-up-outline', nombre: 'Respeto', desc: 'Reconocemos la dignidad de cada Usuario y familia.' },
   { icon: 'people-outline', nombre: 'Trabajo colectivo', desc: 'La fuerza de la comunidad está en la unión.' },
   { icon: 'ribbon-outline', nombre: 'Identidad cultural', desc: 'Preservamos nuestras tradiciones y saberes ancestrales.' },
   { icon: 'shield-outline', nombre: 'Defensa del territorio', desc: 'Protegemos nuestras tierras para las futuras generaciones.' },

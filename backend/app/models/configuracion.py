@@ -245,7 +245,7 @@ class CampoUsuario(Base):
 
 class ConfiguracionCarnet(Base):
     """
-    Configuración visual del carnet comunero.
+    Configuración visual del carnet Usuario.
 
     Almacena:
     - Textos del carnet (nombre comunidad, subtítulo, resolución)
@@ -266,6 +266,10 @@ class ConfiguracionCarnet(Base):
     escudo_url = Column(String(500), nullable=True)       # Escudo reverso (top-left)
     fondo_anverso_url = Column(String(500), nullable=True)  # Fondo paisaje anverso
     fondo_reverso_url = Column(String(500), nullable=True)  # Fondo reverso
+
+    # Firmas digitales
+    firma_secretario_url = Column(String(500), nullable=True)  # Firma del secretario
+    firma_presidente_url = Column(String(500), nullable=True)  # Firma del presidente
 
     # Auditoría
     created_at = Column(DateTime, default=datetime.utcnow)

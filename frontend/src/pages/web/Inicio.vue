@@ -11,7 +11,7 @@
             Torata · Mariscal Nieto · Moquegua
           </div>
           <h1>Comunidad Campesina<br><span class="green">Tumilaca, Pocata,</span><br>Coscore y Tala</h1>
-          <p>Territorio, organización y desarrollo sostenible al servicio de los comuneros del valle de Tumilaca.</p>
+          <p>Territorio, organización y desarrollo sostenible al servicio de los Usuarios del valle de Tumilaca.</p>
           <div class="hero-btns">
             <button class="btn-primary" @click="nav('nosotros')">
               <ion-icon name="people-outline"></ion-icon> Conocer más
@@ -52,7 +52,7 @@
           <div class="sobre-text">
             <span class="tag-green">Nuestra Comunidad</span>
             <h2>Una familia unida por la tierra y las tradiciones</h2>
-            <p>En la Comunidad Campesina de Tumilaca, Pocata, Coscore y Tala (TPCT), cada comunero es parte de una gran familia. Desde 1949, compartimos no solo la tierra, sino también sueños, luchas y celebraciones. Aquí, el trabajo colectivo y el respeto mutuo nos unen en un camino hacia un futuro sostenible.</p>
+            <p>En la Comunidad Campesina de Tumilaca, Pocata, Coscore y Tala (TPCT), cada Usuario es parte de una gran familia. Desde 1949, compartimos no solo la tierra, sino también sueños, luchas y celebraciones. Aquí, el trabajo colectivo y el respeto mutuo nos unen en un camino hacia un futuro sostenible.</p>
             <div class="sobre-stats">
               <div class="ss-item" v-for="s in sobreStats" :key="s.label">
                 <strong>{{ s.value }}</strong>
@@ -164,7 +164,7 @@ const stats = [
   { icon: 'calendar-outline', value: '1949',    label: 'Año de fundación' },
   { icon: 'trophy-outline',   value: '77 años', label: 'De historia comunal' },
   { icon: 'map-outline',      value: '4',       label: 'Anexos comunales' },
-  { icon: 'people-outline',   value: '100+',    label: 'Comuneros activos' },
+  { icon: 'people-outline',   value: '100+',    label: 'Usuarios activos' },
 ]
 
 const sobreStats = [
@@ -176,7 +176,7 @@ const sobreStats = [
 const pilares = [
   {
     key: 'organizacion', icon: 'business-outline', titulo: 'Organización Comunal',
-    desc: 'Estructura democrática y participativa liderada por la Asamblea General de Comuneros.',
+    desc: 'Estructura democrática y participativa liderada por la Asamblea General de Usuarios.',
     img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=600&q=80',
   },
   {
@@ -218,7 +218,7 @@ const noticias = [
   {
     tipo: 'ECOSER', fecha: 'Febrero 2026',
     titulo: 'ECOSER firma nuevo contrato de servicios',
-    resumen: 'La empresa comunal suscribió un contrato generando 25 puestos de trabajo para comuneros del valle.',
+    resumen: 'La empresa comunal suscribió un contrato generando 25 puestos de trabajo para Usuarios del valle.',
     img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80',
   },
 ]

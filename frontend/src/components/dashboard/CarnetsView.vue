@@ -20,7 +20,7 @@
     <div v-if="mostrarConfigModal" class="modal-overlay" @click.self="mostrarConfigModal = false">
       <div class="modal-config-advanced">
         <div class="modal-header">
-          <h2>Configurar Carnet Comunero</h2>
+          <h2>Configurar Carnet</h2>
           <button class="btn-close" @click="mostrarConfigModal = false">&times;</button>
         </div>
 
@@ -163,6 +163,62 @@
                     class="file-input-hidden"
                   >
                 </div>
+
+                <!-- Firma Secretario -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputFirmaSecretario"
+                  @dragover.prevent="dragOverItem = 'firma_secretario'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'firma_secretario')"
+                  :class="{ 'drag-over': dragOverItem === 'firma_secretario' }"
+                >
+                  <div class="dropzone-label">Firma Secretario</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.firma_secretario_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-firma-secretario"
+                    type="file"
+                    @change="e => cargarImagen(e, 'firma_secretario')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
+
+                <!-- Firma Presidente -->
+                <div
+                  class="imagen-dropzone"
+                  @click="clickInputFirmaPresidente"
+                  @dragover.prevent="dragOverItem = 'firma_presidente'"
+                  @dragleave.prevent="dragOverItem = null"
+                  @drop.prevent="(e) => handleDrop(e, 'firma_presidente')"
+                  :class="{ 'drag-over': dragOverItem === 'firma_presidente' }"
+                >
+                  <div class="dropzone-label">Firma Presidente</div>
+                  <div class="dropzone-content">
+                    <div v-if="configCarnet.firma_presidente_url" class="imagen-preview-grande">
+                      <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
+                    </div>
+                    <div v-else class="dropzone-placeholder">
+                      <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+                      <div class="dropzone-text">Arrastra aquí o haz clic</div>
+                    </div>
+                  </div>
+                  <input
+                    id="input-firma-presidente"
+                    type="file"
+                    @change="e => cargarImagen(e, 'firma_presidente')"
+                    accept="image/*"
+                    class="file-input-hidden"
+                  >
+                </div>
               </div>
             </div>
           </div>
@@ -187,7 +243,7 @@
 
                 <!-- REVERSO mini -->
                 <div class="lado-derecho-mini">
-                  <div class="siglas-mini">{{ configCarnet.nombre_corto }}</div>
+                  <div class="siglas-mini">{{ conUsuariot.nombre_corto }}</div>
                   <div class="escudo-placeholder-mini">
                     <img v-if="configCarnet.escudo_url" :src="configCarnet.escudo_url" class="escudo-img-mini">
                     <span v-else>[Escudo]</span>
@@ -260,7 +316,7 @@
 
               <!-- Footer: Fechas y firmas -->
               <div class="carnet-footer">
-                <div class="fechas-section">
+                <div class="fechas-section">Usuario
                   <div class="fecha-item">
                     <span class="fecha-label">Fecha de Emisión</span>
                     <span class="fecha-valor">{{ obtenerFechaEmision() }}</span>
@@ -327,7 +383,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div>Usuario
       </div>
     </div>
 
@@ -595,6 +651,16 @@ export default {
       if (input) input.click()
     }
 
+    const clickInputFirmaSecretario = () => {
+      const input = document.getElementById('input-firma-secretario')
+      if (input) input.click()
+    }
+
+    const clickInputFirmaPresidente = () => {
+      const input = document.getElementById('input-firma-presidente')
+      if (input) input.click()
+    }
+
     const guardarConfiguracion = async () => {
       try {
         cargando.value = true
@@ -813,6 +879,8 @@ export default {
       clickInputEscudo,
       clickInputFondoAnverso,
       clickInputFondoReverso,
+      clickInputFirmaSecretario,
+      clickInputFirmaPresidente,
       obtenerNumeroCarnet,
       obtenerApellidos,
       obtenerNombres,

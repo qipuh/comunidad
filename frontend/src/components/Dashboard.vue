@@ -248,7 +248,7 @@ const titulos = {
   'config-cobranza': { titulo: 'Configuración de Cobranza', subtitulo: 'Configura conceptos de pago' },
   operaciones: { titulo: 'Operaciones', subtitulo: 'Aprueba o rechaza pagos pendientes' },
   votacion: { titulo: 'Votaciones', subtitulo: 'Participa en las votaciones activas de la comunidad' },
-  carnets: { titulo: 'Carnets', subtitulo: 'Emite y gestiona carnets de comuneros' },
+  carnets: { titulo: 'Carnets', subtitulo: 'Emite y gestiona carnets de Usuarios' },
   elecciones: { titulo: 'Elecciones', subtitulo: 'Crea y gestiona elecciones y votaciones' },
   'eleccion-detalle': { titulo: 'Detalle de Elección', subtitulo: 'Gestiona opciones y resultados de la elección' },
   reuniones: { titulo: 'Reuniones', subtitulo: 'Gestiona las reuniones de la comunidad' },

@@ -474,7 +474,7 @@ from sqlalchemy import func
 
 
 # ============================================================================
-# ENDPOINTS: CONFIGURACIÓN DEL CARNET COMUNERO
+# ENDPOINTS: CONFIGURACIÓN DEL CARNET Usuario
 # ============================================================================
 
 from app.models.configuracion import ConfiguracionCarnet
@@ -523,7 +523,9 @@ async def obtener_config_carnet(db: Session = Depends(get_db)):
             "bandera_url": config.bandera_url,
             "escudo_url": config.escudo_url,
             "fondo_anverso_url": config.fondo_anverso_url,
-            "fondo_reverso_url": config.fondo_reverso_url
+            "fondo_reverso_url": config.fondo_reverso_url,
+            "firma_secretario_url": getattr(config, 'firma_secretario_url', None),
+            "firma_presidente_url": getattr(config, 'firma_presidente_url', None)
         }
     except Exception as e:
         # Si hay error (ej: columna no existe), devolver valores por defecto
@@ -535,7 +537,9 @@ async def obtener_config_carnet(db: Session = Depends(get_db)):
             "bandera_url": None,
             "escudo_url": None,
             "fondo_anverso_url": None,
-            "fondo_reverso_url": None
+            "fondo_reverso_url": None,
+            "firma_secretario_url": None,
+            "firma_presidente_url": None
         }
 
 
@@ -592,16 +596,16 @@ async def actualizar_config_carnet(
 
 @router.post("/configuracion/carnet/upload")
 async def upload_imagen_carnet(
-    tipo: str = Query(..., description="bandera | escudo | fondo_anverso | fondo_reverso"),
+    tipo: str = Query(..., description="bandera | escudo | fondo_anverso | fondo_reverso | firma_secretario | firma_presidente"),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
     """
     Subir imagen para el carnet.
-    tipo: bandera (anverso top-left), escudo (reverso), fondo_anverso, fondo_reverso
+    tipo: bandera (anverso top-left), escudo (reverso), fondo_anverso, fondo_reverso, firma_secretario, firma_presidente
     """
     try:
-        tipos_validos = ["bandera", "escudo", "fondo_anverso", "fondo_reverso"]
+        tipos_validos = ["bandera", "escudo", "fondo_anverso", "fondo_reverso", "firma_secretario", "firma_presidente"]
         if tipo not in tipos_validos:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -633,7 +637,9 @@ async def upload_imagen_carnet(
             "bandera": "bandera_url",
             "escudo": "escudo_url",
             "fondo_anverso": "fondo_anverso_url",
-            "fondo_reverso": "fondo_reverso_url"
+            "fondo_reverso": "fondo_reverso_url",
+            "firma_secretario": "firma_secretario_url",
+            "firma_presidente": "firma_presidente_url"
         }
 
         url_relativa = f"/uploads/comunidad/{filename}"

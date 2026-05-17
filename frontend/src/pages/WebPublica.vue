@@ -71,7 +71,7 @@
       <div class="hero-content">
         <div class="hero-badge">Distrito de Torata · Moquegua · Perú</div>
         <h1>Comunidad Campesina de<br><span class="highlight">Tumilaca, Pocata,<br>Coscore y Tala</span></h1>
-        <p>Territorio, organización y desarrollo sostenible<br>al servicio de nuestros comuneros.</p>
+        <p>Territorio, organización y desarrollo sostenible<br>al servicio de nuestros Usuarios.</p>
         <div class="hero-buttons">
           <button @click="scrollTo('nosotros')" class="btn-primary-hero">Conocer más</button>
           <button @click="scrollTo('contacto')" class="btn-secondary-hero">Contáctanos</button>
@@ -153,7 +153,7 @@
         <div class="section-header">
           <span class="section-tag">Estructura</span>
           <h2>Organización Comunal</h2>
-          <p>Gobierno democrático y participativo al servicio de los comuneros</p>
+          <p>Gobierno democrático y participativo al servicio de los Usuarios</p>
         </div>
 
         <div class="org-grid">
@@ -241,7 +241,7 @@
         <div class="section-header">
           <span class="section-tag">Desarrollo</span>
           <h2>Proyectos y Desarrollo</h2>
-          <p>Iniciativas para el bienestar colectivo de los comuneros</p>
+          <p>Iniciativas para el bienestar colectivo de los Usuarios</p>
         </div>
 
         <div class="lineas-grid">
@@ -260,7 +260,7 @@
           <div class="ecoser-grid">
             <div class="ecoser-desc">
               <h3>Empresa Comunal ECOSER</h3>
-              <p>Brazo operativo y económico de la comunidad, orientado a la prestación de servicios y generación de oportunidades laborales para los comuneros.</p>
+              <p>Brazo operativo y económico de la comunidad, orientado a la prestación de servicios y generación de oportunidades laborales para los Usuarios.</p>
               <div class="ecoser-objetivos">
                 <div v-for="obj in ecoserObjetivos" :key="obj" class="obj-item">
                   <ion-icon name="checkmark-outline" class="obj-check"></ion-icon>
@@ -320,7 +320,7 @@
         <div class="section-header">
           <span class="section-tag">Gestión abierta</span>
           <h2>Transparencia</h2>
-          <p>Comprometidos con la rendición de cuentas a nuestros comuneros</p>
+          <p>Comprometidos con la rendición de cuentas a nuestros Usuarios</p>
         </div>
         <div class="transparencia-grid">
           <div v-for="doc in documentos" :key="doc.nombre" class="doc-card">
@@ -539,7 +539,7 @@ const ecoserObjetivos = [
   'Generar empleo local',
   'Brindar servicios a empresas públicas y privadas',
   'Fortalecer la economía comunal',
-  'Promover la participación de los comuneros',
+  'Promover la participación de los Usuarios',
 ]
 
 const ecoserServicios = [
@@ -561,20 +561,20 @@ const documentos = [
 
 const noticias = [
   { fecha: 'Abril 2026', tipo: 'Asamblea', titulo: '77° Aniversario de la Comunidad Campesina TPCT', resumen: 'La comunidad celebra su 77° aniversario de fundación con actividades culturales y productivas.' },
-  { fecha: 'Marzo 2026', tipo: 'Comunicado', titulo: 'Acuerdos de la Asamblea General Ordinaria', resumen: 'Se presentaron los acuerdos tomados en la última asamblea general de comuneros.' },
+  { fecha: 'Marzo 2026', tipo: 'Comunicado', titulo: 'Acuerdos de la Asamblea General Ordinaria', resumen: 'Se presentaron los acuerdos tomados en la última asamblea general de Usuarios.' },
   { fecha: 'Febrero 2026', tipo: 'Proyecto', titulo: 'Avances en el Proyecto de Infraestructura Comunal', resumen: 'Se informan los avances del proyecto de mejoramiento de infraestructura en los anexos.' },
 ]
 
 const cultura = [
-  { icono: 'calendar-outline', titulo: 'Festividades patronales', desc: 'Celebraciones tradicionales que reúnen a comuneros y fortalecen los lazos comunitarios.' },
+  { icono: 'calendar-outline', titulo: 'Festividades patronales', desc: 'Celebraciones tradicionales que reúnen a Usuarios y fortalecen los lazos comunitarios.' },
   { icono: 'people-outline', titulo: 'Actividades tradicionales', desc: 'Prácticas ancestrales transmitidas de generación en generación.' },
   { icono: 'restaurant-outline', titulo: 'Gastronomía local', desc: 'Sabores únicos del valle de Tumilaca con productos propios de la comunidad.' },
   { icono: 'leaf-outline', titulo: 'Prácticas agrícolas ancestrales', desc: 'Técnicas de cultivo tradicionales que conviven con métodos modernos.' },
 ]
 
 const convocatorias = [
-  { icono: 'briefcase-outline', tipo: 'Convocatorias laborales', desc: 'Oportunidades de empleo para comuneros calificados en distintas áreas.' },
-  { icono: 'business-outline', tipo: 'Asambleas comunales', desc: 'Reuniones ordinarias y extraordinarias donde participan todos los comuneros.' },
+  { icono: 'briefcase-outline', tipo: 'Convocatorias laborales', desc: 'Oportunidades de empleo para Usuarios calificados en distintas áreas.' },
+  { icono: 'business-outline', tipo: 'Asambleas comunales', desc: 'Reuniones ordinarias y extraordinarias donde participan todos los Usuarios.' },
   { icono: 'calendar-outline', tipo: 'Actividades y eventos', desc: 'Eventos culturales, deportivos y comunitarios programados.' },
   { icono: 'stats-chart-outline', tipo: 'Proyectos y gestiones', desc: 'Iniciativas de desarrollo en ejecución y convocatorias de participación.' },
 ]

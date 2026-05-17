@@ -33,7 +33,7 @@
                   <option value="">Selecciona un asunto</option>
                   <option value="informacion">Información general sobre la comunidad</option>
                   <option value="ecoser">Servicios de ECOSER</option>
-                  <option value="comunero">Trámites de empadronamiento</option>
+                  <option value="Usuario">Trámites de empadronamiento</option>
                   <option value="territorio">Consulta sobre territorio</option>
                   <option value="otro">Otro</option>
                 </select>

@@ -123,44 +123,50 @@ async def listar_usuarios(
         usuarios = db.query(Usuario).order_by(Usuario.created_at.desc()).limit(limit).offset(offset).all()
         total = db.query(Usuario).count()
 
+        data = []
+        for u in usuarios:
+            try:
+                item = {
+                    "id": u.id,
+                    "email": u.email,
+                    "username": u.username,
+                    "nombres": u.nombres,
+                    "apellido_paterno": u.apellido_paterno,
+                    "apellido_materno": u.apellido_materno,
+                    "nombre_completo": u.nombre_completo,
+                    "numero_dni": u.numero_dni,
+                    "telefono": u.telefono,
+                    "fecha_nacimiento": u.fecha_nacimiento,
+                    "sexo": u.sexo,
+                    "estado_civil": u.estado_civil,
+                    "direccion": u.direccion,
+                    "departamento": u.departamento,
+                    "provincia": u.provincia,
+                    "distrito": u.distrito,
+                    "anexo": u.anexo,
+                    "foto_url": u.foto_url,
+                    "foto_frontal": u.foto_frontal,
+                    "foto_lateral_izq": u.foto_lateral_izq,
+                    "foto_lateral_der": u.foto_lateral_der,
+                    "usar_reconocimiento_facial": u.usar_reconocimiento_facial,
+                    "rol": u.rol,
+                    "estado": u.estado,
+                    "fecha_inicio_cobranza": u.fecha_inicio_cobranza.isoformat() if u.fecha_inicio_cobranza else None,
+                    "created_at": u.created_at.isoformat() if u.created_at else None,
+                    "updated_at": u.updated_at.isoformat() if u.updated_at else None
+                }
+                data.append(item)
+            except Exception as item_error:
+                print(f"[ERROR] Error procesando usuario {u.id}: {item_error}")
+                raise
+
         return {
             "success": True,
             "count": len(usuarios),
             "total": total,
             "limit": limit,
             "offset": offset,
-            "data": [
-            {
-                "id": u.id,
-                "email": u.email,
-                "username": u.username,
-                "nombres": u.nombres,
-                "apellido_paterno": u.apellido_paterno,
-                "apellido_materno": u.apellido_materno,
-                "nombre_completo": u.nombre_completo,
-                "numero_dni": u.numero_dni,
-                "telefono": u.telefono,
-                "fecha_nacimiento": u.fecha_nacimiento,
-                "sexo": u.sexo,
-                "estado_civil": u.estado_civil,
-                "direccion": u.direccion,
-                "departamento": u.departamento,
-                "provincia": u.provincia,
-                "distrito": u.distrito,
-                "anexo": u.anexo,
-                "foto_url": u.foto_url,
-                "foto_frontal": u.foto_frontal,
-                "foto_lateral_izq": u.foto_lateral_izq,
-                "foto_lateral_der": u.foto_lateral_der,
-                "usar_reconocimiento_facial": u.usar_reconocimiento_facial,
-                "rol": u.rol,
-                "estado": u.estado,
-                "fecha_inicio_cobranza": u.fecha_inicio_cobranza.isoformat() if u.fecha_inicio_cobranza else None,
-                "created_at": u.created_at.isoformat() if u.created_at else None,
-                "updated_at": u.updated_at.isoformat() if u.updated_at else None
-            }
-            for u in usuarios
-        ]
+            "data": data
         }
     except Exception as e:
         import traceback

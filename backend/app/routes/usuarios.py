@@ -136,6 +136,7 @@ async def listar_usuarios(
                 "nombres": u.nombres,
                 "apellido_paterno": u.apellido_paterno,
                 "apellido_materno": u.apellido_materno,
+                "nombre_completo": u.nombre_completo,
                 "numero_dni": u.numero_dni,
                 "telefono": u.telefono,
                 "fecha_nacimiento": u.fecha_nacimiento,
@@ -300,6 +301,7 @@ async def obtener_usuario(
             "nombres": usuario.nombres,
             "apellido_paterno": usuario.apellido_paterno,
             "apellido_materno": usuario.apellido_materno,
+            "nombre_completo": usuario.nombre_completo,
             "numero_dni": usuario.numero_dni,
             "telefono": usuario.telefono,
             "fecha_nacimiento": usuario.fecha_nacimiento,
@@ -499,6 +501,7 @@ async def buscar_por_email(
             "nombres": usuario.nombres,
             "apellido_paterno": usuario.apellido_paterno,
             "apellido_materno": usuario.apellido_materno,
+            "nombre_completo": usuario.nombre_completo,
             "rol": usuario.rol,
             "estado": usuario.estado
         }

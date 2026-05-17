@@ -261,10 +261,11 @@
       </div>
     </div>
 
-    <!-- Vista de Previsualización -->
+    <!-- Vista de Previsualización (Mismo diseño que Vista Individual) -->
     <div v-if="vistaPreview" class="carnet-preview-container">
       <div class="carnet-preview-grid">
         <div v-for="usuario in usuarios" :key="usuario.id" class="carnet-preview-item">
+          <div :id="`carnet-preview-${usuario.id}`" class="carnet-container">
           <!-- ANVERSO -->
           <div :id="`preview-anverso-${usuario.id}`" class="carnet-card anverso">
             <!-- Fondo -->
@@ -316,7 +317,7 @@
 
               <!-- Footer: Fechas y firmas -->
               <div class="carnet-footer">
-                <div class="fechas-section">Usuario
+                <div class="fechas-section">
                   <div class="fecha-item">
                     <span class="fecha-label">Fecha de Emisión</span>
                     <span class="fecha-valor">{{ obtenerFechaEmision() }}</span>
@@ -383,7 +384,8 @@
               </div>
             </div>
           </div>
-        </div>Usuario
+          </div>
+        </div>
       </div>
     </div>
 

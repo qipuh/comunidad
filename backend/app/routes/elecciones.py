@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.database import get_db
 from app.models.usuario import Usuario
-from app.models.eleccion import Eleccion, OpcionEleccion, Voto, TipoEleccionEnum, EstadoEleccionEnum
+from app.models.eleccion import Eleccion, OpcionEleccion, Voto, PadronEleccion, TipoEleccionEnum, EstadoEleccionEnum
 from app.utils.auth import get_current_user
 from app.utils.reconocimiento_facial import validar_rostro_contra_usuario
 from pydantic import BaseModel
@@ -278,6 +278,25 @@ async def cambiar_estado(
         raise HTTPException(status_code=400, detail="Debe agregar opciones antes de activar")
 
     eleccion.estado = datos.estado
+
+    # Si está activando, agregar "VOTO EN BLANCO" si no existe
+    if datos.estado == "activo":
+        voto_blanco_existe = db.query(OpcionEleccion).filter_by(
+            eleccion_id=eleccion_id,
+            nombre="VOTO EN BLANCO"
+        ).first()
+        if not voto_blanco_existe:
+            max_orden = db.query(func.max(OpcionEleccion.orden)).filter_by(
+                eleccion_id=eleccion_id
+            ).scalar() or 0
+            voto_blanco = OpcionEleccion(
+                eleccion_id=eleccion_id,
+                nombre="VOTO EN BLANCO",
+                descripcion="Abstención de voto",
+                orden=max_orden + 1
+            )
+            db.add(voto_blanco)
+
     db.commit()
     db.refresh(eleccion)
 
@@ -523,11 +542,245 @@ async def obtener_resultados(
     # Ordenar por votos descending
     opciones_resultado.sort(key=lambda x: x["votos"], reverse=True)
 
+    # Calcular padron stats
+    total_padron = db.query(func.count(PadronEleccion.id)).filter(
+        PadronEleccion.eleccion_id == eleccion_id
+    ).scalar() or 0
+
+    total_no_votaron = total_padron - total_votos
+    participacion_pct = (total_votos / total_padron * 100) if total_padron > 0 else 0
+
+    total_impugnados = db.query(func.count(Voto.id)).filter(
+        Voto.eleccion_id == eleccion_id,
+        Voto.impugnado == True
+    ).scalar() or 0
+
     return {
         "eleccion_id": eleccion.id,
         "titulo": eleccion.titulo,
         "estado": eleccion.estado,
         "tipo": eleccion.tipo,
-        "total_votos": total_votos,
+        "total_padron": total_padron,
+        "total_votaron": total_votos,
+        "total_no_votaron": total_no_votaron,
+        "total_impugnados": total_impugnados,
+        "participacion_pct": round(participacion_pct, 2),
         "opciones": opciones_resultado
+    }
+
+
+# ==================== PADRÓN DE ELECTORES ====================
+
+@router.get("/{eleccion_id}/padron")
+async def obtener_padron(
+    eleccion_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin obtiene el padrón de electores con estado de voto"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    # Obtener padrón con info de voto
+    padron = db.query(PadronEleccion).filter_by(eleccion_id=eleccion_id).all()
+    usuarios_votaron = db.query(Voto.usuario_id).filter_by(eleccion_id=eleccion_id).all()
+    votaron_ids = {v[0] for v in usuarios_votaron}
+
+    resultado = []
+    for p in padron:
+        resultado.append({
+            "id": p.id,
+            "usuario_id": p.usuario_id,
+            "nombres": p.usuario.nombres,
+            "apellido_paterno": p.usuario.apellido_paterno,
+            "apellido_materno": p.usuario.apellido_materno,
+            "numero_dni": p.usuario.numero_dni,
+            "votó": p.usuario_id in votaron_ids,
+            "created_at": p.created_at.isoformat()
+        })
+
+    return {"success": True, "count": len(resultado), "data": resultado}
+
+
+@router.post("/{eleccion_id}/padron")
+async def agregar_al_padron(
+    eleccion_id: int,
+    usuarios_ids: List[int],
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin agrega uno o varios usuarios al padrón (solo en borrador)"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    if eleccion.estado != "borrador":
+        raise HTTPException(status_code=400, detail="Solo en estado borrador")
+
+    agregados = 0
+    duplicados = 0
+    for uid in usuarios_ids:
+        existe_usuario = db.query(Usuario).filter_by(id=uid).first()
+        if not existe_usuario:
+            continue
+
+        existe_padron = db.query(PadronEleccion).filter_by(
+            eleccion_id=eleccion_id, usuario_id=uid
+        ).first()
+        if existe_padron:
+            duplicados += 1
+            continue
+
+        db.add(PadronEleccion(eleccion_id=eleccion_id, usuario_id=uid))
+        agregados += 1
+
+    db.commit()
+    return {
+        "success": True,
+        "agregados": agregados,
+        "duplicados": duplicados,
+        "message": f"Agregados {agregados} usuarios, {duplicados} duplicados"
+    }
+
+
+@router.post("/{eleccion_id}/padron/importar-todos")
+async def importar_todos_padron(
+    eleccion_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin importa todos los usuarios activos al padrón"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    usuarios_activos = db.query(Usuario).filter_by(estado="activo").all()
+
+    agregados = 0
+    for u in usuarios_activos:
+        existe = db.query(PadronEleccion).filter_by(
+            eleccion_id=eleccion_id, usuario_id=u.id
+        ).first()
+        if not existe:
+            db.add(PadronEleccion(eleccion_id=eleccion_id, usuario_id=u.id))
+            agregados += 1
+
+    db.commit()
+    return {
+        "success": True,
+        "importados": agregados,
+        "message": f"Importados {agregados} usuarios activos"
+    }
+
+
+@router.delete("/{eleccion_id}/padron/{usuario_id}")
+async def remover_del_padron(
+    eleccion_id: int,
+    usuario_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin remueve usuario del padrón (solo en borrador)"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    if eleccion.estado != "borrador":
+        raise HTTPException(status_code=400, detail="Solo en estado borrador")
+
+    padron = db.query(PadronEleccion).filter_by(
+        eleccion_id=eleccion_id, usuario_id=usuario_id
+    ).first()
+    if not padron:
+        raise HTTPException(status_code=404, detail="Usuario no en padrón")
+
+    db.delete(padron)
+    db.commit()
+    return {"success": True, "message": "Usuario removido del padrón"}
+
+
+# ==================== VOTOS Y IMPUGNACIÓN ====================
+
+@router.get("/{eleccion_id}/votos")
+async def obtener_votos(
+    eleccion_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin obtiene listado detallado de votos individuales"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    votos = db.query(Voto).filter_by(eleccion_id=eleccion_id).all()
+
+    resultado = []
+    for v in votos:
+        resultado.append({
+            "id": v.id,
+            "usuario_id": v.usuario_id,
+            "nombres": v.usuario.nombres,
+            "apellido_paterno": v.usuario.apellido_paterno,
+            "apellido_materno": v.usuario.apellido_materno,
+            "numero_dni": v.usuario.numero_dni,
+            "opcion_nombre": v.opcion.nombre,
+            "metodo_validacion": v.metodo_validacion,
+            "impugnado": v.impugnado,
+            "motivo_impugnacion": v.motivo_impugnacion,
+            "created_at": v.created_at.isoformat()
+        })
+
+    return {"success": True, "count": len(resultado), "data": resultado}
+
+
+class ImpugnarRequest(BaseModel):
+    impugnado: bool
+    motivo: Optional[str] = None
+
+
+@router.post("/{eleccion_id}/votos/{voto_id}/impugnar")
+async def impugnar_voto(
+    eleccion_id: int,
+    voto_id: int,
+    request: ImpugnarRequest,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin marca/desmarcar voto como impugnado"""
+    if usuario.rol != "admin":
+        raise HTTPException(status_code=403, detail="Solo admin")
+
+    eleccion = db.query(Eleccion).filter_by(id=eleccion_id).first()
+    if not eleccion:
+        raise HTTPException(status_code=404, detail="Elección no encontrada")
+
+    voto = db.query(Voto).filter_by(id=voto_id, eleccion_id=eleccion_id).first()
+    if not voto:
+        raise HTTPException(status_code=404, detail="Voto no encontrado")
+
+    voto.impugnado = request.impugnado
+    voto.motivo_impugnacion = request.motivo if request.impugnado else None
+    voto.impugnado_por = usuario.id if request.impugnado else None
+    voto.impugnado_at = datetime.utcnow() if request.impugnado else None
+
+    db.commit()
+    return {
+        "success": True,
+        "message": f"Voto {'impugnado' if request.impugnado else 'desimpugnado'}"
     }

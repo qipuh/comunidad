@@ -83,6 +83,69 @@ export const eleccionesService = {
       console.error('Error obteniendo resultados:', error)
       throw error
     }
+  },
+
+  async obtenerPadron(eleccionId: number) {
+    try {
+      const response = await api.get(`/elecciones/${eleccionId}/padron`)
+      return response.data
+    } catch (error) {
+      console.error('Error obteniendo padrón:', error)
+      throw error
+    }
+  },
+
+  async agregarAlPadron(eleccionId: number, usuariosIds: number[]) {
+    try {
+      const response = await api.post(`/elecciones/${eleccionId}/padron`, usuariosIds)
+      return response.data
+    } catch (error) {
+      console.error('Error agregando al padrón:', error)
+      throw error
+    }
+  },
+
+  async importarTodosPadron(eleccionId: number) {
+    try {
+      const response = await api.post(`/elecciones/${eleccionId}/padron/importar-todos`)
+      return response.data
+    } catch (error) {
+      console.error('Error importando padrón:', error)
+      throw error
+    }
+  },
+
+  async removerDelPadron(eleccionId: number, usuarioId: number) {
+    try {
+      const response = await api.delete(`/elecciones/${eleccionId}/padron/${usuarioId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error removiendo del padrón:', error)
+      throw error
+    }
+  },
+
+  async obtenerVotos(eleccionId: number) {
+    try {
+      const response = await api.get(`/elecciones/${eleccionId}/votos`)
+      return response.data
+    } catch (error) {
+      console.error('Error obteniendo votos:', error)
+      throw error
+    }
+  },
+
+  async impugnarVoto(eleccionId: number, votoId: number, impugnado: boolean, motivo?: string) {
+    try {
+      const response = await api.post(`/elecciones/${eleccionId}/votos/${votoId}/impugnar`, {
+        impugnado,
+        motivo
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error impugnando voto:', error)
+      throw error
+    }
   }
 }
 

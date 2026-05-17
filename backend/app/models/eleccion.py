@@ -46,6 +46,7 @@ class Eleccion(Base):
     # Relaciones
     opciones = relationship("OpcionEleccion", back_populates="eleccion", cascade="all, delete-orphan")
     votos = relationship("Voto", back_populates="eleccion", cascade="all, delete-orphan")
+    padron = relationship("PadronEleccion", back_populates="eleccion", cascade="all, delete-orphan")
 
     def to_dict(self, incluir_votos=False):
         data = {
@@ -111,6 +112,10 @@ class Voto(Base):
     latitud = Column(Float, nullable=True)  # GPS (manual only)
     longitud = Column(Float, nullable=True)  # GPS (manual only)
     ip_address = Column(String(45), nullable=True)  # audit
+    impugnado = Column(Boolean, default=False)
+    motivo_impugnacion = Column(Text, nullable=True)
+    impugnado_por = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    impugnado_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
@@ -128,5 +133,29 @@ class Voto(Base):
             "foto_validacion": self.foto_validacion,
             "latitud": self.latitud,
             "longitud": self.longitud,
+            "impugnado": self.impugnado,
+            "motivo_impugnacion": self.motivo_impugnacion,
+            "created_at": self.created_at.isoformat(),
+        }
+
+
+class PadronEleccion(Base):
+    __tablename__ = "padron_eleccion"
+    __table_args__ = (UniqueConstraint("eleccion_id", "usuario_id", name="uq_padron_elector"),)
+
+    id = Column(Integer, primary_key=True)
+    eleccion_id = Column(Integer, ForeignKey("elecciones.id", ondelete="CASCADE"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    eleccion = relationship("Eleccion", back_populates="padron")
+    usuario = relationship("Usuario", foreign_keys=[usuario_id])
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "eleccion_id": self.eleccion_id,
+            "usuario_id": self.usuario_id,
             "created_at": self.created_at.isoformat(),
         }

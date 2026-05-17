@@ -465,7 +465,7 @@ export default {
     const cargarUsuarios = async () => {
       try {
         cargando.value = true
-        const response = await api.get('/usuarios/?limit=100')
+        const response = await api.get('/usuarios/?limit=10000')
         if (response.data.success) {
           usuarios.value = response.data.data
           if (usuarios.value.length > 0) {

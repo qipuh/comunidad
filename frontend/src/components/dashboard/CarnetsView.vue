@@ -502,6 +502,7 @@ export default {
     })
 
     const totalBloques = computed(() => {
+      if (!usuarios.value || usuarios.value.length === 0) return 0
       return Math.ceil(usuarios.value.length / 100)
     })
 

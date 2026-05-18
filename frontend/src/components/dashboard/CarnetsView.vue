@@ -821,9 +821,11 @@ export default {
           const usuario = usuariosBloque[idx]
           usuarioSeleccionado.value = usuario
 
-          // Generar QR
-          await generarQR(usuario, `qr-canvas-${usuario.id}`)
-          await new Promise(r => setTimeout(r, 100))
+          // Generar QR sin esperar
+          generarQR(usuario, `qr-canvas-${usuario.id}`)
+
+          // Pequeño delay para que se renderice el QR
+          await new Promise(r => setTimeout(r, 50))
 
           const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
           if (!carnetEl) {
@@ -831,14 +833,25 @@ export default {
             continue
           }
 
-          // Capturar (escala reducida para evitar PDF muy grande)
-          const carnetCanvas = await html2canvas(carnetEl, { scale: 1.2, useCORS: true, allowTaint: true })
-          const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.85)
+          // Capturar (sin esperar, más rápido)
+          const carnetCanvas = await html2canvas(carnetEl, {
+            scale: 1,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          })
+          const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.8)
           pdf.addImage(carnetImg, 'JPEG', 0, 0, 254, 144)
 
           // Nueva página
           if (idx < usuariosBloque.length - 1) {
             pdf.addPage([254, 144], 'landscape')
+          }
+
+          // Log cada 10 para ver progreso
+          if ((idx + 1) % 10 === 0) {
+            console.log(`[Bloque] ${idx + 1}/${usuariosBloque.length} carnets procesados`)
           }
         }
 

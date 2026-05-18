@@ -796,9 +796,18 @@ export default {
       try {
         cargando.value = true
         const USUARIOS_POR_BLOQUE = 100
-        const indiceInicio = (numBloque - 1) * USUARIOS_POR_BLOQUE
-        const indiceFin = Math.min(indiceInicio + USUARIOS_POR_BLOQUE, usuarios.value.length)
-        const usuariosBloque = usuarios.value.slice(indiceInicio, indiceFin)
+        const offset = (numBloque - 1) * USUARIOS_POR_BLOQUE
+
+        console.log(`[Bloque ${numBloque}] Cargando usuarios ${offset + 1}-${offset + USUARIOS_POR_BLOQUE}...`)
+
+        // Cargar SOLO este bloque del API
+        const response = await api.get(`/usuarios/?limit=${USUARIOS_POR_BLOQUE}&offset=${offset}`)
+        const usuariosBloque = response.data.data || []
+
+        if (usuariosBloque.length === 0) {
+          alert(`No hay usuarios en el bloque ${numBloque}`)
+          return
+        }
 
         const pdf = new jsPDF({
           orientation: 'landscape',

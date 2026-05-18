@@ -6,10 +6,48 @@
         <ion-icon name="settings-outline"></ion-icon>
         Configurar carnet
       </button>
-      <button class="btn-exportar-todos" @click="exportarTodosPDF">
+      <button class="btn-exportar-todos" @click="mostrarModalBloques = true">
         <ion-icon name="download-outline"></ion-icon>
-        Exportar todos (PDF)
+        Exportar por bloques (PDF)
       </button>
+    </div>
+
+    <!-- Modal de Bloques -->
+    <div v-if="mostrarModalBloques" class="modal-overlay" @click.self="mostrarModalBloques = false">
+      <div class="modal-bloques">
+        <div class="modal-header">
+          <h2>Descargar Carnets por Bloques</h2>
+          <button class="btn-close" @click="mostrarModalBloques = false">&times;</button>
+        </div>
+
+        <div class="modal-body-bloques">
+          <p class="info-bloques">
+            Total de usuarios: <strong>{{ usuarios.value.length }}</strong> |
+            Bloques de 100: <strong>{{ totalBloques }}</strong>
+          </p>
+
+          <div class="grid-bloques">
+            <button
+              v-for="bloque in totalBloques"
+              :key="bloque"
+              class="btn-bloque"
+              @click="exportarBloqueePDF(bloque)"
+              :disabled="cargando"
+            >
+              <div class="numero-bloque">Bloque {{ bloque }}</div>
+              <div class="rango-bloque">
+                {{ (bloque - 1) * 100 + 1 }} - {{ Math.min(bloque * 100, usuarios.value.length) }}
+              </div>
+              <div v-if="cargando" class="spinner-mini"></div>
+              <ion-icon v-else name="download-outline"></ion-icon>
+            </button>
+          </div>
+
+          <div class="nota-bloques">
+            Cada bloque contiene 100 carnets y se descargará en un PDF separado.
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Modal de Configuración -->
@@ -436,6 +474,7 @@ export default {
     const busqueda = ref('')
     const tabActivo = ref('anverso')
     const mostrarConfigModal = ref(false)
+    const mostrarModalBloques = ref(false)
     const cargando = ref(false)
     const dragOverItem = ref(null)
 
@@ -460,6 +499,10 @@ export default {
         u.nombre_completo?.toLowerCase().includes(q) ||
         u.numero_dni?.includes(q)
       )
+    })
+
+    const totalBloques = computed(() => {
+      return Math.ceil(usuarios.value.length / 100)
     })
 
     const cargarUsuarios = async () => {
@@ -748,6 +791,58 @@ export default {
       }
     }
 
+    const exportarBloqueePDF = async (numBloque) => {
+      try {
+        cargando.value = true
+        const USUARIOS_POR_BLOQUE = 100
+        const indiceInicio = (numBloque - 1) * USUARIOS_POR_BLOQUE
+        const indiceFin = Math.min(indiceInicio + USUARIOS_POR_BLOQUE, usuarios.value.length)
+        const usuariosBloque = usuarios.value.slice(indiceInicio, indiceFin)
+
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: [254, 144]
+        })
+
+        console.log(`[Bloque ${numBloque}] Procesando ${usuariosBloque.length} carnets...`)
+
+        for (let idx = 0; idx < usuariosBloque.length; idx++) {
+          const usuario = usuariosBloque[idx]
+          usuarioSeleccionado.value = usuario
+
+          // Generar QR
+          await generarQR(usuario, `qr-canvas-${usuario.id}`)
+          await new Promise(r => setTimeout(r, 100))
+
+          const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
+          if (!carnetEl) {
+            console.warn(`Carnet ${usuario.id} no encontrado`)
+            continue
+          }
+
+          // Capturar
+          const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true, allowTaint: true })
+          const carnetImg = carnetCanvas.toDataURL('image/png')
+          pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
+
+          // Nueva página
+          if (idx < usuariosBloque.length - 1) {
+            pdf.addPage([254, 144], 'landscape')
+          }
+        }
+
+        pdf.save(`carnets-bloque-${numBloque}-${new Date().getTime()}.pdf`)
+        alert(`✅ Bloque ${numBloque} descargado (${usuariosBloque.length} carnets)`)
+        mostrarModalBloques.value = false
+      } catch (error) {
+        console.error(`Error en bloque ${numBloque}:`, error)
+        alert(`Error: ${error.message}`)
+      } finally {
+        cargando.value = false
+      }
+    }
+
     onMounted(async () => {
       await cargarUsuarios()
       await cargarConfigCarnet()
@@ -796,9 +891,11 @@ export default {
       busqueda,
       tabActivo,
       mostrarConfigModal,
+      mostrarModalBloques,
       cargando,
       dragOverItem,
       configCarnet,
+      totalBloques,
       cargarImagen,
       handleDrop,
       guardarConfiguracion,
@@ -814,7 +911,8 @@ export default {
       obtenerFechaEmision,
       obtenerFechaCaducidad,
       exportarCarnetIndividual,
-      exportarTodosPDF
+      exportarTodosPDF,
+      exportarBloqueePDF
     }
   }
 }
@@ -2271,6 +2369,140 @@ export default {
   word-break: break-all;
   text-align: center;
   line-height: 1;
+}
+
+/* Modal de Bloques */
+.modal-bloques {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideInModal 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body-bloques {
+  padding: 30px;
+}
+
+.info-bloques {
+  text-align: center;
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.grid-bloques {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn-bloque {
+  padding: 15px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.btn-bloque:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-bloque:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.numero-bloque {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rango-bloque {
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+}
+
+.spinner-mini {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #667eea;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-bloque ion-icon {
+  font-size: 20px;
+}
+
+.nota-bloques {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+@keyframes slideInModal {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media print {

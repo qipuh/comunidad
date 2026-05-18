@@ -831,10 +831,10 @@ export default {
             continue
           }
 
-          // Capturar
-          const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true, allowTaint: true })
-          const carnetImg = carnetCanvas.toDataURL('image/png')
-          pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
+          // Capturar (escala reducida para evitar PDF muy grande)
+          const carnetCanvas = await html2canvas(carnetEl, { scale: 1.2, useCORS: true, allowTaint: true })
+          const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.85)
+          pdf.addImage(carnetImg, 'JPEG', 0, 0, 254, 144)
 
           // Nueva página
           if (idx < usuariosBloque.length - 1) {

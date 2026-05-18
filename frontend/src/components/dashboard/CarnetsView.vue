@@ -22,7 +22,7 @@
 
         <div class="modal-body-bloques">
           <p class="info-bloques">
-            Total de usuarios: <strong>{{ usuarios.value.length }}</strong> |
+            Total de usuarios: <strong>{{ usuarios.value?.length || 0 }}</strong> |
             Bloques de 100: <strong>{{ totalBloques }}</strong>
           </p>
 
@@ -36,7 +36,7 @@
             >
               <div class="numero-bloque">Bloque {{ bloque }}</div>
               <div class="rango-bloque">
-                {{ (bloque - 1) * 100 + 1 }} - {{ Math.min(bloque * 100, usuarios.value.length) }}
+                {{ (bloque - 1) * 100 + 1 }} - {{ Math.min(bloque * 100, usuarios.value?.length || 0) }}
               </div>
               <div v-if="cargando" class="spinner-mini"></div>
               <ion-icon v-else name="download-outline"></ion-icon>

@@ -1,14 +1,89 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pathlib import Path
 import shutil
+from datetime import datetime
+from typing import Optional, List
 from app.db.database import get_db
 from app.models.usuario import Usuario
+from app.models.configuracion import ConfiguracionCarnet
+from app.services.carnet_pdf_service import generar_pdf_carnets
 
 router = APIRouter(prefix="/api/carnets", tags=["carnets"])
 
 EXTENSIONES_PERMITIDAS = {'.png', '.jpg', '.jpeg', '.webp'}
 UPLOAD_DIR = Path("uploads/usuarios")
+
+
+@router.get("/exportar-pdf")
+def exportar_pdf(
+    limit: int = Query(200, ge=1, le=2000, description="Cantidad de carnets a generar"),
+    offset: int = Query(0, ge=0, description="Desde qué usuario empezar"),
+    todos: bool = Query(False, description="Si es True, ignora limit y genera todos"),
+    db: Session = Depends(get_db),
+):
+    """
+    Genera un PDF vectorial con los carnets usando Chromium headless (Playwright).
+    Calidad superior al render canvas-a-imagen del frontend.
+    """
+    query = db.query(Usuario).order_by(Usuario.id.asc())
+
+    if todos:
+        usuarios = query.all()
+    else:
+        usuarios = query.offset(offset).limit(limit).all()
+
+    if not usuarios:
+        raise HTTPException(status_code=404, detail="No hay usuarios en el rango solicitado")
+
+    config = db.query(ConfiguracionCarnet).first()
+    if not config:
+        config = ConfiguracionCarnet()
+
+    try:
+        pdf_bytes = generar_pdf_carnets(usuarios, config)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error generando PDF: {e}")
+
+    if todos:
+        nombre = f"carnets-todos-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.pdf"
+    else:
+        nombre = f"carnets-{offset + 1}-{offset + len(usuarios)}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )
+
+
+@router.get("/exportar-pdf-individual/{usuario_id}")
+def exportar_pdf_individual(usuario_id: int, db: Session = Depends(get_db)):
+    """Genera el PDF de un solo carnet."""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    config = db.query(ConfiguracionCarnet).first()
+    if not config:
+        config = ConfiguracionCarnet()
+
+    try:
+        pdf_bytes = generar_pdf_carnets([usuario], config)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error generando PDF: {e}")
+
+    nombre = f"carnet-{usuario.numero_dni or usuario.id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )
 
 
 @router.post("/vincular-fotos")

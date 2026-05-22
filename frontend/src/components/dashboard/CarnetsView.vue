@@ -26,8 +26,8 @@
 
         <div class="modal-body-bloques">
           <p class="info-bloques">
-            Total de usuarios: <strong>{{ usuarios.value?.length || 0 }}</strong> |
-            Bloques de 50: <strong>{{ totalBloques }}</strong>
+            Total de usuarios: <strong>{{ usuarios?.length || 0 }}</strong> |
+            Bloques de 200: <strong>{{ totalBloques }}</strong>
           </p>
 
           <div class="grid-bloques">
@@ -40,15 +40,25 @@
             >
               <div class="numero-bloque">Bloque {{ bloque }}</div>
               <div class="rango-bloque">
-                {{ (bloque - 1) * 50 + 1 }} - {{ Math.min(bloque * 50, usuarios.value?.length || 0) }}
+                {{ (bloque - 1) * 200 + 1 }} - {{ Math.min(bloque * 200, usuarios?.length || 0) }}
               </div>
               <div v-if="cargando" class="spinner-mini"></div>
               <ion-icon v-else name="download-outline"></ion-icon>
             </button>
           </div>
 
+          <button
+            class="btn-todos-pdf"
+            @click="exportarTodosPDF"
+            :disabled="cargando"
+          >
+            <ion-icon name="cloud-download-outline"></ion-icon>
+            Descargar TODOS en un solo PDF ({{ usuarios?.length || 0 }} carnets)
+          </button>
+
           <div class="nota-bloques">
-            Cada bloque contiene 50 carnets y se descargará en un PDF separado (optimizado para servidor lento).
+            PDF vectorial de alta calidad generado en el servidor (Chromium headless).
+            Cada bloque tiene 200 carnets. El servidor tarda ~1s por carnet.
           </div>
         </div>
       </div>
@@ -690,9 +700,11 @@ export default {
       )
     })
 
+    const USUARIOS_POR_BLOQUE = 200
+
     const totalBloques = computed(() => {
       if (!usuarios.value || usuarios.value.length === 0) return 0
-      return Math.ceil(usuarios.value.length / 50)
+      return Math.ceil(usuarios.value.length / USUARIOS_POR_BLOQUE)
     })
 
     const cargarUsuarios = async () => {
@@ -901,35 +913,31 @@ export default {
       }
     }
 
+    const descargarBlob = (blob, nombre) => {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = nombre
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }
+
     const exportarCarnetIndividual = async () => {
       if (!usuarioSeleccionado.value) return
 
       try {
         cargando.value = true
-        await generarQR(usuarioSeleccionado.value, `qr-canvas-completo-${usuarioSeleccionado.value.id}`)
-        await new Promise(r => setTimeout(r, 200))
-
-        const carnetEl = document.getElementById(`carnet-completo-${usuarioSeleccionado.value.id}`)
-
-        if (!carnetEl) {
-          console.error('No se encontró el elemento del carnet')
-          return
-        }
-
-        const pdf = new jsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: [254, 144]
-        })
-
-        const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true })
-        const carnetImg = carnetCanvas.toDataURL('image/png')
-        pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
-
-        pdf.save(`carnet-${usuarioSeleccionado.value.numero_dni}.pdf`)
+        const response = await api.get(
+          `/carnets/exportar-pdf-individual/${usuarioSeleccionado.value.id}`,
+          { responseType: 'blob' }
+        )
+        const dni = usuarioSeleccionado.value.numero_dni || usuarioSeleccionado.value.id
+        descargarBlob(response.data, `carnet-${dni}.pdf`)
       } catch (error) {
         console.error('Error exportando carnet:', error)
-        alert('Error al exportar carnet: ' + error.message)
+        alert('Error al exportar carnet: ' + (error.response?.data?.detail || error.message))
       } finally {
         cargando.value = false
       }
@@ -941,55 +949,21 @@ export default {
         return
       }
 
+      if (!confirm(`Vas a generar un único PDF con TODOS los ${usuarios.value.length} carnets. Puede tardar 1-2 minutos. ¿Continuar?`)) {
+        return
+      }
+
       try {
         cargando.value = true
-        const totalUsuarios = usuarios.value.length
-        let procesados = 0
-
-        const pdf = new jsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: [254, 144] // Tamaño de carnet: 254mm x 144mm
+        const response = await api.get('/carnets/exportar-pdf?todos=true', {
+          responseType: 'blob',
+          timeout: 300000
         })
-
-        for (let idx = 0; idx < totalUsuarios; idx++) {
-          const usuario = usuarios.value[idx]
-          usuarioSeleccionado.value = usuario
-          procesados++
-
-          // Generar QR para este usuario
-          await generarQR(usuario, `qr-canvas-${usuario.id}`)
-          await new Promise(r => setTimeout(r, 150))
-
-          const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
-          if (!carnetEl) {
-            console.warn(`Carnet para usuario ${usuario.id} no encontrado, omitiendo...`)
-            continue
-          }
-
-          // Capturar el carnet completo
-          const carnetCanvas = await html2canvas(carnetEl, { scale: 2, useCORS: true, allowTaint: true })
-          const carnetImg = carnetCanvas.toDataURL('image/png')
-
-          // Agregar imagen a la página actual (completa)
-          pdf.addImage(carnetImg, 'PNG', 0, 0, 254, 144)
-
-          // Agregar nueva página para el siguiente carnet (excepto el último)
-          if (idx < totalUsuarios - 1) {
-            pdf.addPage([254, 144], 'landscape')
-          }
-
-          // Mostrar progreso (cada 10)
-          if (procesados % 10 === 0) {
-            console.log(`Procesados ${procesados}/${totalUsuarios} carnets...`)
-          }
-        }
-
-        pdf.save(`carnets-completos-${new Date().getTime()}.pdf`)
-        alert(`✅ Exportados ${totalUsuarios} carnets exitosamente\nCada carnet en su propia página`)
+        descargarBlob(response.data, `carnets-todos-${new Date().getTime()}.pdf`)
+        mostrarModalBloques.value = false
       } catch (error) {
         console.error('Error exportando todos los carnets:', error)
-        alert('Error al exportar: ' + error.message)
+        alert('Error al exportar: ' + (error.response?.data?.detail || error.message))
       } finally {
         cargando.value = false
       }
@@ -998,80 +972,18 @@ export default {
     const exportarBloqueePDF = async (numBloque) => {
       try {
         cargando.value = true
-        const USUARIOS_POR_BLOQUE = 50  // Reducido de 100 a 50 para más velocidad
         const offset = (numBloque - 1) * USUARIOS_POR_BLOQUE
 
-        console.log(`[Bloque ${numBloque}] Cargando usuarios ${offset + 1}-${offset + USUARIOS_POR_BLOQUE}...`)
+        const response = await api.get(
+          `/carnets/exportar-pdf?limit=${USUARIOS_POR_BLOQUE}&offset=${offset}`,
+          { responseType: 'blob', timeout: 180000 }
+        )
 
-        // Cargar SOLO este bloque del API
-        const response = await api.get(`/usuarios/?limit=${USUARIOS_POR_BLOQUE}&offset=${offset}`)
-        const usuariosBloque = response.data.data || []
-
-        if (usuariosBloque.length === 0) {
-          alert(`No hay usuarios en el bloque ${numBloque}`)
-          return
-        }
-
-        const pdf = new jsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: [254, 144]
-        })
-
-        console.log(`[Bloque ${numBloque}] Procesando ${usuariosBloque.length} carnets...`)
-
-        for (let idx = 0; idx < usuariosBloque.length; idx++) {
-          const usuario = usuariosBloque[idx]
-          usuarioSeleccionado.value = usuario
-
-          // Generar QR sin esperar
-          generarQR(usuario, `qr-canvas-${usuario.id}`)
-
-          // Delay mínimo para que se renderice
-          await new Promise(r => setTimeout(r, 30))
-
-          const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
-          if (!carnetEl) {
-            console.warn(`Carnet ${usuario.id} no encontrado`)
-            continue
-          }
-
-          try {
-            // Capturar con máxima optimización para servidor lento
-            const carnetCanvas = await html2canvas(carnetEl, {
-              scale: 0.8,  // Escala muy reducida
-              useCORS: true,
-              allowTaint: true,
-              logging: false,
-              backgroundColor: '#ffffff',
-              imageTimeout: 5000
-            })
-            // JPEG muy comprimido para velocidad
-            const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.6)
-            pdf.addImage(carnetImg, 'JPEG', 0, 0, 254, 144)
-
-            // Nueva página
-            if (idx < usuariosBloque.length - 1) {
-              pdf.addPage([254, 144], 'landscape')
-            }
-          } catch (capError) {
-            console.warn(`Error capturando carnet ${usuario.id}: ${capError.message}`)
-            // Continuar con el siguiente en caso de error
-            continue
-          }
-
-          // Mostrar progreso cada 5
-          if ((idx + 1) % 5 === 0) {
-            console.log(`📊 ${idx + 1}/${usuariosBloque.length} carnets procesados`)
-          }
-        }
-
-        pdf.save(`carnets-bloque-${numBloque}-${new Date().getTime()}.pdf`)
-        alert(`✅ Bloque ${numBloque} descargado\n(${usuariosBloque.length} carnets)`)
+        descargarBlob(response.data, `carnets-bloque-${numBloque}.pdf`)
         mostrarModalBloques.value = false
       } catch (error) {
         console.error(`Error en bloque ${numBloque}:`, error)
-        alert(`Error: ${error.message}`)
+        alert(`Error al exportar bloque ${numBloque}: ${error.response?.data?.detail || error.message}`)
       } finally {
         cargando.value = false
       }
@@ -2854,6 +2766,34 @@ export default {
   font-size: 12px;
   padding-top: 15px;
   border-top: 1px solid #eee;
+}
+
+.btn-todos-pdf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin: 15px 0;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-todos-pdf:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-todos-pdf:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @keyframes slideInModal {

@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '003'
-down_revision = '002_add_usuario_biometric_fields'
+down_revision = '002'
 branch_labels = None
 depends_on = None
 

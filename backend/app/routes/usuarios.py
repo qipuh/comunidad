@@ -981,10 +981,24 @@ async def vincular_fotos(db: Session = Depends(get_db)):
 async def descargar_plantilla():
     """Descargar plantilla de importación de usuarios en Excel"""
     try:
-        plantilla_path = Path("uploads/usuarios/plantilla_importacion.xlsx")
+        # Intentar rutas posibles
+        posibles_rutas = [
+            Path("uploads/usuarios/plantilla_importacion.xlsx"),
+            Path("./uploads/usuarios/plantilla_importacion.xlsx"),
+            Path(__file__).parent.parent.parent.parent / "uploads" / "usuarios" / "plantilla_importacion.xlsx"
+        ]
 
-        if not plantilla_path.exists():
-            raise HTTPException(status_code=404, detail="Plantilla no encontrada. Contactar a administrador.")
+        plantilla_path = None
+        for ruta in posibles_rutas:
+            if ruta.exists():
+                plantilla_path = ruta
+                break
+
+        if not plantilla_path:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Plantilla no encontrada en rutas esperadas"
+            )
 
         return FileResponse(
             path=plantilla_path,
@@ -1057,10 +1071,24 @@ async def vincular_fotos(db: Session = Depends(get_db)):
 async def descargar_plantilla():
     """Descargar plantilla de importación de usuarios en Excel"""
     try:
-        plantilla_path = Path("uploads/usuarios/plantilla_importacion.xlsx")
+        # Intentar rutas posibles
+        posibles_rutas = [
+            Path("uploads/usuarios/plantilla_importacion.xlsx"),
+            Path("./uploads/usuarios/plantilla_importacion.xlsx"),
+            Path(__file__).parent.parent.parent.parent / "uploads" / "usuarios" / "plantilla_importacion.xlsx"
+        ]
 
-        if not plantilla_path.exists():
-            raise HTTPException(status_code=404, detail="Plantilla no encontrada. Contactar a administrador.")
+        plantilla_path = None
+        for ruta in posibles_rutas:
+            if ruta.exists():
+                plantilla_path = ruta
+                break
+
+        if not plantilla_path:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Plantilla no encontrada en rutas esperadas"
+            )
 
         return FileResponse(
             path=plantilla_path,

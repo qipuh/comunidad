@@ -902,7 +902,7 @@ const cargarConceptos = async () => {
 const cargarUsuarios = async () => {
   cargando.value = true
   try {
-    const result = await usuariosService.listarUsuarios(100, 0)
+    const result = await usuariosService.listarUsuarios(10000, 0)
     usuarios.value = result.data || []
   } catch (error) {
     mensajeAlerta.value = 'Error cargando usuarios'

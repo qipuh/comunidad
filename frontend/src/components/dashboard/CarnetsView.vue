@@ -16,6 +16,41 @@
       </button>
     </div>
 
+    <!-- Modal de Progreso de Exportación -->
+    <div v-if="mostrarModalProgreso" class="modal-overlay modal-overlay-progress">
+      <div class="modal-progreso">
+        <div class="modal-header-progreso">
+          <h2>Generando PDF...</h2>
+        </div>
+
+        <div class="modal-body-progreso">
+          <div class="progreso-info">
+            <p v-if="tareaActual" class="total-carnets">
+              {{ tareaActual.totalCarnets }} carnet(s)
+            </p>
+            <p class="mensaje-progreso">{{ mensajeProgreso }}</p>
+          </div>
+
+          <div class="progreso-container">
+            <div class="progreso-barra">
+              <div class="progreso-fill" :style="{ width: progreso + '%' }"></div>
+            </div>
+            <div class="progreso-porcentaje">{{ progreso }}%</div>
+          </div>
+
+          <div class="progreso-detalles">
+            <p v-if="tareaActual && tareaActual.inicio">
+              Tiempo: {{ Math.floor((new Date() - tareaActual.inicio) / 1000) }}s
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer-progreso">
+          <button class="btn-outline" @click="cancelarExportacion">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de Bloques -->
     <div v-if="mostrarModalBloques" class="modal-overlay" @click.self="mostrarModalBloques = false">
       <div class="modal-bloques">
@@ -26,28 +61,56 @@
 
         <div class="modal-body-bloques">
           <p class="info-bloques">
-            Total de usuarios: <strong>{{ usuarios?.length || 0 }}</strong> |
-            Bloques de 200: <strong>{{ totalBloques }}</strong>
+            Total de usuarios: <strong>{{ usuarios?.length || 0 }}</strong>
           </p>
 
-          <div class="grid-bloques">
-            <button
-              v-for="bloque in totalBloques"
-              :key="bloque"
-              class="btn-bloque"
-              @click="exportarBloqueePDF(bloque)"
-              :disabled="cargando"
-            >
-              <div class="numero-bloque">Bloque {{ bloque }}</div>
-              <div class="rango-bloque">
-                {{ (bloque - 1) * 200 + 1 }} - {{ Math.min(bloque * 200, usuarios?.length || 0) }}
-              </div>
-              <div v-if="cargando" class="spinner-mini"></div>
-              <ion-icon v-else name="download-outline"></ion-icon>
-            </button>
+          <div class="selector-tamano">
+            <label class="selector-label">Tamaño de bloque:</label>
+            <div class="selector-botones">
+              <button
+                v-for="opcion in [50, 100, 200]"
+                :key="opcion"
+                class="btn-tamano"
+                :class="{ activo: tamanoBloque === opcion }"
+                @click="tamanoBloque = opcion"
+                :disabled="cargando"
+              >
+                {{ opcion }}
+              </button>
+              <button
+                class="btn-tamano btn-tamano-todos"
+                :class="{ activo: tamanoBloque === 'todos' }"
+                @click="tamanoBloque = 'todos'"
+                :disabled="cargando"
+              >
+                TODOS ({{ usuarios?.length || 0 }})
+              </button>
+            </div>
+          </div>
+
+          <div v-if="tamanoBloque !== 'todos'" class="bloques-section">
+            <p class="info-bloques">
+              {{ totalBloques }} bloque(s) de {{ tamanoBloque }} carnets
+            </p>
+            <div class="grid-bloques">
+              <button
+                v-for="bloque in totalBloques"
+                :key="bloque"
+                class="btn-bloque"
+                @click="exportarBloqueePDF(bloque)"
+                :disabled="cargando"
+              >
+                <div class="numero-bloque">Bloque {{ bloque }}</div>
+                <div class="rango-bloque">
+                  {{ (bloque - 1) * tamanoBloque + 1 }} - {{ Math.min(bloque * tamanoBloque, usuarios?.length || 0) }}
+                </div>
+                <ion-icon name="download-outline"></ion-icon>
+              </button>
+            </div>
           </div>
 
           <button
+            v-if="tamanoBloque === 'todos'"
             class="btn-todos-pdf"
             @click="exportarTodosPDF"
             :disabled="cargando"
@@ -58,7 +121,7 @@
 
           <div class="nota-bloques">
             PDF vectorial de alta calidad generado en el servidor (Chromium headless).
-            Cada bloque tiene 200 carnets. El servidor tarda ~1s por carnet.
+            El servidor tarda ~1-2s por carnet.
           </div>
         </div>
       </div>
@@ -700,11 +763,12 @@ export default {
       )
     })
 
-    const USUARIOS_POR_BLOQUE = 200
+    const tamanoBloque = ref(200)
 
     const totalBloques = computed(() => {
       if (!usuarios.value || usuarios.value.length === 0) return 0
-      return Math.ceil(usuarios.value.length / USUARIOS_POR_BLOQUE)
+      if (tamanoBloque.value === 'todos') return 1
+      return Math.ceil(usuarios.value.length / tamanoBloque.value)
     })
 
     const cargarUsuarios = async () => {
@@ -943,50 +1007,116 @@ export default {
       }
     }
 
+    // Sistema de tareas con progreso
+    const mostrarModalProgreso = ref(false)
+    const tareaActual = ref(null)
+    const progreso = ref(0)
+    const mensajeProgreso = ref('')
+    const pollingInterval = ref(null)
+
+    const iniciarExportacion = async (params) => {
+      try {
+        const response = await api.post('/carnets/exportar-async', null, { params })
+        tareaActual.value = {
+          task_id: response.data.task_id,
+          inicio: new Date(),
+          totalCarnets: params.todos ? usuarios.value.length : (params.limit || 200)
+        }
+        mostrarModalProgreso.value = true
+        progreso.value = 0
+        mensajeProgreso.value = 'En cola de espera...'
+        mostrarModalBloques.value = false
+
+        // Iniciar polling
+        rastrearProgreso()
+      } catch (error) {
+        console.error('Error iniciando exportación:', error)
+        alert('Error al iniciar exportación: ' + (error.response?.data?.detail || error.message))
+      }
+    }
+
+    const rastrearProgreso = async () => {
+      if (!tareaActual.value) return
+
+      const chequearEstado = async () => {
+        try {
+          const response = await api.get(`/carnets/tarea/${tareaActual.value.task_id}`)
+          const estado = response.data
+
+          progreso.value = estado.porcentaje || 0
+          mensajeProgreso.value = estado.mensaje || ''
+
+          if (estado.estado === 'completada') {
+            clearInterval(pollingInterval.value)
+            // Descargar automáticamente
+            await descargarPDF(tareaActual.value.task_id, estado.total_carnets)
+            mostrarModalProgreso.value = false
+          } else if (estado.estado === 'error') {
+            clearInterval(pollingInterval.value)
+            alert(`Error: ${estado.error || 'Error desconocido'}`)
+            mostrarModalProgreso.value = false
+          }
+        } catch (error) {
+          console.error('Error rastreando progreso:', error)
+          clearInterval(pollingInterval.value)
+          alert('Error al rastrear progreso')
+          mostrarModalProgreso.value = false
+        }
+      }
+
+      // Check inicial inmediato
+      await chequearEstado()
+
+      // Polling cada 500ms
+      if (tareaActual.value) {
+        pollingInterval.value = setInterval(chequearEstado, 500)
+      }
+    }
+
+    const descargarPDF = async (taskId, totalCarnets) => {
+      try {
+        const response = await api.get(`/carnets/descargar/${taskId}`, {
+          responseType: 'blob'
+        })
+
+        const nombreArchivo = totalCarnets === 1
+          ? `carnet.pdf`
+          : `carnets-${totalCarnets}.pdf`
+
+        descargarBlob(response.data, nombreArchivo)
+      } catch (error) {
+        console.error('Error descargando PDF:', error)
+        alert('Error al descargar PDF: ' + (error.response?.data?.detail || error.message))
+      }
+    }
+
+    const cancelarExportacion = () => {
+      if (pollingInterval.value) {
+        clearInterval(pollingInterval.value)
+      }
+      tareaActual.value = null
+      mostrarModalProgreso.value = false
+    }
+
     const exportarTodosPDF = async () => {
       if (usuarios.value.length === 0) {
         alert('No hay usuarios para exportar')
         return
       }
 
-      if (!confirm(`Vas a generar un único PDF con TODOS los ${usuarios.value.length} carnets. Puede tardar 1-2 minutos. ¿Continuar?`)) {
+      const segundosEstimados = Math.ceil(usuarios.value.length * 1.5)
+      const minutosEstimados = Math.ceil(segundosEstimados / 60)
+      if (!confirm(`Vas a generar un único PDF con TODOS los ${usuarios.value.length} carnets.\n\nTiempo estimado: ~${minutosEstimados} minuto(s).\n\n¿Continuar?`)) {
         return
       }
 
-      try {
-        cargando.value = true
-        const response = await api.get('/carnets/exportar-pdf?todos=true', {
-          responseType: 'blob',
-          timeout: 300000
-        })
-        descargarBlob(response.data, `carnets-todos-${new Date().getTime()}.pdf`)
-        mostrarModalBloques.value = false
-      } catch (error) {
-        console.error('Error exportando todos los carnets:', error)
-        alert('Error al exportar: ' + (error.response?.data?.detail || error.message))
-      } finally {
-        cargando.value = false
-      }
+      await iniciarExportacion({ todos: true })
     }
 
     const exportarBloqueePDF = async (numBloque) => {
-      try {
-        cargando.value = true
-        const offset = (numBloque - 1) * USUARIOS_POR_BLOQUE
-
-        const response = await api.get(
-          `/carnets/exportar-pdf?limit=${USUARIOS_POR_BLOQUE}&offset=${offset}`,
-          { responseType: 'blob', timeout: 180000 }
-        )
-
-        descargarBlob(response.data, `carnets-bloque-${numBloque}.pdf`)
-        mostrarModalBloques.value = false
-      } catch (error) {
-        console.error(`Error en bloque ${numBloque}:`, error)
-        alert(`Error al exportar bloque ${numBloque}: ${error.response?.data?.detail || error.message}`)
-      } finally {
-        cargando.value = false
-      }
+      const tamano = tamanoBloque.value === 'todos' ? usuarios.value.length : tamanoBloque.value
+      const offset = (numBloque - 1) * tamano
+      await iniciarExportacion({ limit: tamano, offset })
     }
 
     onMounted(async () => {
@@ -1192,7 +1322,13 @@ export default {
       manejarSeleccionFotos,
       eliminarFotoCargar,
       formatarTamaño,
-      enviarFotos
+      enviarFotos,
+      mostrarModalProgreso,
+      progreso,
+      mensajeProgreso,
+      cancelarExportacion,
+      tareaActual,
+      tamanoBloque
     }
   }
 }
@@ -3236,5 +3372,195 @@ export default {
 
 .btn-remove-foto:hover {
   background: rgba(239, 68, 68, 1);
+}
+
+/* MODAL DE PROGRESO */
+.modal-overlay-progress {
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-progreso {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.modal-header-progreso {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.modal-header-progreso h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-body-progreso {
+  padding: 30px;
+}
+
+.progreso-info {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.total-carnets {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 5px 0;
+}
+
+.mensaje-progreso {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  min-height: 20px;
+}
+
+.progreso-container {
+  margin: 25px 0;
+}
+
+.progreso-barra {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progreso-porcentaje {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.progreso-detalles {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 15px;
+}
+
+.modal-footer-progreso {
+  padding: 20px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-outline {
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* SELECTOR DE TAMAÑO DE BLOQUE */
+.selector-tamano {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.selector-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.selector-botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-tamano {
+  padding: 8px 18px;
+  border: 1.5px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.btn-tamano:hover:not(:disabled) {
+  border-color: #667eea;
+  background: #f3f4ff;
+}
+
+.btn-tamano.activo {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-tamano:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-tamano-todos {
+  background: white;
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.btn-tamano-todos:hover:not(:disabled) {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.btn-tamano-todos.activo {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.bloques-section {
+  margin-top: 15px;
 }
 </style>

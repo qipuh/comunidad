@@ -65,23 +65,38 @@
         <table v-else>
           <thead>
             <tr>
-              <th style="width: 28%;">Nombre</th>
-              <th style="width: 12%;">DNI</th>
-              <th style="width: 12%;">Teléfono</th>
-              <th style="width: 10%;">Rol</th>
-              <th style="width: 10%;">Estado</th>
+              <th style="width: 10%;" @click="cambiarOrdenamiento('num_padron')" class="sortable-header" :class="{ activo: ordenarPor === 'num_padron' }">
+                N° Padrón
+                <ion-icon v-if="ordenarPor === 'num_padron'" :name="direccionOrden === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" class="sort-icon"></ion-icon>
+              </th>
+              <th style="width: 30%;" @click="cambiarOrdenamiento('nombre_completo')" class="sortable-header" :class="{ activo: ordenarPor === 'nombre_completo' }">
+                Nombre
+                <ion-icon v-if="ordenarPor === 'nombre_completo'" :name="direccionOrden === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" class="sort-icon"></ion-icon>
+              </th>
+              <th style="width: 12%;" @click="cambiarOrdenamiento('numero_dni')" class="sortable-header" :class="{ activo: ordenarPor === 'numero_dni' }">
+                DNI
+                <ion-icon v-if="ordenarPor === 'numero_dni'" :name="direccionOrden === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" class="sort-icon"></ion-icon>
+              </th>
+              <th style="width: 12%;" @click="cambiarOrdenamiento('rol')" class="sortable-header" :class="{ activo: ordenarPor === 'rol' }">
+                Rol
+                <ion-icon v-if="ordenarPor === 'rol'" :name="direccionOrden === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" class="sort-icon"></ion-icon>
+              </th>
+              <th style="width: 12%;" @click="cambiarOrdenamiento('estado')" class="sortable-header" :class="{ activo: ordenarPor === 'estado' }">
+                Estado
+                <ion-icon v-if="ordenarPor === 'estado'" :name="direccionOrden === 'asc' ? 'arrow-up-outline' : 'arrow-down-outline'" class="sort-icon"></ion-icon>
+              </th>
               <th style="width: 12%;">Carnet</th>
-              <th style="width: 16%;">Acciones</th>
+              <th style="width: 12%;">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="user in usuariosFiltrados" :key="user.id" class="tabla-row">
+              <td class="padron-cell"><span class="padron-badge">{{ user.num_padron || '—' }}</span></td>
               <td class="nombre-cell">
                 <div class="avatar-placeholder">{{ user.nombre_completo.charAt(0).toUpperCase() }}</div>
                 <span>{{ user.nombre_completo }}</span>
               </td>
               <td><span class="codigo-badge">{{ user.numero_dni }}</span></td>
-              <td>{{ user.telefono || '—' }}</td>
               <td>
                 <span :class="['role-badge', user.rol]">
                   {{ user.rol === 'admin' ? 'Administrador' : 'Usuario' }}
@@ -689,6 +704,8 @@ const resumenImport = ref({ validos: 0, duplicados: 0, errores: 0 })
 const importando = ref(false)
 const filtroEstado = ref('')
 const filtroRol = ref('')
+const ordenarPor = ref('nombre_completo')
+const direccionOrden = ref('asc')  // 'asc' o 'desc'
 const filtroPreview = ref('todos')
 const mostrarConfirmacion = ref(false)
 
@@ -731,7 +748,7 @@ const conceptosMulDer = computed(() => {
 })
 
 const usuariosFiltrados = computed(() => {
-  return usuarios.value.filter(u => {
+  let filtrados = usuarios.value.filter(u => {
     const matchBusqueda = !busqueda.value ||
       u.nombre_completo.toLowerCase().includes(busqueda.value.toLowerCase()) ||
       u.numero_dni.includes(busqueda.value) ||
@@ -740,6 +757,27 @@ const usuariosFiltrados = computed(() => {
     const matchRol = !filtroRol.value || u.rol === filtroRol.value
     return matchBusqueda && matchEstado && matchRol
   })
+
+  // Ordenar
+  filtrados.sort((a, b) => {
+    let valA = a[ordenarPor.value]
+    let valB = b[ordenarPor.value]
+
+    // Manejar null/undefined
+    if (valA == null) valA = ''
+    if (valB == null) valB = ''
+
+    // Convertir a string para comparación case-insensitive
+    if (typeof valA === 'string') valA = valA.toLowerCase()
+    if (typeof valB === 'string') valB = valB.toLowerCase()
+
+    // Comparar
+    if (valA < valB) return direccionOrden.value === 'asc' ? -1 : 1
+    if (valA > valB) return direccionOrden.value === 'asc' ? 1 : -1
+    return 0
+  })
+
+  return filtrados
 })
 
 const formularioValido = computed(() => {
@@ -1286,9 +1324,20 @@ const limpiarFiltros = () => {
   filtroRol.value = ''
 }
 
+const cambiarOrdenamiento = (campo) => {
+  if (ordenarPor.value === campo) {
+    // Si hace click en el mismo campo, cambiar dirección
+    direccionOrden.value = direccionOrden.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // Si hace click en otro campo, ordenar por ese campo de forma ascendente
+    ordenarPor.value = campo
+    direccionOrden.value = 'asc'
+  }
+}
+
 const descargarPlantilla = async () => {
   try {
-    const respuesta = await fetch('/api/usuarios/descargar-plantilla')
+    const respuesta = await fetch('/api/plantilla')
     if (!respuesta.ok) {
       mensajeAlerta.value = 'Error descargando plantilla'
       tipoAlerta.value = 'error'
@@ -1304,6 +1353,9 @@ const descargarPlantilla = async () => {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
+
+    mensajeAlerta.value = '✅ Plantilla descargada correctamente'
+    tipoAlerta.value = 'success'
   } catch (error) {
     console.error('Error descargando plantilla:', error)
     mensajeAlerta.value = 'Error: ' + error.message
@@ -1588,7 +1640,6 @@ const formatoMetodo = (metodo) => {
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 thead {
@@ -1597,13 +1648,14 @@ thead {
 }
 
 th {
-  padding: 16px;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 600;
   color: #6b7280;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .tabla-row {
@@ -1663,6 +1715,22 @@ td {
   font-weight: 600;
   color: #1f2937;
   font-size: 13px;
+}
+
+.padron-cell {
+  text-align: center;
+}
+
+.padron-badge {
+  padding: 6px 10px;
+  background: #e0e7ff;
+  border-radius: 6px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #4f46e5;
+  font-size: 13px;
+  display: inline-block;
+  min-width: 50px;
 }
 
 .role-badge {
@@ -3026,6 +3094,29 @@ td {
   .grid-3 {
     grid-template-columns: 1fr;
   }
+}
+
+/* Estilos para encabezados ordenables */
+th.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+th.sortable-header:hover {
+  background-color: #f3f4f6;
+}
+
+th.sortable-header.activo {
+  background-color: #e5e7eb;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.sort-icon {
+  font-size: 12px;
+  color: #4f46e5;
+  margin-left: 4px;
 }
 
 @media (max-width: 480px) {

@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import paramiko
+import sys
+import io
+
+# Fix encoding for Windows console
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 host = "38.250.161.113"
 user = "root"
@@ -10,6 +16,13 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(host, username=user, password=password, timeout=10)
 
+print("[*] Actualizando código...")
+stdin, stdout, stderr = ssh.exec_command(
+    "cd /var/www/comunidad && git pull origin master",
+    timeout=30
+)
+stdout.channel.recv_exit_status()
+
 print("[*] Instalando dependencias del backend...")
 stdin, stdout, stderr = ssh.exec_command(
     "cd /var/www/comunidad/backend && pip install python-jose cryptography -q",
@@ -18,7 +31,7 @@ stdin, stdout, stderr = ssh.exec_command(
 stdout.channel.recv_exit_status()
 
 print("[*] Creando usuario admin...")
-admin_cmd = "cd /var/www/comunidad/backend && python3 -c \"from app.db.database import SessionLocal; from app.models.usuario import Usuario; from app.utils.auth import hash_password; from sqlalchemy.exc import IntegrityError; db = SessionLocal(); admin = Usuario(numero_dni='00000001', nombres='Admin', apellido_paterno='Sistema', apellido_materno='', email='admin@comunidad.local', password_hash=hash_password('admin123'), rol='admin', estado='activo'); db.add(admin) if not db.query(Usuario).filter_by(numero_dni='00000001').first() else None; db.commit() if not db.query(Usuario).filter_by(numero_dni='00000001').first() else print('Existe'); print('[OK] Admin creado')\" 2>&1"
+admin_cmd = "cd /var/www/comunidad/backend && python3 -c \"from app.db.database import SessionLocal; from app.models.usuario import Usuario; from app.utils.auth import hash_password; from sqlalchemy.exc import IntegrityError; db = SessionLocal(); admin = Usuario(numero_dni='00000001', username='admin', nombres='Admin', apellido_paterno='Sistema', apellido_materno='', email='admin@comunidad.local', password_hash=hash_password('admin123'), rol='admin', estado='activo'); db.add(admin) if not db.query(Usuario).filter_by(numero_dni='00000001').first() else None; db.commit() if not db.query(Usuario).filter_by(numero_dni='00000001').first() else print('Existe'); print('[OK] Admin creado')\" 2>&1"
 
 stdin, stdout, stderr = ssh.exec_command(admin_cmd, timeout=30)
 output = stdout.read().decode().strip()

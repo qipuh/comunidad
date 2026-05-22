@@ -55,11 +55,13 @@ try:
     from app.routes.validaciones import router as validaciones_router
     from app.routes.factiliza import router as factiliza_router
     from app.routes.usuarios import router as usuarios_router
+    from app.routes.plantilla import router as plantilla_router
     from app.routes.auth import router as auth_router
     from app.routes.cobranza import router as cobranza_router
     from app.routes.elecciones import router as elecciones_router
     from app.routes.reuniones import router as reuniones_router
     from app.routes.dashboard import router as dashboard_router
+    from app.routes.carnets import router as carnets_router
     logger.info("✅ Rutas importadas correctamente")
 except Exception as e:
     logger.error(f"❌ Error importando rutas: {type(e).__name__}: {e}", exc_info=True)
@@ -74,11 +76,13 @@ try:
     app.include_router(admin_config_router, tags=["Admin"])
     app.include_router(validaciones_router, tags=["Validaciones"])
     app.include_router(factiliza_router, tags=["Factiliza"])
+    app.include_router(plantilla_router, tags=["Plantilla"])
     app.include_router(usuarios_router, tags=["Usuarios"])
     app.include_router(cobranza_router, tags=["Cobranza"])
     app.include_router(elecciones_router, tags=["Elecciones"])
     app.include_router(reuniones_router, tags=["Reuniones"])
     app.include_router(dashboard_router, tags=["Dashboard"])
+    app.include_router(carnets_router, tags=["Carnets"])
     logger.info("✅ Rutas registradas en la aplicación")
 except Exception as e:
     logger.error(f"ERROR registrando rutas: {type(e).__name__}: {e}", exc_info=True)

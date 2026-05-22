@@ -158,6 +158,7 @@ db = SessionLocal()
 
 admin_user = Usuario(
     numero_dni="00000001",
+    username="admin",
     nombres="Admin",
     apellido_paterno="Sistema",
     apellido_materno="",

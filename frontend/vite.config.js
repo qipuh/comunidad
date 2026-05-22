@@ -20,6 +20,13 @@ export default defineConfig({
   },
   server: {
     middlewareMode: false,
+    host: '0.0.0.0',
+    port: 5173,
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+      protocol: 'ws'
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

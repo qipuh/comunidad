@@ -10,6 +10,10 @@
         <ion-icon name="download-outline"></ion-icon>
         Exportar por bloques (PDF)
       </button>
+      <button class="btn-vincular-fotos" @click="mostrarModalVincularFotos = true">
+        <ion-icon name="image-outline"></ion-icon>
+        Vincular Fotos
+      </button>
     </div>
 
     <!-- Modal de Bloques -->
@@ -23,7 +27,7 @@
         <div class="modal-body-bloques">
           <p class="info-bloques">
             Total de usuarios: <strong>{{ usuarios.value?.length || 0 }}</strong> |
-            Bloques de 100: <strong>{{ totalBloques }}</strong>
+            Bloques de 50: <strong>{{ totalBloques }}</strong>
           </p>
 
           <div class="grid-bloques">
@@ -36,7 +40,7 @@
             >
               <div class="numero-bloque">Bloque {{ bloque }}</div>
               <div class="rango-bloque">
-                {{ (bloque - 1) * 100 + 1 }} - {{ Math.min(bloque * 100, usuarios.value?.length || 0) }}
+                {{ (bloque - 1) * 50 + 1 }} - {{ Math.min(bloque * 50, usuarios.value?.length || 0) }}
               </div>
               <div v-if="cargando" class="spinner-mini"></div>
               <ion-icon v-else name="download-outline"></ion-icon>
@@ -44,7 +48,7 @@
           </div>
 
           <div class="nota-bloques">
-            Cada bloque contiene 100 carnets y se descargará en un PDF separado.
+            Cada bloque contiene 50 carnets y se descargará en un PDF separado (optimizado para servidor lento).
           </div>
         </div>
       </div>
@@ -299,6 +303,180 @@
       </div>
     </div>
 
+    <!-- Modal Vincular Fotos -->
+    <div v-if="mostrarModalVincularFotos" class="modal-overlay" @click.self="mostrarModalVincularFotos = false">
+      <div class="modal-vincular-fotos">
+        <div class="modal-header">
+          <h2>Vincular Fotos</h2>
+          <button class="btn-close" @click="cerrarModalVincularFotos">&times;</button>
+        </div>
+
+        <div class="modal-body-vincular">
+          <div v-if="!resultadoVincularFotos" class="content-vincular">
+            <!-- Tabs -->
+            <div class="tabs-vincular">
+              <button
+                :class="['tab-button', { active: tabVincular === 'vincular' }]"
+                @click="tabVincular = 'vincular'"
+              >
+                <ion-icon name="folder-outline"></ion-icon>
+                Vincular Existentes
+              </button>
+              <button
+                :class="['tab-button', { active: tabVincular === 'cargar' }]"
+                @click="tabVincular = 'cargar'"
+              >
+                <ion-icon name="cloud-upload-outline"></ion-icon>
+                Cargar Fotos
+              </button>
+            </div>
+
+            <!-- Tab 1: Vincular -->
+            <div v-if="tabVincular === 'vincular'" class="tab-content">
+              <p class="info-vincular">
+                <ion-icon name="image-outline" class="icon-grande"></ion-icon>
+              </p>
+              <h3>¿Vincular fotos a usuarios?</h3>
+              <p class="descripcion-vincular">
+                Se buscarán todas las fotos en <code>uploads/usuarios/</code> nombradas por DNI (ej: 12345678.png)
+                y se vincularán automáticamente a los usuarios correspondientes.
+              </p>
+              <div class="info-extensiones">
+                <strong>Extensiones soportadas:</strong> PNG, JPG, JPEG, WebP
+              </div>
+              <div class="modal-footer">
+                <button class="btn-outline" @click="cerrarModalVincularFotos" :disabled="vinculandoFotos">
+                  Cancelar
+                </button>
+                <button class="btn-primary" @click="ejecutarVincularFotos" :disabled="vinculandoFotos">
+                  <ion-icon v-if="!vinculandoFotos" name="image-outline"></ion-icon>
+                  <span v-if="vinculandoFotos">Vinculando...</span>
+                  <span v-else>Vincular Fotos</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab 2: Cargar Fotos -->
+            <div v-else class="tab-content">
+              <div
+                class="drag-drop-area"
+                @dragover.prevent="dragOverArea = true"
+                @dragleave.prevent="dragOverArea = false"
+                @drop.prevent="manejarDropFotos"
+                :class="{ 'drag-over': dragOverArea }"
+              >
+                <div class="drag-drop-content">
+                  <ion-icon name="cloud-upload-outline" class="drag-icon"></ion-icon>
+                  <h3>Arrastra fotos aquí</h3>
+                  <p>o haz clic para seleccionar</p>
+                  <p class="drag-info">Nombra las fotos con el DNI del usuario (ej: 12345678.png)</p>
+                </div>
+                <input
+                  ref="inputFotosCargar"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  @change="manejarSeleccionFotos"
+                  style="display: none"
+                >
+              </div>
+
+              <!-- Vista previa de fotos a cargar -->
+              <div v-if="fotosACargar.length > 0" class="preview-fotos-cargar">
+                <h4>Fotos a cargar ({{ fotosACargar.length }})</h4>
+                <div class="fotos-preview-grid">
+                  <div v-for="(foto, idx) in fotosACargar" :key="idx" class="foto-preview-item">
+                    <img :src="foto.preview" :alt="foto.nombre" class="foto-thumb">
+                    <div class="foto-info">
+                      <div class="foto-nombre">{{ foto.nombre }}</div>
+                      <div class="foto-tamaño">{{ formatarTamaño(foto.archivo.size) }}</div>
+                    </div>
+                    <button class="btn-remove-foto" @click="eliminarFotoCargar(idx)">
+                      <ion-icon name="close-outline"></ion-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button class="btn-outline" @click="cerrarModalVincularFotos" :disabled="cargandoFotos">
+                  Cancelar
+                </button>
+                <button
+                  class="btn-secondary"
+                  @click="$refs.inputFotosCargar.click()"
+                  :disabled="cargandoFotos"
+                >
+                  <ion-icon name="add-outline"></ion-icon>
+                  Seleccionar más
+                </button>
+                <button
+                  class="btn-primary"
+                  @click="enviarFotos"
+                  :disabled="fotosACargar.length === 0 || cargandoFotos"
+                >
+                  <ion-icon v-if="!cargandoFotos" name="cloud-upload-outline"></ion-icon>
+                  <span v-if="cargandoFotos">Cargando...</span>
+                  <span v-else>Cargar {{ fotosACargar.length }} foto(s)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="resultado-vincular">
+            <div class="resumen-resultado">
+              <h3>Resultados</h3>
+              <div class="stats-grid-vincular">
+                <div class="stat-card-vincular" :class="{ success: resultadoVincularFotos.resumen.vinculados > 0 }">
+                  <div class="stat-icon">✅</div>
+                  <div class="stat-content">
+                    <div class="stat-label">Vinculadas</div>
+                    <div class="stat-number">{{ resultadoVincularFotos.resumen.vinculados }}</div>
+                  </div>
+                </div>
+                <div class="stat-card-vincular" :class="{ warning: resultadoVincularFotos.resumen.ya_vinculados > 0 }">
+                  <div class="stat-icon">⏭️</div>
+                  <div class="stat-content">
+                    <div class="stat-label">Ya tenían foto</div>
+                    <div class="stat-number">{{ resultadoVincularFotos.resumen.ya_vinculados }}</div>
+                  </div>
+                </div>
+                <div class="stat-card-vincular" :class="{ info: resultadoVincularFotos.resumen.no_encontrados > 0 }">
+                  <div class="stat-icon">⚠️</div>
+                  <div class="stat-content">
+                    <div class="stat-label">No encontrados</div>
+                    <div class="stat-number">{{ resultadoVincularFotos.resumen.no_encontrados }}</div>
+                  </div>
+                </div>
+                <div class="stat-card-vincular" :class="{ error: resultadoVincularFotos.resumen.errores > 0 }">
+                  <div class="stat-icon">❌</div>
+                  <div class="stat-content">
+                    <div class="stat-label">Errores</div>
+                    <div class="stat-number">{{ resultadoVincularFotos.resumen.errores }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="detalles-vincular" v-if="resultadoVincularFotos.detalles?.length > 0">
+              <h4>Detalles:</h4>
+              <div class="detalles-lista">
+                <div v-for="detalle in resultadoVincularFotos.detalles" :key="detalle.dni" :class="['detalle-item', detalle.estado]">
+                  <span class="detalle-dni">{{ detalle.dni }}</span>
+                  <span class="detalle-nombre">{{ detalle.nombre || '—' }}</span>
+                  <span class="detalle-estado">{{ detalle.mensaje }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn-primary" @click="cerrarModalVincularFotos">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Vista Individual -->
     <div class="carnet-individual-container">
       <div class="usuarios-panel">
@@ -374,6 +552,10 @@
                     <div class="fecha-item">
                       <span class="f-etiqueta">Fecha de Caducidad</span>
                       <span class="f-valor">{{ obtenerFechaCaducidad() }}</span>
+                    </div>
+                    <div class="fecha-item">
+                      <span class="f-etiqueta">Estado Civil</span>
+                      <span class="f-valor">{{ usuarioSeleccionado.estado_civil || '-' }}</span>
                     </div>
                   </div>
                 </div>
@@ -475,7 +657,14 @@ export default {
     const tabActivo = ref('anverso')
     const mostrarConfigModal = ref(false)
     const mostrarModalBloques = ref(false)
+    const mostrarModalVincularFotos = ref(false)
     const cargando = ref(false)
+    const vinculandoFotos = ref(false)
+    const resultadoVincularFotos = ref(null)
+    const tabVincular = ref('vincular')
+    const dragOverArea = ref(false)
+    const fotosACargar = ref([])
+    const cargandoFotos = ref(false)
     const dragOverItem = ref(null)
 
     const configCarnet = ref({
@@ -503,7 +692,7 @@ export default {
 
     const totalBloques = computed(() => {
       if (!usuarios.value || usuarios.value.length === 0) return 0
-      return Math.ceil(usuarios.value.length / 100)
+      return Math.ceil(usuarios.value.length / 50)
     })
 
     const cargarUsuarios = async () => {
@@ -635,8 +824,22 @@ export default {
     }
 
     const obtenerNumeroCarnet = (usuario) => {
-      const id = String(usuario.id).padStart(3, '0')
-      return id + usuario.numero_dni
+      let padron = usuario.num_padron || String(usuario.id).padStart(3, '0')
+
+      // Extraer solo los números del padrón
+      const numPadron = parseInt(padron.replace(/\D/g, '')) || 0
+
+      // Aplicar padding según el rango
+      let padronFormateado
+      if (numPadron < 100) {
+        padronFormateado = String(numPadron).padStart(4, '0')  // 00XX
+      } else if (numPadron < 1000) {
+        padronFormateado = String(numPadron).padStart(4, '0')  // 0XXX
+      } else {
+        padronFormateado = String(numPadron)  // XXXX+
+      }
+
+      return padronFormateado + usuario.numero_dni
     }
 
     const obtenerApellidos = (usuario) => {
@@ -795,7 +998,7 @@ export default {
     const exportarBloqueePDF = async (numBloque) => {
       try {
         cargando.value = true
-        const USUARIOS_POR_BLOQUE = 100
+        const USUARIOS_POR_BLOQUE = 50  // Reducido de 100 a 50 para más velocidad
         const offset = (numBloque - 1) * USUARIOS_POR_BLOQUE
 
         console.log(`[Bloque ${numBloque}] Cargando usuarios ${offset + 1}-${offset + USUARIOS_POR_BLOQUE}...`)
@@ -824,8 +1027,8 @@ export default {
           // Generar QR sin esperar
           generarQR(usuario, `qr-canvas-${usuario.id}`)
 
-          // Pequeño delay para que se renderice el QR
-          await new Promise(r => setTimeout(r, 50))
+          // Delay mínimo para que se renderice
+          await new Promise(r => setTimeout(r, 30))
 
           const carnetEl = document.getElementById(`carnet-completo-${usuario.id}`)
           if (!carnetEl) {
@@ -833,30 +1036,38 @@ export default {
             continue
           }
 
-          // Capturar (sin esperar, más rápido)
-          const carnetCanvas = await html2canvas(carnetEl, {
-            scale: 1,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-          })
-          const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.8)
-          pdf.addImage(carnetImg, 'JPEG', 0, 0, 254, 144)
+          try {
+            // Capturar con máxima optimización para servidor lento
+            const carnetCanvas = await html2canvas(carnetEl, {
+              scale: 0.8,  // Escala muy reducida
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+              imageTimeout: 5000
+            })
+            // JPEG muy comprimido para velocidad
+            const carnetImg = carnetCanvas.toDataURL('image/jpeg', 0.6)
+            pdf.addImage(carnetImg, 'JPEG', 0, 0, 254, 144)
 
-          // Nueva página
-          if (idx < usuariosBloque.length - 1) {
-            pdf.addPage([254, 144], 'landscape')
+            // Nueva página
+            if (idx < usuariosBloque.length - 1) {
+              pdf.addPage([254, 144], 'landscape')
+            }
+          } catch (capError) {
+            console.warn(`Error capturando carnet ${usuario.id}: ${capError.message}`)
+            // Continuar con el siguiente en caso de error
+            continue
           }
 
-          // Log cada 10 para ver progreso
-          if ((idx + 1) % 10 === 0) {
-            console.log(`[Bloque] ${idx + 1}/${usuariosBloque.length} carnets procesados`)
+          // Mostrar progreso cada 5
+          if ((idx + 1) % 5 === 0) {
+            console.log(`📊 ${idx + 1}/${usuariosBloque.length} carnets procesados`)
           }
         }
 
         pdf.save(`carnets-bloque-${numBloque}-${new Date().getTime()}.pdf`)
-        alert(`✅ Bloque ${numBloque} descargado (${usuariosBloque.length} carnets)`)
+        alert(`✅ Bloque ${numBloque} descargado\n(${usuariosBloque.length} carnets)`)
         mostrarModalBloques.value = false
       } catch (error) {
         console.error(`Error en bloque ${numBloque}:`, error)
@@ -907,6 +1118,126 @@ export default {
       }
     })
 
+    const ejecutarVincularFotos = async () => {
+      vinculandoFotos.value = true
+      resultadoVincularFotos.value = null
+      try {
+        const respuesta = await fetch('/api/carnets/vincular-fotos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!respuesta.ok) {
+          throw new Error('Error al vincular fotos')
+        }
+
+        const resultado = await respuesta.json()
+        resultadoVincularFotos.value = resultado
+      } catch (error) {
+        console.error('Error vinculando fotos:', error)
+        resultadoVincularFotos.value = {
+          success: false,
+          error: error.message,
+          resumen: {
+            vinculados: 0,
+            ya_vinculados: 0,
+            no_encontrados: 0,
+            errores: 0,
+            total: 0
+          }
+        }
+      } finally {
+        vinculandoFotos.value = false
+      }
+    }
+
+    const cerrarModalVincularFotos = () => {
+      mostrarModalVincularFotos.value = false
+      resultadoVincularFotos.value = null
+      tabVincular.value = 'vincular'
+      fotosACargar.value = []
+    }
+
+    const manejarDropFotos = (event) => {
+      dragOverArea.value = false
+      const archivos = event.dataTransfer.files
+      procesarArchivos(archivos)
+    }
+
+    const manejarSeleccionFotos = (event) => {
+      const archivos = event.target.files
+      procesarArchivos(archivos)
+    }
+
+    const procesarArchivos = (archivos) => {
+      for (let archivo of archivos) {
+        if (archivo.type.startsWith('image/')) {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            fotosACargar.value.push({
+              archivo: archivo,
+              preview: e.target.result,
+              nombre: archivo.name
+            })
+          }
+          reader.readAsDataURL(archivo)
+        }
+      }
+    }
+
+    const eliminarFotoCargar = (index) => {
+      fotosACargar.value.splice(index, 1)
+    }
+
+    const formatarTamaño = (bytes) => {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+    }
+
+    const enviarFotos = async () => {
+      if (fotosACargar.value.length === 0) return
+
+      cargandoFotos.value = true
+      const formData = new FormData()
+
+      for (let foto of fotosACargar.value) {
+        formData.append('archivos', foto.archivo)
+      }
+
+      try {
+        const respuesta = await fetch('/api/carnets/cargar-fotos', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!respuesta.ok) {
+          throw new Error('Error al cargar fotos')
+        }
+
+        const resultado = await respuesta.json()
+        resultadoVincularFotos.value = resultado
+        fotosACargar.value = []
+      } catch (error) {
+        console.error('Error cargando fotos:', error)
+        resultadoVincularFotos.value = {
+          success: false,
+          error: error.message,
+          resumen: {
+            cargadas: 0,
+            errores: 0,
+            total: 0
+          }
+        }
+      } finally {
+        cargandoFotos.value = false
+      }
+    }
+
     return {
       usuarios,
       usuarioSeleccionado,
@@ -935,7 +1266,21 @@ export default {
       obtenerFechaCaducidad,
       exportarCarnetIndividual,
       exportarTodosPDF,
-      exportarBloqueePDF
+      exportarBloqueePDF,
+      mostrarModalVincularFotos,
+      vinculandoFotos,
+      resultadoVincularFotos,
+      ejecutarVincularFotos,
+      cerrarModalVincularFotos,
+      tabVincular,
+      dragOverArea,
+      fotosACargar,
+      cargandoFotos,
+      manejarDropFotos,
+      manejarSeleccionFotos,
+      eliminarFotoCargar,
+      formatarTamaño,
+      enviarFotos
     }
   }
 }
@@ -2533,5 +2878,423 @@ export default {
     box-shadow: none;
     border: 0.5px solid #000;
   }
+}
+
+/* Estilos para modal Vincular Fotos */
+.btn-vincular-fotos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-vincular-fotos:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.modal-vincular-fotos {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body-vincular {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+.content-vincular {
+  text-align: center;
+  padding: 40px 25px;
+}
+
+.info-vincular {
+  font-size: 60px;
+  margin: 0 0 20px 0;
+  opacity: 0.8;
+}
+
+.icon-grande {
+  font-size: 60px;
+  display: inline-block;
+}
+
+.content-vincular h3 {
+  font-size: 22px;
+  color: #333;
+  margin: 20px 0 15px 0;
+}
+
+.descripcion-vincular {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 15px 0;
+}
+
+.info-extensiones {
+  background: #f0f4ff;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #555;
+  margin: 20px 0;
+}
+
+.info-extensiones code {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.resultado-vincular {
+  padding: 25px;
+}
+
+.resumen-resultado h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.stats-grid-vincular {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.stat-card-vincular {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-left: 4px solid #ddd;
+  text-align: center;
+}
+
+.stat-card-vincular.success {
+  background: #f0fdf4;
+  border-left-color: #22c55e;
+}
+
+.stat-card-vincular.warning {
+  background: #fffbeb;
+  border-left-color: #f59e0b;
+}
+
+.stat-card-vincular.info {
+  background: #eff6ff;
+  border-left-color: #3b82f6;
+}
+
+.stat-card-vincular.error {
+  background: #fef2f2;
+  border-left-color: #ef4444;
+}
+
+.stat-icon {
+  font-size: 24px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-number {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+}
+
+.detalles-vincular {
+  margin-top: 30px;
+}
+
+.detalles-vincular h4 {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.detalles-lista {
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.detalle-item {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.detalle-item:last-child {
+  border-bottom: none;
+}
+
+.detalle-item.vinculada {
+  background: #f0fdf4;
+}
+
+.detalle-item.ya_vinculada {
+  background: #fffbeb;
+}
+
+.detalle-item.no_encontrado {
+  background: #eff6ff;
+}
+
+.detalle-item.error {
+  background: #fef2f2;
+}
+
+.detalle-dni {
+  font-weight: 600;
+  color: #333;
+  font-family: monospace;
+}
+
+.detalle-nombre {
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detalle-estado {
+  color: #999;
+  font-size: 12px;
+  text-align: right;
+}
+
+/* Tabs para Vincular/Cargar */
+.tabs-vincular {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #999;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+}
+
+.tab-button:hover {
+  color: #667eea;
+}
+
+.tab-button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Drag and Drop Area */
+.drag-drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-drop-area:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.drag-drop-area.drag-over {
+  border-color: #667eea;
+  background: #f0f4ff;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
+.drag-drop-content {
+  pointer-events: none;
+  width: 100%;
+}
+
+.drag-icon {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.drag-drop-area h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 10px 0;
+}
+
+.drag-drop-area p {
+  color: #666;
+  font-size: 13px;
+  margin: 5px 0;
+}
+
+.drag-info {
+  color: #999;
+  font-size: 12px !important;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+/* Preview de Fotos a Cargar */
+.preview-fotos-cargar {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.preview-fotos-cargar h4 {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.fotos-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.foto-preview-item {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.foto-preview-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.foto-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+
+.foto-info {
+  padding: 8px;
+  background: white;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.foto-nombre {
+  font-size: 11px;
+  color: #333;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foto-tamaño {
+  font-size: 10px;
+  color: #999;
+  margin-top: 3px;
+}
+
+.btn-remove-foto {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  background: rgba(239, 68, 68, 0.9);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.foto-preview-item:hover .btn-remove-foto {
+  opacity: 1;
+}
+
+.btn-remove-foto:hover {
+  background: rgba(239, 68, 68, 1);
 }
 </style>

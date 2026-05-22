@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.usuario import Usuario
@@ -136,6 +136,7 @@ async def listar_usuarios(
                     "apellido_materno": u.apellido_materno,
                     "nombre_completo": u.nombre_completo,
                     "numero_dni": u.numero_dni,
+                    "num_padron": u.num_padron,
                     "telefono": u.telefono,
                     "fecha_nacimiento": u.fecha_nacimiento,
                     "sexo": u.sexo,
@@ -563,18 +564,33 @@ async def eliminar_usuario(
     db: Session = Depends(get_db)
 ):
     """Eliminar un usuario"""
-    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    try:
+        usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    db.delete(usuario)
-    db.commit()
+        # Primero eliminar cualquier referencia en ConfiguracionCampo
+        from app.models.configuracion import ConfiguracionCampo
+        db.query(ConfiguracionCampo).filter(ConfiguracionCampo.creado_por == usuario_id).delete()
 
-    return {
-        "success": True,
-        "message": "Usuario eliminado exitosamente"
-    }
+        # Luego eliminar el usuario (sus relaciones con cascade se eliminarán automáticamente)
+        db.delete(usuario)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Usuario eliminado exitosamente"
+        }
+    except Exception as e:
+        db.rollback()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error eliminando usuario {usuario_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al eliminar usuario: {str(e)}"
+        )
 
 
 @router.post("/preview-excel")
@@ -977,40 +993,6 @@ async def vincular_fotos(db: Session = Depends(get_db)):
     }
 
 
-@router.get("/descargar-plantilla")
-async def descargar_plantilla():
-    """Descargar plantilla de importación de usuarios en Excel"""
-    try:
-        # Intentar rutas posibles
-        posibles_rutas = [
-            Path("uploads/usuarios/plantilla_importacion.xlsx"),
-            Path("./uploads/usuarios/plantilla_importacion.xlsx"),
-            Path(__file__).parent.parent.parent.parent / "uploads" / "usuarios" / "plantilla_importacion.xlsx"
-        ]
-
-        plantilla_path = None
-        for ruta in posibles_rutas:
-            if ruta.exists():
-                plantilla_path = ruta
-                break
-
-        if not plantilla_path:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Plantilla no encontrada en rutas esperadas"
-            )
-
-        return FileResponse(
-            path=plantilla_path,
-            filename="plantilla_usuarios.xlsx",
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error descargando plantilla: {str(e)}")
-
-
 @router.post("/vincular-fotos")
 async def vincular_fotos(db: Session = Depends(get_db)):
     """Vincular automaticamente fotos frontales a los usuarios.
@@ -1065,37 +1047,3 @@ async def vincular_fotos(db: Session = Depends(get_db)):
             "total_procesadas": len(fotos_encontradas)
         }
     }
-
-
-@router.get("/descargar-plantilla")
-async def descargar_plantilla():
-    """Descargar plantilla de importación de usuarios en Excel"""
-    try:
-        # Intentar rutas posibles
-        posibles_rutas = [
-            Path("uploads/usuarios/plantilla_importacion.xlsx"),
-            Path("./uploads/usuarios/plantilla_importacion.xlsx"),
-            Path(__file__).parent.parent.parent.parent / "uploads" / "usuarios" / "plantilla_importacion.xlsx"
-        ]
-
-        plantilla_path = None
-        for ruta in posibles_rutas:
-            if ruta.exists():
-                plantilla_path = ruta
-                break
-
-        if not plantilla_path:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Plantilla no encontrada en rutas esperadas"
-            )
-
-        return FileResponse(
-            path=plantilla_path,
-            filename="plantilla_usuarios.xlsx",
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error descargando plantilla: {str(e)}")

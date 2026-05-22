@@ -40,6 +40,7 @@ class Usuario(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     numero_dni = Column(String(20), unique=True, nullable=True, index=True)
+    num_padron = Column(String(50), nullable=True, index=True)
 
     # Perfil - Nombres y Apellidos
     nombres = Column(String(255), nullable=True)

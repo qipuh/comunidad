@@ -31,6 +31,10 @@
             <ion-icon name="person-add-outline"></ion-icon>
             Nuevo Usuario
           </button>
+          <button @click="descargarPlantilla" class="btn-secondary" title="Descargar plantilla de importación">
+            <ion-icon name="download-outline"></ion-icon>
+            Plantilla
+          </button>
           <button @click="$refs.importarArchivo.click()" class="btn-secondary">
             <ion-icon name="cloud-upload-outline"></ion-icon>
             Importar
@@ -223,7 +227,7 @@
 
       <!-- Modal Previsualización de Importación -->
       <div v-if="mostrarModalPreview" class="modal-overlay-full" @click.self="cerrarPreview">
-        <div class="modal-contenedor" style="max-width: 1000px;">
+        <div class="modal-contenedor-preview">
           <div class="modal-header">
             <div>
               <h2>Previsualización de Importación</h2>
@@ -238,9 +242,26 @@
             </button>
           </div>
 
+          <div class="preview-filtros">
+            <button
+              v-for="filtro in filtrosPreview"
+              :key="filtro.estado"
+              @click="filtroPreview = filtro.estado"
+              :class="['btn-filtro', { activo: filtroPreview === filtro.estado }]"
+            >
+              {{ filtro.icon }} {{ filtro.label }} ({{ filtro.count }})
+            </button>
+          </div>
+
           <div class="modal-body-scroll">
+            <!-- Info del filtro actual -->
+            <div v-if="filasPreviewFiltradas.length === 0" class="empty-preview">
+              <ion-icon name="document-outline"></ion-icon>
+              <p>No hay registros {{ filtroPreviewTexto }}</p>
+            </div>
+
             <!-- Tabla de filas -->
-            <div class="preview-tabla">
+            <div v-else class="preview-tabla">
               <table>
                 <thead>
                   <tr>
@@ -250,18 +271,21 @@
                         type="checkbox"
                         :checked="todosSeleccionados"
                         @change="alternarTodos"
+                        :disabled="filasPreviewFiltradas.every(f => f.estado === 'error')"
                         title="Seleccionar/deseleccionar todos"
                       >
                     </th>
+                    <th>Padrón</th>
                     <th>Nombre Completo</th>
                     <th>DNI</th>
                     <th>Sexo</th>
                     <th>F. Nacimiento</th>
-                    <th style="width: 150px;">Estado</th>
+                    <th>Est. Civil</th>
+                    <th style="width: 180px;">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="fila in filasPreview" :key="fila.fila" :class="['fila-' + fila.estado]">
+                  <tr v-for="fila in filasPreviewFiltradas" :key="fila.fila" :class="['fila-' + fila.estado]">
                     <td class="fila-num">{{ fila.fila }}</td>
                     <td class="checkbox-cell">
                       <input
@@ -272,16 +296,18 @@
                         :disabled="fila.estado === 'error'"
                       >
                     </td>
+                    <td class="num-padron">{{ fila.datos.num_padron || '-' }}</td>
                     <td>{{ [fila.datos.nombres, fila.datos.apellido_paterno, fila.datos.apellido_materno].filter(n => n).join(' ') }}</td>
                     <td class="dni">{{ fila.datos.dni }}</td>
-                    <td>{{ fila.datos.sexo }}</td>
+                    <td>{{ fila.datos.sexo || '-' }}</td>
                     <td>{{ fila.datos.fecha_nacimiento || '-' }}</td>
+                    <td>{{ fila.datos.estado_civil || '-' }}</td>
                     <td class="estado-cell">
                       <span v-if="fila.estado === 'valido'" class="badge-estado valido">
-                        ✅ Válido
+                        ✅ Nuevo
                       </span>
                       <span v-else-if="fila.estado === 'duplicado'" class="badge-estado duplicado">
-                        ⚠️ Ya existe
+                        ⚠️ Actualizar
                       </span>
                       <span v-else class="badge-estado error" :title="fila.motivo">
                         ❌ {{ fila.motivo }}
@@ -294,14 +320,48 @@
           </div>
 
           <div class="modal-footer">
-            <button @click="cerrarPreview" class="btn-outline">Cancelar</button>
-            <button
-              @click="confirmarImportacion"
-              class="btn-primary"
-              :disabled="filasSeleccionadas.size === 0 || importando"
-            >
-              <ion-icon name="download-outline"></ion-icon>
-              {{ importando ? 'Importando...' : `Importar seleccionados (${filasSeleccionadas.size})` }}
+            <div class="footer-info">
+              <p>{{ filasSeleccionadas.size }} fila(s) seleccionada(s) para importar</p>
+            </div>
+            <div class="footer-buttons">
+              <button @click="cerrarPreview" class="btn-outline">Cancelar</button>
+              <button
+                @click="mostrarConfirmacion = true"
+                class="btn-primary"
+                :disabled="filasSeleccionadas.size === 0 || importando"
+              >
+                <ion-icon name="download-outline"></ion-icon>
+                {{ importando ? 'Importando...' : `Importar (${filasSeleccionadas.size})` }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Confirmación de Importación -->
+      <div v-if="mostrarConfirmacion && mostrarModalPreview" class="modal-overlay" @click.self="mostrarConfirmacion = false">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>Confirmar Importación</h3>
+          </div>
+          <div class="modal-body">
+            <p><strong>¿Continuar con la importación?</strong></p>
+            <ul class="confirmacion-lista">
+              <li v-if="conteoFilasImportacion.nuevos > 0">
+                <span class="icon nuevo">+</span>
+                <strong>{{ conteoFilasImportacion.nuevos }}</strong> nuevo(s) usuario(s)
+              </li>
+              <li v-if="conteoFilasImportacion.actualizar > 0">
+                <span class="icon actualizar">↻</span>
+                <strong>{{ conteoFilasImportacion.actualizar }}</strong> usuario(s) se actualizará(n)
+              </li>
+            </ul>
+            <p class="nota-importante">✓ Los usuarios se crearán con contraseña = DNI</p>
+          </div>
+          <div class="modal-footer">
+            <button @click="mostrarConfirmacion = false" class="btn-outline" :disabled="importando">Cancelar</button>
+            <button @click="confirmarImportacion" class="btn-primary" :disabled="importando">
+              {{ importando ? 'Importando...' : 'Confirmar Importación' }}
             </button>
           </div>
         </div>
@@ -629,6 +689,8 @@ const resumenImport = ref({ validos: 0, duplicados: 0, errores: 0 })
 const importando = ref(false)
 const filtroEstado = ref('')
 const filtroRol = ref('')
+const filtroPreview = ref('todos')
+const mostrarConfirmacion = ref(false)
 
 const formulario = ref({
   numero_dni: '',
@@ -689,9 +751,66 @@ const formularioValido = computed(() => {
   return true
 })
 
+const filtrosPreview = computed(() => [
+  {
+    estado: 'todos',
+    label: 'Todos',
+    icon: '📋',
+    count: filasPreview.value.length
+  },
+  {
+    estado: 'valido',
+    label: 'Nuevos',
+    icon: '✅',
+    count: filasPreview.value.filter(f => f.estado === 'valido').length
+  },
+  {
+    estado: 'duplicado',
+    label: 'Actualizar',
+    icon: '⚠️',
+    count: filasPreview.value.filter(f => f.estado === 'duplicado').length
+  },
+  {
+    estado: 'error',
+    label: 'Errores',
+    icon: '❌',
+    count: filasPreview.value.filter(f => f.estado === 'error').length
+  }
+])
+
+const filtroPreviewTexto = computed(() => {
+  const map = {
+    'todos': '',
+    'valido': 'válidos',
+    'duplicado': 'para actualizar',
+    'error': 'con errores'
+  }
+  return map[filtroPreview.value] || ''
+})
+
+const filasPreviewFiltradas = computed(() => {
+  if (filtroPreview.value === 'todos') return filasPreview.value
+  return filasPreview.value.filter(f => f.estado === filtroPreview.value)
+})
+
+const conteoFilasImportacion = computed(() => {
+  let nuevos = 0
+  let actualizar = 0
+
+  filasSeleccionadas.value.forEach(numFila => {
+    const fila = filasPreview.value.find(f => f.fila === numFila)
+    if (fila) {
+      if (fila.estado === 'valido') nuevos++
+      else if (fila.estado === 'duplicado') actualizar++
+    }
+  })
+
+  return { nuevos, actualizar }
+})
+
 const todosSeleccionados = computed(() => {
-  if (filasPreview.value.length === 0) return false
-  const filasSeleccionables = filasPreview.value.filter(f => f.estado !== 'error')
+  if (filasPreviewFiltradas.value.length === 0) return false
+  const filasSeleccionables = filasPreviewFiltradas.value.filter(f => f.estado !== 'error')
   return filasSeleccionables.length > 0 && filasSeleccionables.every(f => filasSeleccionadas.value.has(f.fila))
 })
 
@@ -729,10 +848,16 @@ onMounted(async () => {
 const cargarConceptos = async () => {
   try {
     const res = await fetch('/api/cobranza/conceptos/')
+    if (!res.ok) {
+      console.warn('No se pudieron cargar conceptos de cobranza')
+      conceptos.value = []
+      return
+    }
     const data = await res.json()
     conceptos.value = data.data || []
   } catch (error) {
-    console.error('Error cargando conceptos:', error)
+    // Silencioso - continuar sin conceptos
+    conceptos.value = []
   }
 }
 
@@ -1067,7 +1192,7 @@ const toggleFila = (numeroFila) => {
 }
 
 const alternarTodos = () => {
-  const filasSeleccionables = filasPreview.value.filter(f => f.estado !== 'error')
+  const filasSeleccionables = filasPreviewFiltradas.value.filter(f => f.estado !== 'error')
 
   if (todosSeleccionados.value) {
     // Deseleccionar todos
@@ -1080,8 +1205,10 @@ const alternarTodos = () => {
 
 const cerrarPreview = () => {
   mostrarModalPreview.value = false
+  mostrarConfirmacion.value = false
   filasPreview.value = []
   filasSeleccionadas.value = new Set()
+  filtroPreview.value = 'todos'
 }
 
 const confirmarImportacion = async () => {
@@ -1093,10 +1220,13 @@ const confirmarImportacion = async () => {
 
   importando.value = true
   try {
-    // Preparar datos a importar
+    // Preparar datos a importar incluyendo flag de actualización
     const usuariosAImportar = filasPreview.value
       .filter(f => filasSeleccionadas.value.has(f.fila))
-      .map(f => f.datos)
+      .map(f => ({
+        ...f.datos,
+        actualizar: f.estado === 'duplicado'  // Marcar los duplicados para actualizar
+      }))
 
     console.log('Enviando usuarios a importar:', usuariosAImportar)
 
@@ -1107,7 +1237,6 @@ const confirmarImportacion = async () => {
     })
 
     console.log('Respuesta status:', respuesta.status)
-    console.log('Respuesta ok:', respuesta.ok)
 
     const datos = await respuesta.json()
     console.log('Datos recibidos:', datos)
@@ -1115,27 +1244,28 @@ const confirmarImportacion = async () => {
     if (!respuesta.ok) {
       mensajeAlerta.value = datos.detail || 'Error importando'
       tipoAlerta.value = 'error'
-      console.error('Error en respuesta:', datos)
       return
     }
 
     // Mostrar resultado
-    const cantidadImportados = datos.usuarios_creados ? datos.usuarios_creados.length : 0
-    if (datos.errores && datos.errores.length > 0) {
-      console.log('Errores en importación:', datos.errores)
-      console.log('Primeros 5 errores:', datos.errores.slice(0, 5))
-    }
+    const creados = datos.usuarios_creados ? datos.usuarios_creados.length : 0
+    const actualizados = datos.usuarios_actualizados ? datos.usuarios_actualizados.length : 0
+    const total = creados + actualizados
 
-    if (cantidadImportados > 0) {
-      mensajeAlerta.value = `✅ ${cantidadImportados} usuarios importados exitosamente`
+    if (total > 0) {
+      const mensaje = []
+      if (creados > 0) mensaje.push(`${creados} nuevo${creados > 1 ? 's' : ''}`)
+      if (actualizados > 0) mensaje.push(`${actualizados} actualizado${actualizados > 1 ? 's' : ''}`)
+      mensajeAlerta.value = `✅ Importación exitosa: ${mensaje.join(' + ')} usuario${total > 1 ? 's' : ''}`
       tipoAlerta.value = 'success'
     } else {
-      mensajeAlerta.value = `❌ No se importó ningún usuario. Errores: ${datos.errores && datos.errores.length > 0 ? datos.errores[0] : 'desconocido'}`
+      const erroresMsg = datos.errores && datos.errores.length > 0 ? datos.errores[0] : 'desconocido'
+      mensajeAlerta.value = `❌ No se importó ningún usuario. Errores: ${erroresMsg}`
       tipoAlerta.value = 'error'
     }
-    console.log('Resultado final:', cantidadImportados)
 
-    // Cerrar modal y recargar
+    // Cerrar modales y recargar
+    mostrarConfirmacion.value = false
     cerrarPreview()
     await cargarUsuarios()
   } catch (error) {
@@ -1154,6 +1284,31 @@ const numeroCarnet = (user) => {
 const limpiarFiltros = () => {
   filtroEstado.value = ''
   filtroRol.value = ''
+}
+
+const descargarPlantilla = async () => {
+  try {
+    const respuesta = await fetch('/api/usuarios/descargar-plantilla')
+    if (!respuesta.ok) {
+      mensajeAlerta.value = 'Error descargando plantilla'
+      tipoAlerta.value = 'error'
+      return
+    }
+
+    const blob = await respuesta.blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'plantilla_usuarios.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error descargando plantilla:', error)
+    mensajeAlerta.value = 'Error: ' + error.message
+    tipoAlerta.value = 'error'
+  }
 }
 
 const abrirCobranzaSidebar = async (usuario) => {
@@ -2111,11 +2266,23 @@ td {
 }
 
 /* Preview Modal */
+.modal-contenedor-preview {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 1400px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .preview-resumen {
   display: flex;
   gap: 12px;
   margin-top: 8px;
   font-size: 13px;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -2241,6 +2408,150 @@ td {
   background: #fee2e2;
   color: #991b1b;
   cursor: help;
+}
+
+/* Preview Filtros */
+.preview-filtros {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-filtro {
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-filtro:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.btn-filtro.activo {
+  background: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+/* Empty state en preview */
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-preview ion-icon {
+  font-size: 48px;
+  color: #cbd5e1;
+}
+
+.empty-preview p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Footer mejorado */
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.footer-info {
+  flex: 1;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.footer-info p {
+  margin: 0;
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Columna num_padron */
+.preview-tabla .num-padron {
+  font-weight: 600;
+  color: #4f46e5;
+  font-family: monospace;
+}
+
+/* Lista de confirmación */
+.confirmacion-lista {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.confirmacion-lista li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.confirmacion-lista li strong {
+  color: #4f46e5;
+  font-size: 16px;
+}
+
+.confirmacion-lista .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: white;
+  font-size: 12px;
+}
+
+.confirmacion-lista .icon.nuevo {
+  background: #10b981;
+}
+
+.confirmacion-lista .icon.actualizar {
+  background: #f59e0b;
+}
+
+.nota-importante {
+  margin: 12px 0 0 0;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-left: 3px solid #10b981;
+  color: #166534;
+  font-size: 12px;
 }
 
 /* Modal confirmación eliminar */

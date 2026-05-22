@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.usuario import Usuario
@@ -613,13 +614,15 @@ async def preview_excel(
             datos = {}
 
             try:
-                # Mapeo: APELLIDO PATERNO, APELLIDO MATERNO, NOMBRES, SEXO, DNI, F. NACIMIENTO
-                apellido_paterno = get_cell(0, "") or ""
-                apellido_materno = get_cell(1, "") or ""
-                nombres = get_cell(2, "") or ""
-                sexo = get_cell(3, "") or ""
-                dni_raw = get_cell(4, "")
-                fecha_nacimiento = get_cell(5)
+                # Mapeo: num_padron, APELLIDO PATERNO, APELLIDO MATERNO, NOMBRES, SEXO, DNI, F. NACIMIENTO, ESTADO CIVIL
+                num_padron = get_cell(0, "") or ""
+                apellido_paterno = get_cell(1, "") or ""
+                apellido_materno = get_cell(2, "") or ""
+                nombres = get_cell(3, "") or ""
+                sexo = get_cell(4, "") or ""
+                dni_raw = get_cell(5, "")
+                fecha_nacimiento = get_cell(6)
+                estado_civil = get_cell(7, "") or ""
 
                 # Procesar DNI
                 dni = str(dni_raw or "").strip() if dni_raw else ""
@@ -651,12 +654,13 @@ async def preview_excel(
                         estado = "error"
                         motivo = f"Sexo inválido: '{sexo}' (debe ser M/F o Masculino/Femenino)"
 
-                # Validar duplicado
+                # Validar duplicado (pero marcar como duplicado si queremos actualizar)
+                usuario_existente = None
                 if estado == "valido":
                     usuario_existente = db.query(Usuario).filter(Usuario.numero_dni == dni).first()
                     if usuario_existente:
                         estado = "duplicado"
-                        motivo = "DNI ya registrado"
+                        motivo = "DNI ya registrado (se puede actualizar)"
 
                 # Procesar fecha
                 fecha_nac_str = None
@@ -673,12 +677,15 @@ async def preview_excel(
                         fecha_nac_str = None
 
                 datos = {
+                    "num_padron": str(num_padron).strip(),
                     "apellido_paterno": str(apellido_paterno).strip(),
                     "apellido_materno": str(apellido_materno).strip(),
                     "nombres": str(nombres).strip(),
                     "sexo": str(sexo).strip() if sexo else "",
                     "dni": dni,
-                    "fecha_nacimiento": fecha_nac_str
+                    "fecha_nacimiento": fecha_nac_str,
+                    "estado_civil": str(estado_civil).strip() if estado_civil else "",
+                    "usuario_existente": usuario_existente is not None
                 }
 
             except Exception as row_error:
@@ -715,7 +722,7 @@ async def importar_confirmado(
     datos: ImportarConfirmadoSchema,
     db: Session = Depends(get_db)
 ):
-    """Importar usuarios que ya fueron validados"""
+    """Importar usuarios que ya fueron validados - Crea nuevos y actualiza existentes"""
     try:
         usuarios_list = datos.usuarios
 
@@ -723,6 +730,7 @@ async def importar_confirmado(
             raise HTTPException(status_code=400, detail="usuarios debe ser una lista")
 
         usuarios_creados = []
+        usuarios_actualizados = []
         errores = []
 
         for idx, user_data in enumerate(usuarios_list):
@@ -733,56 +741,83 @@ async def importar_confirmado(
                 apellido_materno = user_data.get("apellido_materno", "")
                 sexo = user_data.get("sexo", "")
                 fecha_nacimiento = user_data.get("fecha_nacimiento")
+                num_padron = user_data.get("num_padron", "")
+                estado_civil = user_data.get("estado_civil", "")
+                actualizar = user_data.get("actualizar", False)
 
                 # Validación final (seguridad)
                 if not dni or len(dni) != 8 or not dni.isdigit():
                     errores.append(f"Usuario {idx}: DNI inválido '{dni}'")
                     continue
 
-                # Verificar de nuevo que no exista
+                # Verificar si el usuario existe
                 usuario_existente = db.query(Usuario).filter(Usuario.numero_dni == dni).first()
+
                 if usuario_existente:
-                    errores.append(f"Usuario {idx}: DNI {dni} ya registrado")
-                    continue
+                    # Actualizar si está indicado o si es lo único que podemos hacer
+                    if actualizar:
+                        # Actualizar los datos del usuario
+                        usuario_existente.nombres = nombres or usuario_existente.nombres
+                        usuario_existente.apellido_paterno = apellido_paterno or usuario_existente.apellido_paterno
+                        usuario_existente.apellido_materno = apellido_materno or usuario_existente.apellido_materno
+                        usuario_existente.sexo = sexo or usuario_existente.sexo
+                        usuario_existente.fecha_nacimiento = fecha_nacimiento or usuario_existente.fecha_nacimiento
+                        usuario_existente.estado_civil = estado_civil or usuario_existente.estado_civil
+                        if num_padron:
+                            usuario_existente.num_padron = num_padron
 
-                # Crear usuario (contraseña = DNI)
-                nuevo_usuario = Usuario(
-                    numero_dni=dni,
-                    nombres=nombres,
-                    apellido_paterno=apellido_paterno,
-                    apellido_materno=apellido_materno,
-                    email=f"{dni}@comunidad.local",
-                    username=dni,
-                    password_hash=dni,
-                    telefono="",
-                    sexo=sexo if sexo else None,
-                    fecha_nacimiento=fecha_nacimiento,
-                    rol="usuario",
-                    estado="activo",
-                    usar_reconocimiento_facial=False
-                )
+                        db.flush()
+                        nombre_completo = f"{usuario_existente.nombres} {usuario_existente.apellido_paterno}".strip()
+                        usuarios_actualizados.append({
+                            "id": usuario_existente.id,
+                            "dni": dni,
+                            "nombre": nombre_completo
+                        })
+                    else:
+                        errores.append(f"Usuario {idx}: DNI {dni} ya registrado (no se actualiza)")
+                else:
+                    # Crear usuario nuevo
+                    nuevo_usuario = Usuario(
+                        numero_dni=dni,
+                        nombres=nombres,
+                        apellido_paterno=apellido_paterno,
+                        apellido_materno=apellido_materno,
+                        email=f"{dni}@comunidad.local",
+                        username=dni,
+                        password_hash=dni,
+                        telefono="",
+                        sexo=sexo if sexo else None,
+                        fecha_nacimiento=fecha_nacimiento,
+                        estado_civil=estado_civil if estado_civil else None,
+                        num_padron=num_padron if num_padron else None,
+                        rol="usuario",
+                        estado="activo",
+                        usar_reconocimiento_facial=False
+                    )
 
-                db.add(nuevo_usuario)
-                db.flush()
+                    db.add(nuevo_usuario)
+                    db.flush()
 
-                nombre_completo = f"{nombres} {apellido_paterno}".strip()
-                usuarios_creados.append({
-                    "id": nuevo_usuario.id,
-                    "dni": dni,
-                    "nombre": nombre_completo
-                })
+                    nombre_completo = f"{nombres} {apellido_paterno}".strip()
+                    usuarios_creados.append({
+                        "id": nuevo_usuario.id,
+                        "dni": dni,
+                        "nombre": nombre_completo
+                    })
 
             except Exception as e:
                 errores.append(f"Usuario {idx}: {str(e)}")
 
-        if usuarios_creados:
+        if usuarios_creados or usuarios_actualizados:
             db.commit()
 
+        total_procesados = len(usuarios_creados) + len(usuarios_actualizados)
         return {
             "success": True,
             "usuarios_creados": usuarios_creados,
+            "usuarios_actualizados": usuarios_actualizados,
             "errores": errores,
-            "mensaje": f"Se importaron {len(usuarios_creados)} usuarios exitosamente"
+            "mensaje": f"Importación completada: {len(usuarios_creados)} creados, {len(usuarios_actualizados)} actualizados"
         }
 
     except Exception as e:
@@ -885,3 +920,154 @@ async def importar_excel(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Error importando archivo: {str(e)}")
+
+@router.post("/vincular-fotos")
+async def vincular_fotos(db: Session = Depends(get_db)):
+    """Vincular automaticamente fotos frontales a los usuarios.
+    Las fotos deben estar en uploads/usuarios/ nombradas por DNI (ej: 12345678.png)"""
+    EXTENSIONES_PERMITIDAS = {'.png', '.jpg', '.jpeg', '.webp'}
+
+    if not UPLOAD_DIR.exists():
+        raise HTTPException(status_code=400, detail=f"Carpeta {UPLOAD_DIR} no existe")
+
+    fotos_encontradas = [f for f in UPLOAD_DIR.glob("*") if f.is_file()]
+
+    vinculados = 0
+    no_encontrados = 0
+    ya_vinculados = 0
+    errores = 0
+
+    for foto_path in fotos_encontradas:
+        ext = foto_path.suffix.lower()
+        if ext not in EXTENSIONES_PERMITIDAS:
+            continue
+
+        dni = foto_path.stem
+
+        usuario = db.query(Usuario).filter(Usuario.numero_dni == dni).first()
+
+        if not usuario:
+            no_encontrados += 1
+            continue
+
+        ruta_relativa = f"uploads/usuarios/{foto_path.name}"
+
+        if usuario.foto_frontal and usuario.foto_frontal != "":
+            ya_vinculados += 1
+            continue
+
+        try:
+            usuario.foto_frontal = ruta_relativa
+            db.commit()
+            vinculados += 1
+        except Exception as e:
+            db.rollback()
+            errores += 1
+
+    return {
+        "success": True,
+        "mensaje": f"Fotos vinculadas: {vinculados}, ya tenian foto: {ya_vinculados}, no encontrados: {no_encontrados}, errores: {errores}",
+        "resumen": {
+            "vinculados": vinculados,
+            "ya_vinculados": ya_vinculados,
+            "no_encontrados": no_encontrados,
+            "errores": errores,
+            "total_procesadas": len(fotos_encontradas)
+        }
+    }
+
+
+@router.get("/descargar-plantilla")
+async def descargar_plantilla():
+    """Descargar plantilla de importación de usuarios en Excel"""
+    try:
+        plantilla_path = Path("uploads/usuarios/plantilla_importacion.xlsx")
+
+        if not plantilla_path.exists():
+            raise HTTPException(status_code=404, detail="Plantilla no encontrada. Contactar a administrador.")
+
+        return FileResponse(
+            path=plantilla_path,
+            filename="plantilla_usuarios.xlsx",
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error descargando plantilla: {str(e)}")
+
+
+@router.post("/vincular-fotos")
+async def vincular_fotos(db: Session = Depends(get_db)):
+    """Vincular automaticamente fotos frontales a los usuarios.
+    Las fotos deben estar en uploads/usuarios/ nombradas por DNI (ej: 12345678.png)"""
+    EXTENSIONES_PERMITIDAS = {'.png', '.jpg', '.jpeg', '.webp'}
+
+    if not UPLOAD_DIR.exists():
+        raise HTTPException(status_code=400, detail=f"Carpeta {UPLOAD_DIR} no existe")
+
+    fotos_encontradas = [f for f in UPLOAD_DIR.glob("*") if f.is_file()]
+
+    vinculados = 0
+    no_encontrados = 0
+    ya_vinculados = 0
+    errores = 0
+
+    for foto_path in fotos_encontradas:
+        ext = foto_path.suffix.lower()
+        if ext not in EXTENSIONES_PERMITIDAS:
+            continue
+
+        dni = foto_path.stem
+
+        usuario = db.query(Usuario).filter(Usuario.numero_dni == dni).first()
+
+        if not usuario:
+            no_encontrados += 1
+            continue
+
+        ruta_relativa = f"uploads/usuarios/{foto_path.name}"
+
+        if usuario.foto_frontal and usuario.foto_frontal != "":
+            ya_vinculados += 1
+            continue
+
+        try:
+            usuario.foto_frontal = ruta_relativa
+            db.commit()
+            vinculados += 1
+        except Exception as e:
+            db.rollback()
+            errores += 1
+
+    return {
+        "success": True,
+        "mensaje": f"Fotos vinculadas: {vinculados}, ya tenian foto: {ya_vinculados}, no encontrados: {no_encontrados}, errores: {errores}",
+        "resumen": {
+            "vinculados": vinculados,
+            "ya_vinculados": ya_vinculados,
+            "no_encontrados": no_encontrados,
+            "errores": errores,
+            "total_procesadas": len(fotos_encontradas)
+        }
+    }
+
+
+@router.get("/descargar-plantilla")
+async def descargar_plantilla():
+    """Descargar plantilla de importación de usuarios en Excel"""
+    try:
+        plantilla_path = Path("uploads/usuarios/plantilla_importacion.xlsx")
+
+        if not plantilla_path.exists():
+            raise HTTPException(status_code=404, detail="Plantilla no encontrada. Contactar a administrador.")
+
+        return FileResponse(
+            path=plantilla_path,
+            filename="plantilla_usuarios.xlsx",
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error descargando plantilla: {str(e)}")

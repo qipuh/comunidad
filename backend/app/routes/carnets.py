@@ -98,8 +98,9 @@ def exportar_pdf_individual(usuario_id: int, db: Session = Depends(get_db)):
         pdf_bytes = _thread_pool.submit(generar_pdf_carnets, [usuario], config).result()
     except Exception as e:
         import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error generando PDF: {e}")
+        tb = traceback.format_exc()
+        print(tb)
+        raise HTTPException(status_code=500, detail=f"Error generando PDF [{type(e).__name__}]: {e}\n{tb}")
 
     nombre = f"carnet-{usuario.numero_dni or usuario.id}.pdf"
     return Response(

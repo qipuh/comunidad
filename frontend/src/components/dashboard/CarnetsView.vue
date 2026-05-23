@@ -596,7 +596,7 @@
 
               <div class="num-carnet-container">
                 <div class="etiqueta-carnet">N° CARNET</div>
-                <div style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
+                <div style="font-size: 8pt; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">{{ obtenerNumeroCarnet(usuarioSeleccionado) }}</div>
               </div>
 
               <div class="info-bloque">
@@ -640,16 +640,16 @@
                     <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Secretario CC-TPCT</span>
-                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">F. Paripanca R</span>
+                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Secretario CC-TPCT</span>
+                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">F. Paripanca R</span>
                 </div>
                 <div class="firma-box">
                   <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
                     <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Presidente CC-TPCT</span>
-                  <span style="text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">M. García N.</span>
+                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Presidente CC-TPCT</span>
+                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">M. García N.</span>
                 </div>
               </div>
             </div>
@@ -689,10 +689,8 @@
                       <span class="m-valor">{{ usuarioSeleccionado.anexo || '-' }}</span>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="configCarnet.url_qr" class="qr-url-row">
-                  <div class="qr-url-wrapper">
+                  <div v-if="configCarnet.url_qr" class="qr-url-wrapper">
                     <div class="qr-url-label">Página Web:</div>
                     <canvas :id="`qr-url-canvas-${usuarioSeleccionado.id}`" class="qr-url"></canvas>
                     <div class="qr-url-text">{{ configCarnet.url_qr }}</div>
@@ -948,7 +946,7 @@ export default {
           const canvas = document.getElementById(canvasId)
           if (canvas) {
             await QRCode.toCanvas(canvas, qrData, {
-              width: 120,
+              width: 100,
               margin: 1,
               color: { dark: '#000000', light: '#FFFFFF' }
             })
@@ -966,7 +964,7 @@ export default {
           const canvas = document.getElementById(`qr-url-canvas-${usuario.id}`)
           if (canvas) {
             await QRCode.toCanvas(canvas, urlQR, {
-              width: 80,
+              width: 60,
               margin: 1,
               color: { dark: '#000000', light: '#FFFFFF' }
             })
@@ -1834,8 +1832,8 @@ export default {
 }
 
 .carnet-container {
-  width: 1012px;
-  height: 288px;
+  width: 642px;
+  height: 204px;
   background-color: #ffffff;
   border: 1px solid #cccccc;
   display: flex;
@@ -1863,7 +1861,7 @@ export default {
   width: 50%;
   height: 100%;
   position: relative;
-  padding: 20px 25px;
+  padding: 12px 15px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2121,15 +2119,16 @@ export default {
 }
 
 .firma-imagen {
-  max-height: 55px;
-  max-width: 110px;
-  margin-bottom: 15px;
+  max-height: 44px;
+  max-width: 90px;
+  margin-bottom: 1px;
   object-fit: contain;
+  z-index: 9;
 }
 
 .firma-imagen img {
-  max-height: 55px;
-  max-width: 110px;
+  max-height: 44px;
+  max-width: 90px;
   object-fit: contain;
 }
 
@@ -2401,13 +2400,13 @@ export default {
 .header-izquierdo {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .bandera-placeholder {
-  width: 65px;
-  height: 40px;
+  width: 41px;
+  height: 25px;
   /*border: 1px solid #d32f2f;*/
   position: relative;
   flex-shrink: 0;
@@ -2422,30 +2421,30 @@ export default {
 }
 
 .titulo-comunidad {
-  font-size: 13.5px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #0d0d0d;
   line-height: 1.2;
-  letter-spacing: 0.2px;
-  max-width: 220px;
+  letter-spacing: 0.1px;
+  max-width: 150px;
   word-wrap: break-word;
   white-space: normal;
-  margin-top:-4px;
+  margin-top: -2px;
 }
 
 .sub-resolucion {
-  font-size: 8.5px;
+  font-size: 7px;
   font-weight: 600;
-  color: #444;
-  margin-top: 2px;
-  letter-spacing: 0.4px;
-  line-height: 1.2;
+  color: #0f0f0f;
+  margin-top: 1px;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
 }
 
 .num-carnet-container {
   position: absolute;
-  top: 20px;
-  right: 25px;
+  top: 12px;
+  right: 15px;
   text-align: right;
 }
 
@@ -2453,37 +2452,37 @@ export default {
   font-size: 8px;
   font-weight: 600;
   color: #0d0d0d;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   z-index: 9999999999999999999;
 }
 
 .num-carnet {
-  font-size: 15px;
+  font-size: 9px;
   font-weight: 700;
   color: #0d0d0d;
-  margin-top: 2px;
-  letter-spacing: 0.2px;
+  margin-top: 1px;
+  letter-spacing: 0.1px;
   font-family: 'Courier New', monospace;
   background-color: #fff;
-  padding: 3px 3px 0;
+  padding: 2px 2px 0;
 }
 
 .info-bloque {
   display: flex;
-  gap: 15px;
-  margin-top: 5px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .foto-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
 .foto-placeholder {
-  width: 108px;
-  height: 135px;
+  width: 68px;
+  height: 85px;
   border: 1px solid #000000;
   background: #f5f5f5;
   overflow: hidden;
@@ -2503,16 +2502,16 @@ export default {
   font-size: 7px;
   font-weight: 700;
   color: #000;
-  letter-spacing: 0.3px;
-  line-height: 1.2;
+  letter-spacing: 0.2px;
+  line-height: 1.1;
   text-align: center;
 }
 
 .datos-personales {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 2px;
+  gap: 6px;
+  padding-top: 1px;
 }
 
 .campo {
@@ -2521,34 +2520,34 @@ export default {
 }
 
 .campo .etiqueta {
-  font-size: 8.5px;
-  color: #666666;
+  font-size: 8px;
+  color: #000000;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
 }
 
 .campo .valor {
-  font-size: 14px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #0d0d0d;
   text-transform: uppercase;
-  margin-top: 1px;
-  letter-spacing: 0.3px;
-  line-height: 1.3;
+  margin-top: 0.5px;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
 }
 
 .campo-fechas {
-  margin-top: 3px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
 }
 
 .fecha-item .f-etiqueta {
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 600;
-  color: #616161;
+  color: #000000;
 }
 
 .fecha-item .f-valor {
@@ -2556,20 +2555,20 @@ export default {
   font-weight: 700;
   color: #0d0d0d;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
-  line-height: 1.2;
+  letter-spacing: 0.1px;
+  line-height: 1.1;
 }
 
 .firmas-container {
   position: absolute;
-  bottom: 12px;
-  right: 25px;
+  bottom: 8px;
+  right: 15px;
   display: flex;
-  gap: 40px;
+  gap: 25px;
 }
 
 .firma-box {
-  width: 75px;
+  width: 48px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -2578,11 +2577,11 @@ export default {
 
 .firma-placeholder {
   width: 100%;
-  height: 50px;
+  height: 30px;
   border-bottom: 1px dashed #999;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
   opacity: 0.6;
-  font-size: 10px;
+  font-size: 5px;
   color: #002699;
   display: flex;
   align-items: center;
@@ -2591,17 +2590,17 @@ export default {
 }
 
 .firma-box span {
-  font-size: 8px;
+  font-size: 5px;
   font-weight: 600;
   color: #222;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 /* LADO DERECHO (REVERSO) */
 .lado-derecho {
-  padding: 20px 20px;
+  padding: 12px 12px;
 }
 
 .header-derecho {
@@ -2610,26 +2609,26 @@ export default {
   align-items: center;
   width: fit-content;
   position: absolute;
-  top: 20px;
-  left: 50px;
+  top: 12px;
+  left: 32px;
 }
 
 .siglas {
-  font-size: 15px;
+  font-size: 9px;
   font-weight: 700;
   color: #0d0d0d;
-  letter-spacing: 0.5px;
-  margin-bottom: 5px;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
   font-family: 'Courier New', monospace;
 }
 
 .escudo-placeholder {
-  width: 55px;
-  height: 60px;
+  width: 50px;
+  height: 55px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
+  font-size: 5px;
   color: #777;
   text-align: center;
   overflow: hidden;
@@ -2644,73 +2643,63 @@ export default {
 .footer-derecho {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
 }
 
 .qr-row {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
+  gap: 10px;
 }
 
 .qr-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .qr-placeholder {
-  width: 88px;
-  height: 88px;
+  width: 100px;
+  height: 100px;
   border: 1px solid #000;
   background-color: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 10px;
+  font-size: 6px;
 }
 
 .qr-codigo {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #0d0d0d;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   font-family: 'Courier New', monospace;
   text-align: center;
-  width: 88px;
+  width: 100px;
 }
 
 .metadatos-qr {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   flex: 1;
 }
 
 .metadatos-derecha {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 35px;
-  row-gap: 14px;
+  column-gap: 20px;
+  row-gap: 8px;
   flex-grow: 1;
-  padding-bottom: 8px;
-}
-
-.qr-url-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  position: absolute;
-  bottom: 20px;
-  right: 0;
+  padding-bottom: 5px;
 }
 
 .meta-item {
@@ -2719,69 +2708,63 @@ export default {
 }
 
 .meta-item .m-etiqueta {
-  font-size: 8.5px;
+  font-size: 7px;
   font-weight: 600;
-  color: #666666;
-  letter-spacing: 0.3px;
+  color: #3b3b3b;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .meta-item .m-valor {
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
   color: #0d0d0d;
-  margin-top: 2px;
-  letter-spacing: 0.2px;
-  line-height: 1.3;
+  margin-top: 1px;
+  letter-spacing: 0.1px;
+  line-height: 1.2;
 }
 
 .meta-item .m-valor-destacado {
-  font-size: 14px;
+  font-size: 8px;
   font-weight: 700;
   color: #0d0d0d;
-  margin-top: 2px;
-  letter-spacing: 0.2px;
-  line-height: 1.3;
-}
-
-.qr-url-container {
-  grid-column: span 2;
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 8px;
+  margin-top: 1px;
+  letter-spacing: 0.1px;
+  line-height: 1.2;
 }
 
 .qr-url-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .qr-url-label {
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 600;
-  color: #333;
+  color: #000000;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   white-space: nowrap;
 }
 
 .qr-url {
-  width: 90px !important;
-  height: 90px !important;
-  padding:3px;
+  width: 60px !important;
+  height: 60px !important;
+  padding: 2px;
   border: 1px solid #000;
   background-color: #f5f5f5;
 }
 
 .qr-url-text {
-  font-size: 7pt;
+  font-size: 6pt;
   font-weight: 500;
-  color: #555;
-  max-width: 165px;
+  color: #000000;
+  max-width: 90px;
   word-break: break-all;
   text-align: center;
   line-height: 1;

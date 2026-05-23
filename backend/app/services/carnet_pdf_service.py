@@ -140,8 +140,8 @@ def _html_a_pdf(html: str) -> bytes:
             page = browser.new_page()
             page.set_content(html, wait_until="networkidle")
             return page.pdf(
-                width="642px",
-                height="204px",
+                width="180mm",
+                height="54mm",
                 print_background=True,
                 margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
                 prefer_css_page_size=True,
@@ -185,8 +185,8 @@ def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None) 
                 try:
                     page.set_content(html, wait_until="networkidle")
                     pdf_bytes = page.pdf(
-                        width="642px",
-                        height="204px",
+                        width="180mm",
+                        height="54mm",
                         print_background=True,
                         margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
                         prefer_css_page_size=True,

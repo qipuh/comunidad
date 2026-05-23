@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Carnets</title>
 <style>
-  @page { size: 642px 204px; margin: 0; }
+  @page { size: 180mm 54mm; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
     margin: 0; padding: 0; background: #ffffff;
@@ -13,41 +13,29 @@
     -moz-osx-font-smoothing: grayscale;
   }
   .pagina-carnet {
-    width: 642px; height: 204px;
+    width: 180mm; height: 54mm;
     page-break-after: always; overflow: hidden;
   }
   .pagina-carnet:last-child { page-break-after: auto; }
   .carnet-container {
-    width: 642px;
-    height: 204px;
-    background-color: #ffffff;
     display: flex;
-    position: relative;
+    gap: 10mm;
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
   }
-  .carnet-container::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 1px;
-    height: 100%;
-    background-color: #cccccc;
-    z-index: 10;
-  }
-  .lado-izquierdo, .lado-derecho {
-    width: 50%;
-    height: 100%;
+  .carnet-lado {
+    width: 85mm;
+    height: 54mm;
+    background-color: #ffffff;
     position: relative;
     padding: 12px 15px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    overflow: hidden;
   }
-  .lado-izquierdo > *, .lado-derecho > * {
+  .carnet-lado > * {
     position: relative;
     z-index: 1;
   }
@@ -390,7 +378,7 @@
 <div class="pagina-carnet">
   <div class="carnet-container">
     <!-- LADO IZQUIERDO (ANVERSO) -->
-    <div class="lado-izquierdo"{% if config.fondo_anverso_data %} style="background-image: url('{{ config.fondo_anverso_data }}')"{% endif %}>
+    <div class="carnet-lado lado-izquierdo"{% if config.fondo_anverso_data %} style="background-image: url('{{ config.fondo_anverso_data }}')"{% endif %}>
       <div class="header-izquierdo">
         <div class="bandera-placeholder">
           {% if config.bandera_data %}<img src="{{ config.bandera_data }}" class="bandera-img">{% endif %}
@@ -464,7 +452,7 @@
     </div>
 
     <!-- LADO DERECHO (REVERSO) -->
-    <div class="lado-derecho"{% if config.fondo_reverso_data %} style="background-image: url('{{ config.fondo_reverso_data }}')"{% endif %}>
+    <div class="carnet-lado lado-derecho"{% if config.fondo_reverso_data %} style="background-image: url('{{ config.fondo_reverso_data }}')"{% endif %}>
       <div class="header-derecho">
         <div class="siglas">{{ config.nombre_corto }}</div>
         <div class="escudo-placeholder">

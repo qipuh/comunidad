@@ -583,7 +583,7 @@
         <div class="carnet-completo-viewport" :id="`carnet-completo-${usuarioSeleccionado.id}`">
           <div class="carnet-container">
             <!-- LADO IZQUIERDO (ANVERSO) -->
-            <div class="lado-izquierdo" :style="{ backgroundImage: configCarnet.fondo_anverso_url ? `url(${configCarnet.fondo_anverso_url})` : 'none' }">
+            <div class="carnet-lado lado-izquierdo" :style="{ backgroundImage: configCarnet.fondo_anverso_url ? `url(${configCarnet.fondo_anverso_url})` : 'none' }">
               <div class="header-izquierdo">
                 <div class="bandera-placeholder">
                   <img v-if="configCarnet.bandera_url" :src="configCarnet.bandera_url" class="bandera-img">
@@ -655,7 +655,7 @@
             </div>
 
             <!-- LADO DERECHO (REVERSO) -->
-            <div class="lado-derecho" :style="{ backgroundImage: configCarnet.fondo_reverso_url ? `url(${configCarnet.fondo_reverso_url})` : 'none' }">
+            <div class="carnet-lado lado-derecho" :style="{ backgroundImage: configCarnet.fondo_reverso_url ? `url(${configCarnet.fondo_reverso_url})` : 'none' }">
               <div class="header-derecho">
                 <div class="siglas">{{ configCarnet.nombre_corto || 'CC.TPCT' }}</div>
                 <div class="escudo-placeholder">
@@ -1833,35 +1833,21 @@ export default {
 }
 
 .carnet-container {
-  width: 642px;
-  height: 204px;
-  background-color: #ffffff;
-  border: 1px solid #cccccc;
   display: flex;
-  position: relative;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  gap: 10mm;
   font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
 }
 
-.carnet-container::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background-color: #cccccc;
-  z-index: 10;
-}
-
-
-.lado-izquierdo, .lado-derecho {
-  width: 50%;
-  height: 100%;
+.carnet-lado {
+  width: 85mm;
+  height: 54mm;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
   position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
   padding: 12px 15px;
   background-size: cover;
   background-position: center;

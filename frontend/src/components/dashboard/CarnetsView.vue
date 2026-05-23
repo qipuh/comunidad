@@ -1065,9 +1065,9 @@ export default {
       // Check inicial inmediato
       await chequearEstado()
 
-      // Polling cada 500ms
+      // Polling cada 2s
       if (tareaActual.value) {
-        pollingInterval.value = setInterval(chequearEstado, 500)
+        pollingInterval.value = setInterval(chequearEstado, 2000)
       }
     }
 

@@ -14,22 +14,10 @@ export const api = axios.create({
 // Interceptor para agregar token si existe
 api.interceptors.request.use(
   (config) => {
-    console.log('\n[API Request] ===== REQUEST DEBUG =====')
-    console.log('[API Request] URL:', config.url)
-    console.log('[API Request] Method:', config.method)
-    console.log('[API Request] localStorage.length:', localStorage.length)
-    console.log('[API Request] localStorage.keys():', Object.keys(localStorage))
     const token = localStorage.getItem('auth_token')
-    console.log('[API Request] localStorage.getItem("auth_token"):', token ? token.substring(0, 20) + '...' : 'NULL')
-    console.log('[API Request] localStorage.getItem("auth_usuario"):', localStorage.getItem('auth_usuario') ? 'EXISTS' : 'NULL')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('[API Request] ✓ Authorization header set')
-    } else {
-      console.warn('[API Request] ✗ WARNING: No token found in localStorage!')
-      console.warn('[API Request] All localStorage keys:', localStorage)
     }
-    console.log('[API Request] ===== END DEBUG =====\n')
     return config
   },
   (error) => {

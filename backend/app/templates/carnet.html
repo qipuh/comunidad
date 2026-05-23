@@ -184,8 +184,8 @@
   }
   .firmas-container {
     position: absolute;
-    bottom: 8px;
-    right: 15px;
+    bottom: 15px;
+    right: 25px;
     display: flex;
     gap: 25px;
   }
@@ -226,7 +226,8 @@
     letter-spacing: 0.3px;
     text-transform: uppercase;
     line-height: 1.1;
-    text-shadow: 0 0 5px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,1), 0 0 20px rgba(255,255,255,1), 0 0 25px rgba(255,255,255,1), 0 0 30px rgba(255,255,255,1), 0 0 35px rgba(255,255,255,1);
+    text-shadow: rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px;
+
     white-space: nowrap;
   }
 
@@ -436,8 +437,7 @@
           {% else %}
             <div class="firma-placeholder">[Firma]</div>
           {% endif %}
-          <span class="firma-text">Secretario CC-TPCT</span>
-          <span class="firma-text">F. Paripanca R</span>
+          <span class="firma-text">Secretario CC-TPCT<br>F. Paripanca R</span>
         </div>
         <div class="firma-box">
           {% if config.firma_presidente_data %}
@@ -445,8 +445,7 @@
           {% else %}
             <div class="firma-placeholder">[Firma]</div>
           {% endif %}
-          <span class="firma-text">Presidente CC-TPCT</span>
-          <span class="firma-text">M. García N.</span>
+          <span class="firma-text">Presidente CC-TPCT <br> M. García N.</span>
         </div>
       </div>
     </div>

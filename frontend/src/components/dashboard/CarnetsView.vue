@@ -640,16 +640,14 @@
                     <img :src="configCarnet.firma_secretario_url" alt="Firma Secretario">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Secretario CC-TPCT</span>
-                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">F. Paripanca R</span>
+                  <span style="font-size:6px!important; text-shadow: rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px;font-weight: 700; white-space: nowrap;">Secretario CC-TPCT <br> F. Paripanca R</span>
                 </div>
                 <div class="firma-box">
                   <div v-if="configCarnet.firma_presidente_url" class="firma-imagen">
                     <img :src="configCarnet.firma_presidente_url" alt="Firma Presidente">
                   </div>
                   <div v-else class="firma-placeholder">[Firma]</div>
-                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700; white-space: nowrap;">Presidente CC-TPCT</span>
-                  <span style="font-size:6px!important; text-shadow: 0 0 5px rgba(255, 255, 255, 1), 0 0 10px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 35px rgba(255, 255, 255, 1); font-weight: 700;">M. García N.</span>
+                  <span style="font-size:6px!important; text-shadow: rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px, rgb(255, 255, 255) 0px 0px 5px;font-weight: 700; white-space: nowrap;">Secretario CC-TPCT <br> F. Paripanca R</span>
                 </div>
               </div>
             </div>
@@ -2548,8 +2546,8 @@ export default {
 
 .firmas-container {
   position: absolute;
-  bottom: 8px;
-  right: 15px;
+  bottom: 15px;
+  right: 25px;
   display: flex;
   gap: 25px;
 }

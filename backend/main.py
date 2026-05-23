@@ -3,6 +3,12 @@ FastAPI Main Application
 Sistema de Configuración Dinámico para Comunidades
 """
 
+# Fix Windows + Python 3.13 + Playwright: forzar ProactorEventLoop ANTES de todo
+import asyncio
+import sys
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -174,11 +180,11 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Iniciando servidor en http://127.0.0.1:4242")
+    logger.info("Iniciando servidor en http://127.0.0.1:8000")
     uvicorn.run(
         "main:app",
         host="127.0.0.1",
-        port=4242,
+        port=8000,
         reload=True,
         log_level="info"
     )

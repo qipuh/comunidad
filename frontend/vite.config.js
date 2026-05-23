@@ -22,6 +22,7 @@ export default defineConfig({
     middlewareMode: false,
     host: '0.0.0.0',
     port: 5173,
+    allowedHosts: ['comunidad.test', '.comunidad.test', 'localhost'],
     hmr: {
       host: 'localhost',
       port: 5173,

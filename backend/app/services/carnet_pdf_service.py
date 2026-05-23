@@ -3,16 +3,24 @@ Servicio para generar PDFs de carnets de alta calidad usando Playwright (Chromiu
 Renderiza el HTML/CSS exacto del template y genera PDFs vectoriales.
 """
 
+import asyncio
 import base64
 import io
 import mimetypes
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
 import qrcode
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+# Fix para Python 3.13 + Windows + Playwright (NotImplementedError en subprocess)
+# Debe ejecutarse ANTES de importar playwright
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 from playwright.sync_api import sync_playwright
 
 from app.models.usuario import Usuario
@@ -132,8 +140,29 @@ def _renderizar_html(usuarios: List[Usuario], config_carnet) -> str:
     return template.render(**contexto)
 
 
+def _ensure_proactor_loop():
+    """Cada thread del pool necesita ProactorEventLoop en Windows + Python 3.13.
+    Sin esto, asyncio.create_subprocess_exec falla con NotImplementedError porque
+    SelectorEventLoop no soporta subprocess en Windows. Uvicorn fuerza Selector,
+    así que re-imponemos Proactor aquí.
+    """
+    if sys.platform == "win32":
+        # Re-imponer policy global (uvicorn puede haberla cambiado a Selector)
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        # Crear loop nuevo para este thread
+        try:
+            existing = asyncio.get_event_loop_policy().get_event_loop()
+            if existing and not existing.is_closed():
+                existing.close()
+        except Exception:
+            pass
+        loop = asyncio.ProactorEventLoop()
+        asyncio.set_event_loop(loop)
+
+
 def _html_a_pdf(html: str) -> bytes:
     """Genera PDF de un único bloque HTML."""
+    _ensure_proactor_loop()
     with sync_playwright() as p:
         browser = p.chromium.launch()
         try:
@@ -169,6 +198,7 @@ def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None) 
 
     chunks = [usuarios[i:i + CHUNK_SIZE] for i in range(0, total, CHUNK_SIZE)]
 
+    _ensure_proactor_loop()
     with sync_playwright() as p:
         browser = p.chromium.launch()
         try:

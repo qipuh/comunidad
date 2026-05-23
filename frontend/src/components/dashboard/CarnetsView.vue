@@ -993,7 +993,7 @@ export default {
         cargando.value = true
         const response = await api.get(
           `/carnets/exportar-pdf-individual/${usuarioSeleccionado.value.id}`,
-          { responseType: 'blob' }
+          { responseType: 'blob', timeout: 120000 }
         )
         const dni = usuarioSeleccionado.value.numero_dni || usuarioSeleccionado.value.id
         descargarBlob(response.data, `carnet-${dni}.pdf`)
@@ -1074,7 +1074,8 @@ export default {
     const descargarPDF = async (taskId, totalCarnets) => {
       try {
         const response = await api.get(`/carnets/descargar/${taskId}`, {
-          responseType: 'blob'
+          responseType: 'blob',
+          timeout: 600000  // 10 minutos para descargas grandes
         })
 
         const nombreArchivo = totalCarnets === 1

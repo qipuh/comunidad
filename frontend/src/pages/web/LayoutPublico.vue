@@ -96,8 +96,8 @@
           <div class="footer-contact">
             <h4>Contacto</h4>
             <div class="fc-item"><ion-icon name="location-outline"></ion-icon><span>Distrito de Torata, Moquegua – Perú</span></div>
-            <div class="fc-item"><ion-icon name="mail-outline"></ion-icon><span>comunidad.tpct@gmail.com</span></div>
-            <div class="fc-item"><ion-icon name="earth-outline"></ion-icon><span>www.tpct.pe</span></div>
+            <div class="fc-item"><ion-icon name="mail-outline"></ion-icon><span>---</span></div>
+            <div class="fc-item"><ion-icon name="earth-outline"></ion-icon><span>https://comunidadcampesinatpct.com</span></div>
           </div>
         </div>
         <div class="footer-bottom">

@@ -6,7 +6,7 @@
       <div class="header-inner">
         <div class="brand">
           <div class="brand-logo">
-            <ion-icon name="leaf" class="logo-icon-svg"></ion-icon>
+            <img :src="'/uploads/logo/logo.png'" alt="Logo" class="logo-img" />
           </div>
           <div class="brand-text">
             <span class="brand-name">Comunidad Campesina TPCT</span>
@@ -661,13 +661,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .brand-logo {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #16a34a, #15803d);
-  border-radius: 10px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: white;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brand-text {

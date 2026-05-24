@@ -2,7 +2,7 @@
   <LayoutPublico>
 
     <!-- HERO con fondo e imagen, overlay degradado -->
-    <section class="hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1568805778734-f0a5a77d7272?w=1400&q=80')` }">
+    <section class="hero" :style="{ backgroundImage: `url('/uploads/img/inicio/01.png')` }">
       <div class="hero-overlay"></div>
       <div class="hero-inner">
         <div class="hero-text">
@@ -42,8 +42,8 @@
       <div class="container">
         <div class="sobre-grid">
           <div class="sobre-images">
-            <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600&q=80" alt="Reunión comunitaria en Tumilaca" class="si-top" />
-            <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&q=80" alt="Familias comuneras trabajando juntas" class="si-bottom" />
+            <img src="/uploads/img/inicio/cerro_baul.png" alt="Cerro Baúl, hito ancestral del territorio" class="si-top" />
+            <img src="/uploads/img/inicio/cementerio_pocata.png" alt="Cementerio comunal de Pocata" class="si-bottom" />
             <div class="si-badge">
               <strong>77</strong>
               <span>años de historia</span>
@@ -197,9 +197,9 @@ const pilares = [
 ]
 
 const galeriaStrip = [
-  { src: 'https://images.unsplash.com/photo-1570219870023-102f3a8b5b0e?w=700&q=80', alt: 'Paisaje andino peruano' },
-  { src: 'https://images.unsplash.com/photo-1536704271660-d219aa1bd6eb?w=700&q=80', alt: 'Comunidad campesina' },
-  { src: 'https://images.unsplash.com/photo-1730423284218-a8a7e9422ebf?w=700&q=80', alt: 'Agricultura en los andes' },
+  { src: '/uploads/img/inicio/01.png',                alt: 'Nuestro territorio comunal' },
+  { src: '/uploads/img/inicio/cerro_baul.png',        alt: 'Cerro Baúl · Patrimonio cultural' },
+  { src: '/uploads/img/inicio/cementerio_pocata.png', alt: 'Cementerio comunal de Pocata' },
 ]
 
 const noticias = [

@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1550290129-41b39a6fdfe8?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/ecoser/01.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="construct-outline"></ion-icon> Proyectos</span>
@@ -71,6 +71,23 @@
             </div>
           </div>
         </div>
+        <div class="ecoser-galeria">
+          <div class="section-head">
+            <span class="tag">ECOSER en acción</span>
+            <h2>Galería de Operaciones</h2>
+          </div>
+          <div class="galeria-grid">
+            <div v-for="item in galeriaEcoser" :key="item.src" class="galeria-item" :class="{ 'is-video': item.tipo === 'video' }" @click="abrirMedia(item)">
+              <img v-if="item.tipo === 'imagen'" :src="item.src" :alt="item.titulo" />
+              <video v-else :src="item.src" muted preload="metadata" playsinline></video>
+              <div class="gi-overlay">
+                <ion-icon :name="item.tipo === 'video' ? 'play-circle-outline' : 'expand-outline'"></ion-icon>
+                <span>{{ item.titulo }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="cta-ecoser">
           <h3>¿Tu empresa necesita nuestros servicios?</h3>
           <p>Contamos con mano de obra local, conocimiento del territorio y organización comunal consolidada.</p>
@@ -78,15 +95,34 @@
             <ion-icon name="call-outline"></ion-icon> Contactar a ECOSER
           </button>
         </div>
+
+        <!-- Lightbox -->
+        <div v-if="mediaAbierto" class="lightbox" @click.self="mediaAbierto = null">
+          <button class="lb-close" @click="mediaAbierto = null"><ion-icon name="close-outline"></ion-icon></button>
+          <img v-if="mediaAbierto.tipo === 'imagen'" :src="mediaAbierto.src" :alt="mediaAbierto.titulo" />
+          <video v-else :src="mediaAbierto.src" controls autoplay playsinline></video>
+        </div>
       </div>
     </section>
   </LayoutPublico>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import LayoutPublico from './LayoutPublico.vue'
 import { useWebNav } from '../../composables/useWebNav'
 const { navegar } = useWebNav()
+
+const mediaAbierto = ref(null)
+const abrirMedia = (item) => { mediaAbierto.value = item }
+
+const galeriaEcoser = [
+  { tipo: 'imagen', src: '/uploads/img/ecoser/01.png', titulo: 'Operaciones en campo' },
+  { tipo: 'imagen', src: '/uploads/img/ecoser/02.png', titulo: 'Equipo ECOSER' },
+  { tipo: 'imagen', src: '/uploads/img/ecoser/03.png', titulo: 'Servicio a la comunidad' },
+  { tipo: 'video',  src: '/uploads/img/ecoser/01.mov', titulo: 'Video: trabajos en territorio' },
+  { tipo: 'video',  src: '/uploads/img/ecoser/02.mov', titulo: 'Video: ECOSER en acción' },
+]
 
 const lineas = [
   { icon: 'leaf-outline', titulo: 'Desarrollo productivo', desc: 'Impulso a las actividades agrícolas y pecuarias como base de la economía familiar comunal.' },
@@ -160,6 +196,44 @@ const servicios = [
 .sc-body h3 { font-size: 18px; font-weight: 700; color: #1a2e1a; margin-bottom: 8px; }
 .sc-body p { font-size: 14px; color: #4a5e4a; line-height: 1.7; }
 
+.ecoser-galeria { margin: 0 0 56px; }
+.ecoser-galeria .section-head { margin-bottom: 32px; }
+.galeria-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.galeria-item {
+  position: relative; aspect-ratio: 4/3; border-radius: 14px; overflow: hidden;
+  cursor: pointer; background: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.galeria-item:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+.galeria-item img, .galeria-item video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gi-overlay {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; color: white;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7));
+  opacity: 0; transition: opacity 0.2s;
+}
+.galeria-item:hover .gi-overlay { opacity: 1; }
+.galeria-item.is-video .gi-overlay { opacity: 1; background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.55)); }
+.gi-overlay ion-icon { font-size: 48px; }
+.galeria-item.is-video .gi-overlay ion-icon { font-size: 64px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+.gi-overlay span { font-size: 13px; font-weight: 600; padding: 0 12px; text-align: center; }
+
+.lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.lightbox img, .lightbox video {
+  max-width: 95vw; max-height: 90vh; border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.lb-close {
+  position: absolute; top: 20px; right: 20px; width: 44px; height: 44px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 50%; color: white; font-size: 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+}
+.lb-close:hover { background: rgba(255,255,255,0.25); }
+
 .cta-ecoser { background: linear-gradient(135deg,#0a1e0c,#16a34a); border-radius: 20px; padding: 48px; text-align: center; color: white; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .cta-ecoser h3 { font-size: 1.6rem; font-weight: 800; }
 .cta-ecoser p { font-size: 15px; color: rgba(255,255,255,0.8); max-width: 600px; line-height: 1.7; }
@@ -170,9 +244,11 @@ const servicios = [
   .lineas-grid { grid-template-columns: repeat(2,1fr); }
   .ecoser-grid { grid-template-columns: 1fr; }
   .servicios-grid { grid-template-columns: 1fr; }
+  .galeria-grid { grid-template-columns: repeat(2, 1fr); }
   .cta-ecoser { padding: 32px 24px; }
 }
 @media (max-width: 480px) {
   .lineas-grid { grid-template-columns: 1fr; }
+  .galeria-grid { grid-template-columns: 1fr; }
 }
 </style>

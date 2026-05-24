@@ -24,7 +24,7 @@
         <!-- Presidente destacado -->
         <div class="presidente-card">
           <div class="pres-img">
-            <img src="https://images.unsplash.com/photo-1568805778734-f0a5a77d7272?w=400&q=80" alt="Presidente" />
+            <img src="/uploads/img/organizacion/presidente.jpeg" alt="Presidente" />
           </div>
           <div class="pres-info">
             <span class="pres-cargo">Presidente</span>

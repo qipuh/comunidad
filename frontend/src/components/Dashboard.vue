@@ -8,8 +8,7 @@
       <!-- Brand -->
       <div class="sidebar-brand">
         <div class="brand-mark">
-          <img v-if="marca.logo_url" :src="marca.logo_url" :alt="marca.nombre_pagina" class="brand-logo" />
-          <ion-icon v-else name="shield-checkmark" class="brand-icon"></ion-icon>
+          <img :src="'/uploads/logo/logo.png'" alt="Logo" class="brand-logo" />
         </div>
         <div class="brand-text">
           <span class="brand-name">{{ marca.nombre_pagina || 'Comunidad' }}</span>
@@ -179,6 +178,7 @@
           <button class="hamburger" @click="sidebarOpen = !sidebarOpen">
             <ion-icon name="menu-outline"></ion-icon>
           </button>
+          <img :src="'/uploads/logo/logo.png'" alt="Logo" class="topbar-logo" />
           <div class="topbar-title">
             <h1>{{ activeView === 'dashboard' ? `Hola, ${usuario?.nombre_completo?.split(' ')[0] || 'Bienvenido'}` : getTituloVista() }}</h1>
             <p class="topbar-subtitle">{{ activeView === 'dashboard' ? 'Bienvenido a tu panel de control' : getSubtituloVista() }}</p>
@@ -314,7 +314,7 @@ const getSubtituloVista = () => {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -580,6 +580,12 @@ ion-icon {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.topbar-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
 }
 
 .topbar-title h1 {

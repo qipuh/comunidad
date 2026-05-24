@@ -6,7 +6,7 @@
       <div class="header-inner">
         <button class="brand" @click="nav('inicio')">
           <div class="brand-logo">
-            <ion-icon name="leaf"></ion-icon>
+            <img :src="'/uploads/logo/logo.png'" alt="Logo" class="logo-img" />
           </div>
           <div class="brand-text">
             <span class="brand-name">Comunidad TPCT</span>
@@ -173,9 +173,12 @@ main { flex: 1; }
 }
 .brand-logo {
   width: 42px; height: 42px;
-  background: linear-gradient(135deg,#16a34a,#15803d);
-  border-radius: 10px; display: flex; align-items: center;
-  justify-content: center; font-size: 22px; color: white;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.logo-img {
+  width: 100%; height: 100%; object-fit: contain;
 }
 .brand-text { display: flex; flex-direction: column; text-align: left; }
 .brand-name { font-size: 15px; font-weight: 700; color: white; line-height: 1.2; }

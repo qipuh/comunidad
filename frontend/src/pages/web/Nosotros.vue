@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1697729872733-24e9e8186a47?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/nosotros/comunidad.jpeg')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="people-outline"></ion-icon> Nosotros</span>
@@ -21,7 +21,10 @@
             <p>Está conformada por los anexos de <strong>Tumilaca, Pocata, Coscore y Tala</strong>, territorios que mantienen una profunda relación con la tierra y una identidad cultural sólida.</p>
           </div>
           <div class="historia-imgs">
-            <img src="https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=700&q=80" alt="Usuarios peruanos" class="hi-main" />
+            <div class="hi-collage">
+              <img :src="'/uploads/img/nosotros/tumilala.png'" alt="Anexo Tumilaca" class="hi-img-1" />
+              <img :src="'/uploads/img/nosotros/tumilala2.png'" alt="Anexo Tumilaca - vista 2" class="hi-img-2" />
+            </div>
             <div class="hi-stats">
               <div class="hi-stat" v-for="s in hitos" :key="s.label">
                 <strong>{{ s.value }}</strong>
@@ -133,7 +136,28 @@ const valores = [
 .historia-text { display: flex; flex-direction: column; gap: 16px; }
 .historia-text h2 { font-size: 2rem; font-weight: 800; color: #1a2e1a; }
 .historia-text p { font-size: 15px; color: #4a5e4a; line-height: 1.8; }
-.hi-main { width: 100%; height: 360px; object-fit: cover; border-radius: 20px; margin-bottom: 16px; }
+.hi-collage {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  grid-template-rows: 180px 180px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.hi-img-1 {
+  grid-row: 1 / span 2;
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+}
+.hi-img-2 {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  grid-row: 1 / span 2;
+  align-self: center;
+  height: 280px;
+  margin-top: 40px;
+}
 .hi-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
 .hi-stat {
   background: #dcfce7; border: 1px solid #86efac; border-radius: 12px;

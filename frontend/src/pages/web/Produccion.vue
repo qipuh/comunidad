@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1553550491-0895a24ffdac?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/nosotros/comunidad.jpeg')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="leaf-outline"></ion-icon> Producción</span>
@@ -71,17 +71,17 @@
 import LayoutPublico from './LayoutPublico.vue'
 
 const agricola = [
-  { nombre: 'Fresas', desc: 'Cultivo emblemático del valle de Tumilaca, producción de alta calidad para mercados locales y regionales.', img: 'https://images.unsplash.com/photo-1730424508745-29ea708ae698?w=600&q=80' },
-  { nombre: 'Damasco', desc: 'Fruta de hueso tradicional de los valles moqueguanos, de sabor intenso y dulce característico.', img: 'https://images.unsplash.com/photo-1536705284215-000a0c2f0406?w=600&q=80' },
-  { nombre: 'Palta', desc: 'Aguacate andino de alta demanda, cultivado en las laderas del valle de Tumilaca con técnicas tradicionales.', img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80' },
-  { nombre: 'Manzana', desc: 'Manzana serrana de variedades locales, cultivada en altitudes que garantizan su calidad y sabor.', img: 'https://images.unsplash.com/photo-1570219870023-102f3a8b5b0e?w=600&q=80' },
-  { nombre: 'Hortalizas', desc: 'Producción diversificada de hortalizas para consumo local y abastecimiento de mercados cercanos.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
+  { nombre: 'Fresas', desc: 'Cultivo emblemático del valle de Tumilaca, producción de alta calidad para mercados locales y regionales.', img: '/uploads/img/produccion/fresas.webp' },
+  { nombre: 'Damasco', desc: 'Fruta de hueso tradicional de los valles moqueguanos, de sabor intenso y dulce característico.', img: '/uploads/img/produccion/damasco.jpg' },
+  { nombre: 'Palta', desc: 'Aguacate andino de alta demanda, cultivado en las laderas del valle de Tumilaca con técnicas tradicionales.', img: '/uploads/img/produccion/palta.webp' },
+  { nombre: 'Manzana', desc: 'Manzana serrana de variedades locales, cultivada en altitudes que garantizan su calidad y sabor.', img: '/uploads/img/produccion/manzana.jpeg' },
+  { nombre: 'Hortalizas', desc: 'Producción diversificada de hortalizas para consumo local y abastecimiento de mercados cercanos.', img: '/uploads/img/produccion/hortalizas.webp' },
 ]
 
 const pecuaria = [
-  { nombre: 'Caprinos', desc: 'Crianza de cabras adaptadas al entorno andino, aprovechando los pastizales naturales del territorio.', img: 'https://images.unsplash.com/photo-1697729872733-24e9e8186a47?w=600&q=80' },
-  { nombre: 'Producción de Leche', desc: 'Obtención de leche fresca de alta calidad para consumo familiar y elaboración de derivados lácteos.', img: 'https://images.unsplash.com/photo-1593460915132-fcb729cc4597?w=600&q=80' },
-  { nombre: 'Crianza de Cuyes', desc: 'Actividad pecuaria ancestral andina, fuente importante de proteínas y de ingresos económicos para las familias.', img: 'https://images.unsplash.com/photo-1568805778734-f0a5a77d7272?w=600&q=80' },
+  { nombre: 'Caprinos', desc: 'Crianza de cabras adaptadas al entorno andino, aprovechando los pastizales naturales del territorio.', img: '/uploads/img/produccion/caprinos.jpg' },
+  { nombre: 'Producción de Leche', desc: 'Obtención de leche fresca de alta calidad para consumo familiar y elaboración de derivados lácteos.', img: '/uploads/img/produccion/leche.jpg' },
+  { nombre: 'Crianza de Cuyes', desc: 'Actividad pecuaria ancestral andina, fuente importante de proteínas y de ingresos económicos para las familias.', img: '/uploads/img/produccion/cuyes.jpg' },
 ]
 </script>
 

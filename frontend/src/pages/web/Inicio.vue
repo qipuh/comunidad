@@ -42,8 +42,8 @@
       <div class="container">
         <div class="sobre-grid">
           <div class="sobre-images">
-            <img src="/uploads/img/inicio/cerro_baul.png" alt="Cerro Baúl, hito ancestral del territorio" class="si-top" />
-            <img src="/uploads/img/inicio/cementerio_pocata.png" alt="Cementerio comunal de Pocata" class="si-bottom" />
+            <img :src="'/uploads/img/inicio/cerro_baul.png'" alt="Cerro Baúl, hito ancestral del territorio" class="si-top" />
+            <img :src="'/uploads/img/inicio/cementerio_pocata.png'" alt="Cementerio comunal de Pocata" class="si-bottom" />
             <div class="si-badge">
               <strong>77</strong>
               <span>años de historia</span>

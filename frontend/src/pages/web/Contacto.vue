@@ -140,8 +140,8 @@ function enviarFormulario() {
 
 const contactoInfo = [
   { icon: 'location-outline', label: 'Dirección', valor: 'Torata, Mariscal Nieto, Moquegua' },
-  { icon: 'call-outline', label: 'Teléfono', valor: '+51 053 462 000' },
-  { icon: 'mail-outline', label: 'Correo', valor: 'comunidad@tpct.pe' },
+  { icon: 'call-outline', label: 'Teléfono', valor: '----' },
+  { icon: 'mail-outline', label: 'Correo', valor: '----' },
   { icon: 'globe-outline', label: 'Región', valor: 'Moquegua, Perú' },
 ]
 

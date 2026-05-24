@@ -52,6 +52,23 @@
             </div>
           </div>
         </div>
+
+        <!-- Clientes -->
+        <div class="clientes-block">
+          <span class="clientes-tag">Trabajamos con</span>
+          <h3>Nuestros clientes</h3>
+          <p>ECOSER presta servicios a las principales empresas mineras que operan en la región Moquegua.</p>
+          <div class="clientes-logos">
+            <div class="cliente-logo">
+              <img :src="'/uploads/img/clientes/anglo-american-logo.jpg'" alt="Anglo American" />
+              <span>Anglo American</span>
+            </div>
+            <div class="cliente-logo">
+              <img :src="'/uploads/img/clientes/southern-peru.jpg'" alt="Southern Perú" />
+              <span>Southern Perú</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -195,6 +212,36 @@ const servicios = [
 .sc-body ion-icon { font-size: 28px; color: #16a34a; margin-bottom: 10px; }
 .sc-body h3 { font-size: 18px; font-weight: 700; color: #1a2e1a; margin-bottom: 8px; }
 .sc-body p { font-size: 14px; color: #4a5e4a; line-height: 1.7; }
+
+.clientes-block {
+  margin-top: 56px;
+  padding: 40px 32px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  text-align: center;
+  color: white;
+}
+.clientes-tag {
+  display: inline-block; padding: 4px 14px;
+  background: rgba(134,239,172,0.15); color: #86efac;
+  border-radius: 100px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+}
+.clientes-block h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+.clientes-block p { font-size: 14px; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto 28px; line-height: 1.6; }
+.clientes-logos {
+  display: flex; justify-content: center; align-items: center;
+  gap: 48px; flex-wrap: wrap;
+}
+.cliente-logo {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: white; border-radius: 14px; padding: 20px 28px;
+  min-width: 200px; transition: transform 0.2s, box-shadow 0.2s;
+}
+.cliente-logo:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.25); }
+.cliente-logo img { max-height: 60px; max-width: 180px; object-fit: contain; }
+.cliente-logo span { font-size: 12px; font-weight: 600; color: #0a1e0c; text-transform: uppercase; letter-spacing: 0.5px; }
 
 .ecoser-galeria { margin: 0 0 56px; }
 .ecoser-galeria .section-head { margin-bottom: 32px; }

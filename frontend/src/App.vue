@@ -51,8 +51,14 @@ const alertState = alertStore.state
 
 // Cuando el usuario hace clic en "Área Admin" desde cualquier página web
 setIrAdmin(() => {
-  vista.value = 'login'
-  window.history.pushState({}, '', '/admin')
+  if (authService.estaAutenticado()) {
+    usuarioActual.value = authService.obtenerUsuario()
+    vista.value = 'dashboard'
+    window.history.pushState({}, '', '/dashboard')
+  } else {
+    vista.value = 'login'
+    window.history.pushState({}, '', '/admin')
+  }
 })
 
 onMounted(() => {

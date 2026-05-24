@@ -158,6 +158,12 @@
       </nav>
 
       <!-- Footer -->
+      <div class="sidebar-extras">
+        <a href="/" class="sidebar-ver-web" @click.prevent="irAWeb">
+          <ion-icon name="globe-outline"></ion-icon>
+          <span>Ver sitio web</span>
+        </a>
+      </div>
       <div class="sidebar-user">
         <div class="sidebar-user-avatar">{{ inicialesUsuario }}</div>
         <div class="sidebar-user-info">
@@ -237,6 +243,10 @@ const fechaHoy = computed(() => {
   const hoy = new Date()
   return hoy.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 })
+
+const irAWeb = () => {
+  window.location.href = '/'
+}
 
 const titulos = {
   usuarios: { titulo: 'Usuarios', subtitulo: 'Gestiona todos los usuarios del sistema' },
@@ -491,13 +501,32 @@ ion-icon {
 }
 
 /* User footer */
+.sidebar-extras {
+  margin-top: auto;
+  padding: 8px 12px 0;
+}
+.sidebar-ver-web {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  color: rgba(255,255,255,0.85); text-decoration: none;
+  font-size: 13px; font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.2s;
+}
+.sidebar-ver-web:hover {
+  background: rgba(134,239,172,0.15);
+  color: #86efac;
+  border-color: rgba(134,239,172,0.3);
+}
+.sidebar-ver-web ion-icon { font-size: 18px; }
+
 .sidebar-user {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
   border-top: 1px solid rgba(255,255,255,0.06);
-  margin-top: auto;
 }
 
 .sidebar-user-avatar {

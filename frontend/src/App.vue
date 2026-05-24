@@ -4,7 +4,7 @@
     <WebApp v-if="vista === 'web'" />
 
     <!-- Login admin -->
-    <Login v-else-if="vista === 'login'" @autenticado="onAutenticado" @volver="vista = 'web'" />
+    <Login v-else-if="vista === 'login'" @autenticado="onAutenticado" @volver="volverAWeb" />
 
     <!-- Dashboard -->
     <Dashboard v-else-if="vista === 'dashboard'" :usuario="usuarioActual" @cerrar-sesion="cerrarSesion" />
@@ -31,31 +31,60 @@ import authService from './services/auth.service'
 import { useWebNav } from './composables/useWebNav'
 import { alertStore } from './stores/alertStore'
 
-const vista = ref('web')
+const RUTAS_DASHBOARD = ['/dashboard', '/usuarios', '/configuracion', '/marca', '/reportes',
+  '/integraciones', '/cobranza', '/operaciones', '/elecciones', '/votacion',
+  '/carnets', '/reuniones']
+
+function vistaDesdeUrl() {
+  const path = window.location.pathname || '/'
+  if (path === '/admin' || path === '/login') return 'login'
+  if (RUTAS_DASHBOARD.some(r => path === r || path.startsWith(r + '/'))) {
+    return authService.estaAutenticado() ? 'dashboard' : 'login'
+  }
+  return 'web'
+}
+
+const vista = ref(vistaDesdeUrl())
 const usuarioActual = ref(null)
 const { setIrAdmin } = useWebNav()
 const alertState = alertStore.state
 
 // Cuando el usuario hace clic en "Área Admin" desde cualquier página web
-setIrAdmin(() => { vista.value = 'login' })
+setIrAdmin(() => {
+  vista.value = 'login'
+  window.history.pushState({}, '', '/admin')
+})
 
 onMounted(() => {
-  if (authService.estaAutenticado()) {
+  if (authService.estaAutenticado() && vista.value === 'web') {
     usuarioActual.value = authService.obtenerUsuario()
-    vista.value = 'dashboard'
+    // No forzar dashboard si está navegando la web pública
+  } else if (vista.value === 'dashboard') {
+    usuarioActual.value = authService.obtenerUsuario()
   }
 })
 
 const onAutenticado = (usuario) => {
   usuarioActual.value = usuario
   vista.value = 'dashboard'
+  window.history.pushState({}, '', '/dashboard')
 }
 
 const cerrarSesion = async () => {
   await authService.logout()
   usuarioActual.value = null
   vista.value = 'web'
+  window.history.pushState({}, '', '/')
 }
+
+const volverAWeb = () => {
+  vista.value = 'web'
+  window.history.pushState({}, '', '/')
+}
+
+window.addEventListener('popstate', () => {
+  vista.value = vistaDesdeUrl()
+})
 </script>
 
 <style>

@@ -28,7 +28,7 @@
             </div>
           </div>
           <div class="ter-img-wrap">
-            <img src="/uploads/img/variadas/cerro-baul.png" alt="Territorio comunal" />
+            <img :src=\"'/uploads/img/variadas/cerro-baul.png'\" alt="Territorio comunal" />
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@
             <p>La comunidad mantiene espacios de diálogo y coordinación con los distintos actores presentes en el territorio, en el marco del respeto a sus derechos colectivos y la búsqueda de oportunidades para el desarrollo sostenible.</p>
           </div>
           <div class="entorno-img">
-            <img src="/uploads/img/variadas/cerro-pucarinito.png" alt="Entorno productivo" />
+            <img :src=\"'/uploads/img/variadas/cerro-pucarinito.png'\" alt="Entorno productivo" />
           </div>
         </div>
       </div>

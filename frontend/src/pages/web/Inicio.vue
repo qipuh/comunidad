@@ -130,7 +130,7 @@
     <!-- CTA ECOSER -->
     <section class="ecoser-cta">
       <div class="ecoser-cta-bg">
-        <img src="/uploads/img/variadas/2.png" alt="ECOSER comunidad" />
+        <img :src=\"'/uploads/img/variadas/2.png'\" alt="ECOSER comunidad" />
         <div class="ecoser-overlay"></div>
       </div>
       <div class="container">

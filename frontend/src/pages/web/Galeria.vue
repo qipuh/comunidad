@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1570219870023-102f3a8b5b0e?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/inicio/cerro_baul.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="images-outline"></ion-icon> Galería</span>
@@ -52,26 +52,48 @@ const filtroActivo = ref('todas')
 const fotoActiva = ref(null)
 
 const filtros = [
-  { key: 'todas', label: 'Todas' },
-  { key: 'comunidad', label: 'Comunidad' },
-  { key: 'territorio', label: 'Territorio' },
-  { key: 'produccion', label: 'Producción' },
+  { key: 'todas',       label: 'Todas' },
+  { key: 'comunidad',   label: 'Comunidad' },
+  { key: 'territorio',  label: 'Territorio' },
   { key: 'actividades', label: 'Actividades' },
 ]
 
 const fotos = [
-  { id: 1, categoria: 'comunidad', categoriaLabel: 'Comunidad', grande: true, titulo: 'Usuarios en asamblea', desc: 'Participación activa de los Usuarios en la toma de decisiones colectivas.', img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=900&q=80' },
-  { id: 2, categoria: 'territorio', categoriaLabel: 'Territorio', titulo: 'Valle de Tumilaca', desc: 'El fértil valle donde se desarrollan las principales actividades agrícolas de la comunidad.', img: 'https://images.unsplash.com/photo-1697729872733-24e9e8186a47?w=600&q=80' },
-  { id: 3, categoria: 'produccion', categoriaLabel: 'Producción', titulo: 'Cultivo de fresas', desc: 'Las fresas son el cultivo emblemático del valle, conocidas por su calidad y sabor.', img: 'https://images.unsplash.com/photo-1730424508745-29ea708ae698?w=600&q=80' },
-  { id: 4, categoria: 'territorio', categoriaLabel: 'Territorio', titulo: 'Zonas altoandinas', desc: 'Las partes altas del territorio comunal con pastizales naturales para la ganadería.', img: 'https://images.unsplash.com/photo-1553550491-0895a24ffdac?w=600&q=80' },
-  { id: 5, categoria: 'actividades', categoriaLabel: 'Actividades', titulo: 'Trabajo comunal', desc: 'La minga como expresión del trabajo colectivo y la solidaridad entre Usuarios.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
-  { id: 6, categoria: 'produccion', categoriaLabel: 'Producción', grande: true, titulo: 'Campos de cultivo', desc: 'Vista panorámica de los campos de cultivo en el sector Pocata, productivos durante todo el año.', img: 'https://images.unsplash.com/photo-1593460915132-fcb729cc4597?w=900&q=80' },
-  { id: 7, categoria: 'comunidad', categoriaLabel: 'Comunidad', titulo: 'Familias comuneras', desc: 'Las familias son la base de la comunidad, transmitiendo valores y tradiciones de generación en generación.', img: 'https://images.unsplash.com/photo-1568805778734-f0a5a77d7272?w=600&q=80' },
-  { id: 8, categoria: 'territorio', categoriaLabel: 'Territorio', titulo: 'Canales de irrigación', desc: 'El sistema de riego que hace posible la agricultura en el árido valle de Torata.', img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80' },
-  { id: 9, categoria: 'produccion', categoriaLabel: 'Producción', titulo: 'Cosecha de palta', desc: 'La palta andina cultivada en las laderas del valle, de alta demanda en el mercado regional.', img: 'https://images.unsplash.com/photo-1536705284215-000a0c2f0406?w=600&q=80' },
-  { id: 10, categoria: 'actividades', categoriaLabel: 'Actividades', titulo: 'Reunión de la junta', desc: 'Sesión de trabajo de la Junta Directiva en las instalaciones comunales.', img: 'https://images.unsplash.com/photo-1550290129-41b39a6fdfe8?w=600&q=80' },
-  { id: 11, categoria: 'comunidad', categoriaLabel: 'Comunidad', titulo: 'Jóvenes Usuarios', desc: 'La nueva generación comprometida con el futuro y la identidad de la comunidad.', img: 'https://images.unsplash.com/photo-1536704271660-d219aa1bd6eb?w=600&q=80' },
-  { id: 12, categoria: 'territorio', categoriaLabel: 'Territorio', grande: true, titulo: 'Paisaje del distrito de Torata', desc: 'La diversidad de paisajes del territorio comunal, desde el fondo del valle hasta las cumbres andinas.', img: 'https://images.unsplash.com/photo-1570219870023-102f3a8b5b0e?w=900&q=80' },
+  // COMUNIDAD
+  { id: 1, categoria: 'comunidad', categoriaLabel: 'Comunidad', grande: true,
+    titulo: 'Nuestra Comunidad TPCT', desc: 'Familias comuneras unidas por la tierra y las tradiciones del valle de Tumilaca.',
+    img: '/uploads/img/nosotros/comunidad.jpeg' },
+  { id: 2, categoria: 'comunidad', categoriaLabel: 'Comunidad',
+    titulo: 'Anexo Tumilaca', desc: 'Vista del anexo de Tumilaca, corazón productivo del valle.',
+    img: '/uploads/img/nosotros/tumilala.png' },
+  { id: 3, categoria: 'comunidad', categoriaLabel: 'Comunidad',
+    titulo: 'Tumilaca en acción', desc: 'Actividades cotidianas de los Usuarios en el anexo de Tumilaca.',
+    img: '/uploads/img/nosotros/tumilala2.png' },
+
+  // TERRITORIO
+  { id: 4, categoria: 'territorio', categoriaLabel: 'Territorio', grande: true,
+    titulo: 'Cerro Baúl', desc: 'Hito arqueológico y cultural emblemático del territorio comunal.',
+    img: '/uploads/img/inicio/cerro_baul.png' },
+  { id: 5, categoria: 'territorio', categoriaLabel: 'Territorio',
+    titulo: 'Cementerio de Pocata', desc: 'Cementerio comunal histórico del anexo Pocata.',
+    img: '/uploads/img/inicio/cementerio_pocata.png' },
+  { id: 6, categoria: 'territorio', categoriaLabel: 'Territorio',
+    titulo: 'Vista del valle', desc: 'Panorámica del territorio comunal en el distrito de Torata.',
+    img: '/uploads/img/inicio/01.png' },
+  { id: 7, categoria: 'territorio', categoriaLabel: 'Territorio',
+    titulo: 'Paisaje comunal', desc: 'Diversidad geográfica del territorio de la comunidad TPCT.',
+    img: '/uploads/img/heroimage.jpeg' },
+
+  // ACTIVIDADES — ECOSER
+  { id: 8, categoria: 'actividades', categoriaLabel: 'Actividades',
+    titulo: 'ECOSER en operaciones', desc: 'Trabajos de la empresa comunal ECOSER en el territorio.',
+    img: '/uploads/img/ecoser/01.png' },
+  { id: 9, categoria: 'actividades', categoriaLabel: 'Actividades',
+    titulo: 'Equipo ECOSER', desc: 'Mano de obra local capacitada para servicios diversos.',
+    img: '/uploads/img/ecoser/02.png' },
+  { id: 10, categoria: 'actividades', categoriaLabel: 'Actividades', grande: true,
+    titulo: 'Servicios al territorio', desc: 'ECOSER brindando servicios a la comunidad y empresas de la zona.',
+    img: '/uploads/img/ecoser/03.png' },
 ]
 
 const fotosFiltradas = computed(() =>

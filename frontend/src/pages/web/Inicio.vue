@@ -130,7 +130,7 @@
     <!-- CTA ECOSER -->
     <section class="ecoser-cta">
       <div class="ecoser-cta-bg">
-        <img src="https://images.unsplash.com/photo-1550290129-41b39a6fdfe8?w=1400&q=80" alt="ECOSER comunidad" />
+        <img src="/uploads/img/variadas/2.png" alt="ECOSER comunidad" />
         <div class="ecoser-overlay"></div>
       </div>
       <div class="container">
@@ -177,22 +177,22 @@ const pilares = [
   {
     key: 'organizacion', icon: 'business-outline', titulo: 'Organización Comunal',
     desc: 'Estructura democrática y participativa liderada por la Asamblea General de Usuarios.',
-    img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=600&q=80',
+    img: '/uploads/img/variadas/cementerio-pocata.png',
   },
   {
     key: 'territorio', icon: 'map-outline', titulo: 'Nuestro Territorio',
     desc: 'Extensas tierras en el valle de Tumilaca y zonas altoandinas del distrito de Torata.',
-    img: 'https://images.unsplash.com/photo-1593460915132-fcb729cc4597?w=600&q=80',
+    img: '/uploads/img/variadas/cerro-baul.png',
   },
   {
     key: 'produccion', icon: 'leaf-outline', titulo: 'Desarrollo Productivo',
     desc: 'Producción agrícola y pecuaria como base del sustento de las familias comuneras.',
-    img: 'https://images.unsplash.com/photo-1553550491-0895a24ffdac?w=600&q=80',
+    img: '/uploads/img/variadas/cerro-pucarinito.png',
   },
   {
     key: 'proyectos', icon: 'construct-outline', titulo: 'Empresa ECOSER',
     desc: 'Brazo económico de la comunidad que genera empleo y presta servicios empresariales.',
-    img: 'https://images.unsplash.com/photo-1536705284215-000a0c2f0406?w=600&q=80',
+    img: '/uploads/img/variadas/coscore-alto-2.png',
   },
 ]
 
@@ -207,19 +207,19 @@ const noticias = [
     tipo: 'Aniversario', fecha: 'Abril 2026',
     titulo: '77° Aniversario de la Comunidad TPCT',
     resumen: 'La comunidad celebra su 77° aniversario con actividades culturales, deportivas y asambleas comunales.',
-    img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80',
+    img: '/uploads/img/variadas/coscore-alto.png',
   },
   {
     tipo: 'Asamblea', fecha: 'Marzo 2026',
     titulo: 'Acuerdos de la Asamblea General Ordinaria',
     resumen: 'Se aprobaron los estados financieros del ejercicio 2025 y el plan de trabajo para el año en curso.',
-    img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=600&q=80',
+    img: '/uploads/img/variadas/coscore-bajo-2.png',
   },
   {
     tipo: 'ECOSER', fecha: 'Febrero 2026',
     titulo: 'ECOSER firma nuevo contrato de servicios',
     resumen: 'La empresa comunal suscribió un contrato generando 25 puestos de trabajo para Usuarios del valle.',
-    img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80',
+    img: '/uploads/img/variadas/coscore-bajo.png',
   },
 ]
 </script>

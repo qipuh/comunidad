@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1593460915132-fcb729cc4597?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/cementerio-pocata.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="map-outline"></ion-icon> Territorio</span>
@@ -28,7 +28,7 @@
             </div>
           </div>
           <div class="ter-img-wrap">
-            <img src="https://images.unsplash.com/photo-1570219870023-102f3a8b5b0e?w=800&q=80" alt="Territorio comunal" />
+            <img src="/uploads/img/variadas/cerro-baul.png" alt="Territorio comunal" />
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@
             <p>La comunidad mantiene espacios de diálogo y coordinación con los distintos actores presentes en el territorio, en el marco del respeto a sus derechos colectivos y la búsqueda de oportunidades para el desarrollo sostenible.</p>
           </div>
           <div class="entorno-img">
-            <img src="https://images.unsplash.com/photo-1553550491-0895a24ffdac?w=800&q=80" alt="Entorno productivo" />
+            <img src="/uploads/img/variadas/cerro-pucarinito.png" alt="Entorno productivo" />
           </div>
         </div>
       </div>
@@ -90,10 +90,10 @@ const datos = [
 ]
 
 const anexos = [
-  { nombre: 'Tumilaca', desc: 'Sector principal del territorio comunal, ubicado en el valle del mismo nombre con condiciones favorables para la agricultura.', img: 'https://images.unsplash.com/photo-1697729872733-24e9e8186a47?w=600&q=80' },
-  { nombre: 'Pocata', desc: 'Sector comunal con actividades agropecuarias tradicionales y organización propia para la gestión territorial.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
-  { nombre: 'Coscore', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: 'https://images.unsplash.com/photo-1536705284215-000a0c2f0406?w=600&q=80' },
-  { nombre: 'Tala', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80' },
+  { nombre: 'Tumilaca', desc: 'Sector principal del territorio comunal, ubicado en el valle del mismo nombre con condiciones favorables para la agricultura.', img: '/uploads/img/variadas/coscore-alto-2.png' },
+  { nombre: 'Pocata', desc: 'Sector comunal con actividades agropecuarias tradicionales y organización propia para la gestión territorial.', img: '/uploads/img/variadas/coscore-alto.png' },
+  { nombre: 'Coscore', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: '/uploads/img/variadas/coscore-bajo-2.png' },
+  { nombre: 'Tala', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/coscore-bajo.png' },
 ]
 
 const mineros = [

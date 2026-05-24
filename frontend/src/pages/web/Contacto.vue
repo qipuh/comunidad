@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/1.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="call-outline"></ion-icon> Contacto</span>

@@ -146,10 +146,10 @@ const ventajas = [
 ]
 
 const servicios = [
-  { icon: 'car-outline', nombre: 'Alquiler de camionetas', desc: 'Flota de vehículos para transporte de personal y equipos en zonas de difícil acceso del distrito de Torata.', img: 'https://images.unsplash.com/photo-1536704271660-d219aa1bd6eb?w=600&q=80' },
-  { icon: 'people-outline', nombre: 'Provisión de mano de obra', desc: 'Personal Usuario capacitado para labores de campo, construcción y operaciones en general.', img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=600&q=80' },
-  { icon: 'cube-outline', nombre: 'Apoyo logístico', desc: 'Soporte integral en operaciones, abastecimiento y coordinación logística en el territorio comunal.', img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=600&q=80' },
-  { icon: 'settings-outline', nombre: 'Servicios diversos', desc: 'Atención a requerimientos específicos de empresas e instituciones que operan en la zona de influencia.', img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=600&q=80' },
+  { icon: 'car-outline', nombre: 'Alquiler de camionetas', desc: 'Flota de vehículos para transporte de personal y equipos en zonas de difícil acceso del distrito de Torata.', img: '/uploads/img/variadas/tala2.png' },
+  { icon: 'people-outline', nombre: 'Provisión de mano de obra', desc: 'Personal Usuario capacitado para labores de campo, construcción y operaciones en general.', img: '/uploads/img/variadas/tumilaca.png' },
+  { icon: 'cube-outline', nombre: 'Apoyo logístico', desc: 'Soporte integral en operaciones, abastecimiento y coordinación logística en el territorio comunal.', img: '/uploads/img/variadas/1.png' },
+  { icon: 'settings-outline', nombre: 'Servicios diversos', desc: 'Atención a requerimientos específicos de empresas e instituciones que operan en la zona de influencia.', img: '/uploads/img/variadas/2.png' },
 ]
 </script>
 

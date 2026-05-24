@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('https://images.unsplash.com/photo-1697729872733-24e9e8186a47?w=1800&q=80')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/cueva.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="newspaper-outline"></ion-icon> Noticias</span>
@@ -96,42 +96,42 @@ const noticias = [
     titulo: 'Asamblea General Ordinaria – Marzo 2026',
     resumen: 'Se realizó la asamblea ordinaria con la participación de más de 120 Usuarios. Se aprobaron los estados financieros del ejercicio 2025 y el plan de trabajo para el presente año.',
     fecha: '15 de marzo, 2026',
-    img: 'https://images.unsplash.com/photo-1519074598089-6436475c7f8f?w=700&q=80',
+    img: '/uploads/img/variadas/cullaba.png',
   },
   {
     id: 2, tipo: 'proyecto', tipoLabel: 'Proyecto',
     titulo: 'Avance del proyecto de mejora de canales de irrigación',
     resumen: 'La comunidad informa sobre el avance del 60% en la rehabilitación de los canales de irrigación del sector Tumilaca, beneficiando a más de 80 familias.',
     fecha: '28 de febrero, 2026',
-    img: 'https://images.unsplash.com/photo-1553550491-0895a24ffdac?w=700&q=80',
+    img: '/uploads/img/variadas/cullavaya-2.png',
   },
   {
     id: 3, tipo: 'ecoser', tipoLabel: 'ECOSER',
     titulo: 'ECOSER firma convenio de servicios con empresa minera',
     resumen: 'La empresa comunal ECOSER ha suscrito un nuevo contrato de prestación de servicios logísticos y provisión de personal, generando 25 puestos de trabajo para Usuarios.',
     fecha: '10 de febrero, 2026',
-    img: 'https://images.unsplash.com/photo-1550290129-41b39a6fdfe8?w=700&q=80',
+    img: '/uploads/img/variadas/cullavaya.png',
   },
   {
     id: 4, tipo: 'asamblea', tipoLabel: 'Asamblea',
     titulo: 'Convocatoria a Asamblea Extraordinaria',
     resumen: 'La Junta Directiva convoca a todos los Usuarios a una asamblea extraordinaria para tratar temas de interés colectivo relacionados con el territorio comunal.',
     fecha: '5 de enero, 2026',
-    img: 'https://images.unsplash.com/photo-1589682449071-d13c27d1c298?w=700&q=80',
+    img: '/uploads/img/variadas/pocata.png',
   },
   {
     id: 5, tipo: 'proyecto', tipoLabel: 'Proyecto',
     titulo: 'Inauguración de nuevo módulo de crianza de cuyes',
     resumen: 'Con el apoyo de la Junta Directiva, se inauguró un módulo comunal de crianza de cuyes en el anexo Pocata, como parte del programa de seguridad alimentaria.',
     fecha: '20 de diciembre, 2025',
-    img: 'https://images.unsplash.com/photo-1730424508745-29ea708ae698?w=700&q=80',
+    img: '/uploads/img/variadas/quebrada-honda-2.png',
   },
   {
     id: 6, tipo: 'ecoser', tipoLabel: 'ECOSER',
     titulo: 'Flota de ECOSER incorpora dos nuevas camionetas',
     resumen: 'ECOSER amplía su capacidad operativa con la adquisición de dos unidades 4x4, fortaleciendo el servicio de transporte en zonas de difícil acceso del distrito de Torata.',
     fecha: '1 de diciembre, 2025',
-    img: 'https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?w=700&q=80',
+    img: '/uploads/img/variadas/quebrada-honda.png',
   },
 ]
 

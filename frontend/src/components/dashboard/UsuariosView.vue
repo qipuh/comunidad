@@ -296,6 +296,7 @@
                     <th>Sexo</th>
                     <th>F. Nacimiento</th>
                     <th>Est. Civil</th>
+                    <th>Anexo</th>
                     <th style="width: 180px;">Estado</th>
                   </tr>
                 </thead>
@@ -317,6 +318,7 @@
                     <td>{{ fila.datos.sexo || '-' }}</td>
                     <td>{{ fila.datos.fecha_nacimiento || '-' }}</td>
                     <td>{{ fila.datos.estado_civil || '-' }}</td>
+                    <td>{{ fila.datos.anexo || '-' }}</td>
                     <td class="estado-cell">
                       <span v-if="fila.estado === 'valido'" class="badge-estado valido">
                         ✅ Nuevo
@@ -456,6 +458,14 @@
                 <label>Estado Civil</label>
                 <input v-model="formulario.estado_civil" type="text" disabled>
               </div>
+            </div>
+
+            <div class="form-group">
+              <label>Anexo</label>
+              <select v-model="formulario.anexo">
+                <option value="">— Sin anexo —</option>
+                <option v-for="a in opcionesAnexo" :key="a" :value="a">{{ a }}</option>
+              </select>
             </div>
 
             <div class="form-group">
@@ -709,6 +719,23 @@ const direccionOrden = ref('asc')  // 'asc' o 'desc'
 const filtroPreview = ref('todos')
 const mostrarConfirmacion = ref(false)
 
+const opcionesAnexo = [
+  'ALTO COSCORE',
+  'CALIENTES',
+  'CALUCHAVE',
+  'CHIBAYA BAJA',
+  'COCOTEA',
+  'COSCORE',
+  'CRUZ PATA',
+  'POCATA',
+  'POCATA/COSCORE',
+  'QUEBRADA HONDA',
+  'QUEBRADAD HONDA',
+  'TALA',
+  'TALA / QUEBRADA HONDA',
+  'TUMILACA',
+]
+
 const formulario = ref({
   numero_dni: '',
   nombres: '',
@@ -717,6 +744,7 @@ const formulario = ref({
   fecha_nacimiento: '',
   sexo: '',
   estado_civil: '',
+  anexo: '',
   direccion: '',
   departamento: '',
   provincia: '',
@@ -1001,6 +1029,7 @@ const editarUsuario = (usuario) => {
     fecha_nacimiento: usuario.fecha_nacimiento || '',
     sexo: usuario.sexo || '',
     estado_civil: usuario.estado_civil || '',
+    anexo: usuario.anexo || '',
     direccion: usuario.direccion || '',
     departamento: usuario.departamento || '',
     provincia: usuario.provincia || '',
@@ -1049,6 +1078,7 @@ const guardarUsuario = async () => {
     formData.append('fecha_nacimiento', formulario.value.fecha_nacimiento)
     formData.append('sexo', formulario.value.sexo)
     formData.append('estado_civil', formulario.value.estado_civil)
+    formData.append('anexo', formulario.value.anexo || '')
     formData.append('direccion', formulario.value.direccion)
     formData.append('departamento', formulario.value.departamento)
     formData.append('provincia', formulario.value.provincia)
@@ -1152,6 +1182,7 @@ const resetFormulario = () => {
     fecha_nacimiento: '',
     sexo: '',
     estado_civil: '',
+    anexo: '',
     direccion: '',
     departamento: '',
     provincia: '',

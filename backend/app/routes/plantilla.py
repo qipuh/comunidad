@@ -42,7 +42,8 @@ def descargar_plantilla():
             'sexo',
             'dni',
             'fecha_nacimiento',
-            'estado_civil'
+            'estado_civil',
+            'anexo'
         ]
 
         ws.append(headers)
@@ -57,11 +58,11 @@ def descargar_plantilla():
 
         # Datos de ejemplo
         ejemplos = [
-            ['P001', 'García', 'López', 'Juan Carlos', 'M', '12345678', '1990-01-15', 'Soltero'],
-            ['P002', 'Pérez', 'Rodríguez', 'María Elena', 'F', '87654321', '1988-06-20', 'Casada'],
-            ['P003', 'López', 'Martínez', 'Carlos Alberto', 'M', '11223344', '1995-03-10', 'Soltero'],
-            ['P004', 'González', 'Fernández', 'Ana Patricia', 'F', '55667788', '1992-08-25', 'Casada'],
-            ['P005', 'Rodríguez', 'García', 'Pedro Luis', 'M', '99887766', '1989-12-05', 'Divorciado'],
+            ['P001', 'García', 'López', 'Juan Carlos', 'M', '12345678', '1990-01-15', 'Soltero', 'TUMILACA'],
+            ['P002', 'Pérez', 'Rodríguez', 'María Elena', 'F', '87654321', '1988-06-20', 'Casada', 'POCATA'],
+            ['P003', 'López', 'Martínez', 'Carlos Alberto', 'M', '11223344', '1995-03-10', 'Soltero', 'COSCORE'],
+            ['P004', 'González', 'Fernández', 'Ana Patricia', 'F', '55667788', '1992-08-25', 'Casada', 'TALA'],
+            ['P005', 'Rodríguez', 'García', 'Pedro Luis', 'M', '99887766', '1989-12-05', 'Divorciado', 'CALIENTES'],
         ]
 
         for ejemplo in ejemplos:
@@ -89,7 +90,8 @@ def descargar_plantilla():
             'E': 8,   # sexo
             'F': 12,  # dni
             'G': 18,  # fecha_nacimiento
-            'H': 15   # estado_civil
+            'H': 15,  # estado_civil
+            'I': 15   # anexo
         }
 
         for col, width in widths.items():
@@ -124,6 +126,7 @@ def descargar_plantilla():
                 '• sexo: M, F, Masculino o Femenino',
                 '• fecha_nacimiento: Formato DD/MM/YYYY o YYYY-MM-DD',
                 '• estado_civil: Soltero, Casado, Divorciado, Viudo',
+                '• anexo: Sector/Anexo al que pertenece. Valores: ALTO COSCORE, CALIENTES, CALUCHAVE, CHIBAYA BAJA, COCOTEA, COSCORE, CRUZ PATA, POCATA, POCATA/COSCORE, QUEBRADA HONDA, QUEBRADAD HONDA, TALA, TALA / QUEBRADA HONDA, TUMILACA',
             ]),
             ('NOTAS IMPORTANTES:', [
                 '✓ El DNI debe ser único (sin duplicados en el archivo)',

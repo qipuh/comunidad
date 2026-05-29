@@ -630,7 +630,7 @@ async def preview_excel(
             datos = {}
 
             try:
-                # Mapeo: num_padron, APELLIDO PATERNO, APELLIDO MATERNO, NOMBRES, SEXO, DNI, F. NACIMIENTO, ESTADO CIVIL
+                # Mapeo: num_padron, APELLIDO PATERNO, APELLIDO MATERNO, NOMBRES, SEXO, DNI, F. NACIMIENTO, ESTADO CIVIL, ANEXO
                 num_padron = get_cell(0, "") or ""
                 apellido_paterno = get_cell(1, "") or ""
                 apellido_materno = get_cell(2, "") or ""
@@ -639,6 +639,7 @@ async def preview_excel(
                 dni_raw = get_cell(5, "")
                 fecha_nacimiento = get_cell(6)
                 estado_civil = get_cell(7, "") or ""
+                anexo = get_cell(8, "") or ""
 
                 # Procesar DNI
                 dni = str(dni_raw or "").strip() if dni_raw else ""
@@ -701,6 +702,7 @@ async def preview_excel(
                     "dni": dni,
                     "fecha_nacimiento": fecha_nac_str,
                     "estado_civil": str(estado_civil).strip() if estado_civil else "",
+                    "anexo": str(anexo).strip() if anexo else "",
                     "usuario_existente": usuario_existente is not None
                 }
 
@@ -759,6 +761,7 @@ async def importar_confirmado(
                 fecha_nacimiento = user_data.get("fecha_nacimiento")
                 num_padron = user_data.get("num_padron", "")
                 estado_civil = user_data.get("estado_civil", "")
+                anexo = user_data.get("anexo", "")
                 actualizar = user_data.get("actualizar", False)
 
                 # Validación final (seguridad)
@@ -779,6 +782,8 @@ async def importar_confirmado(
                         usuario_existente.sexo = sexo or usuario_existente.sexo
                         usuario_existente.fecha_nacimiento = fecha_nacimiento or usuario_existente.fecha_nacimiento
                         usuario_existente.estado_civil = estado_civil or usuario_existente.estado_civil
+                        if anexo:
+                            usuario_existente.anexo = anexo
                         if num_padron:
                             usuario_existente.num_padron = num_padron
 
@@ -806,6 +811,7 @@ async def importar_confirmado(
                         fecha_nacimiento=fecha_nacimiento,
                         estado_civil=estado_civil if estado_civil else None,
                         num_padron=num_padron if num_padron else None,
+                        anexo=anexo if anexo else None,
                         rol="usuario",
                         estado="activo",
                         usar_reconocimiento_facial=False

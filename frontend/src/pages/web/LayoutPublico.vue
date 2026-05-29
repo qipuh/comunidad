@@ -21,7 +21,7 @@
 
           <div class="nav-dropdown">
             <button class="nav-drop-btn">
-              QUIÉNES SOMOS
+              NOSOTROS
               <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
             </button>
             <div class="nav-drop-content">
@@ -38,7 +38,7 @@
 
         <div class="header-right">
           <button class="btn-admin" @click="goAdmin()">
-            ADMIN
+            INTRANET
           </button>
           <button class="hamburger" @click="mobileOpen = !mobileOpen" aria-label="Menú">
             <ion-icon :name="mobileOpen ? 'close' : 'menu'"></ion-icon>

@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/nosotros/comunidad.jpeg')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/coscore-bajo-2.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="people-outline"></ion-icon> Nosotros</span>
@@ -15,6 +15,7 @@
           <div class="historia-text">
             <span class="tag">Nuestros orígenes</span>
             <h2>Historia</h2>
+            <img :src="'/uploads/logo/logo.png'" alt="Comunidad TPCT Torata · Moquegua · Perú" style="width: 150px;" />
             <p>La Comunidad Campesina de Tumilaca, Pocata, Coscore y Tala tiene sus raíces en antiguas formas de organización colectiva que han permitido a las familias del valle de Tumilaca conservar sus tierras, su cultura y sus formas de producción tradicional.</p>
             <p>Sus orígenes formales se remontan al año <strong>1949</strong>, consolidándose como una organización representativa de carácter territorial, social y cultural. En el año 2026, la comunidad celebró su <strong>77° aniversario</strong>.</p>
             <p>A lo largo del tiempo, la comunidad ha fortalecido su organización mediante asambleas generales, juntas directivas y mecanismos participativos, consolidando un modelo de gestión basado en la solidaridad, el respeto y la cooperación.</p>

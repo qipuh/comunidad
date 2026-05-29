@@ -60,12 +60,10 @@
           <p>ECOSER presta servicios a las principales empresas mineras que operan en la región Moquegua.</p>
           <div class="clientes-logos">
             <div class="cliente-logo">
-              <img :src="'/uploads/img/clientes/anglo-american-logo.jpg'" alt="Anglo American" />
-              <span>Anglo American</span>
+              <img :src="'/uploads/img/clientes/aaquellaveco.jpg'" alt="Anglo American" />
             </div>
             <div class="cliente-logo">
               <img :src="'/uploads/img/clientes/southern-peru.jpg'" alt="Southern Perú" />
-              <span>Southern Perú</span>
             </div>
           </div>
         </div>

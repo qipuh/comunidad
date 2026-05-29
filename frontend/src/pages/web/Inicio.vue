@@ -1,8 +1,8 @@
 <template>
   <LayoutPublico>
 
-    <!-- HERO con fondo e imagen, overlay degradado -->
-    <section class="hero" :style="{ backgroundImage: `url('/uploads/img/inicio/01.png')` }">
+    <!-- HERO SLIDER con fotos variadas -->
+    <section class="hero" :style="{ backgroundImage: `url('${sliderImages[currentSlide].src}')` }">
       <div class="hero-overlay"></div>
       <div class="hero-inner">
         <div class="hero-text">
@@ -21,6 +21,22 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Slider Controls -->
+      <div class="slider-controls">
+        <button class="slider-btn prev" @click="prevSlide" :aria-label="`Ver imagen anterior (${currentSlide + 1} de ${sliderImages.length})`">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <div class="slider-dots">
+          <button v-for="(_, idx) in sliderImages" :key="idx"
+                  :class="['dot', { active: idx === currentSlide }]"
+                  @click="goToSlide(idx)"
+                  :aria-label="`Ir a imagen ${idx + 1}`"></button>
+        </div>
+        <button class="slider-btn next" @click="nextSlide" :aria-label="`Ver siguiente imagen (${currentSlide + 1} de ${sliderImages.length})`">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
       </div>
     </section>
 
@@ -154,11 +170,56 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import LayoutPublico from './LayoutPublico.vue'
 import { useWebNav } from '../../composables/useWebNav'
 
 const { navegar } = useWebNav()
 function nav(p) { navegar(p) }
+
+const currentSlide = ref(0)
+const sliderInterval = ref(null)
+
+const sliderImages = [
+  { src: '/uploads/img/web/2.png',   alt: 'Identidad comunal - Comunidad Campesina TPCT' },
+  { src: '/uploads/img/web/3.jpeg',  alt: 'Trabajo agrícola en el valle de Tumilaca' },
+  { src: '/uploads/img/web/1.jpeg',  alt: 'Plaza de Moquegua - Región Moquegua' },
+  { src: '/uploads/img/web/4.jpeg',  alt: 'Fauna andina del territorio comunal' },
+]
+
+function nextSlide() {
+  currentSlide.value = (currentSlide.value + 1) % sliderImages.length
+  resetAutoPlay()
+}
+
+function prevSlide() {
+  currentSlide.value = (currentSlide.value - 1 + sliderImages.length) % sliderImages.length
+  resetAutoPlay()
+}
+
+function goToSlide(idx) {
+  currentSlide.value = idx
+  resetAutoPlay()
+}
+
+function startAutoPlay() {
+  sliderInterval.value = setInterval(() => {
+    currentSlide.value = (currentSlide.value + 1) % sliderImages.length
+  }, 5000)
+}
+
+function resetAutoPlay() {
+  clearInterval(sliderInterval.value)
+  startAutoPlay()
+}
+
+onMounted(() => {
+  startAutoPlay()
+})
+
+onUnmounted(() => {
+  clearInterval(sliderInterval.value)
+})
 
 const stats = [
   { icon: 'calendar-outline', value: '1949',    label: 'Año de fundación' },
@@ -228,7 +289,7 @@ const noticias = [
 .hero {
   min-height: 100vh; background-size: cover; background-position: center;
   display: flex; align-items: center; position: relative; overflow: hidden;
-  padding-top: 70px;
+  padding-top: 70px; background-attachment: fixed; transition: background-image 0.6s ease-in-out;
 }
 .hero::before {
   content: ''; position: absolute; inset: 0;
@@ -416,6 +477,44 @@ const noticias = [
 .ecoser-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
 .text-center { text-align: center; }
 .mt-40 { margin-top: 40px; }
+
+/* Slider Controls */
+.slider-controls {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 20px; z-index: 10;
+}
+
+.slider-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+  color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; transition: all 0.3s; backdrop-filter: blur(4px);
+}
+
+.slider-btn:hover {
+  background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.6);
+  transform: scale(1.1);
+}
+
+.slider-btn ion-icon { font-size: 24px; }
+
+.slider-dots {
+  display: flex; gap: 12px; align-items: center;
+}
+
+.dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,0.3); border: none;
+  cursor: pointer; transition: all 0.3s; padding: 0;
+}
+
+.dot.active {
+  background: white; width: 32px; border-radius: 100px;
+}
+
+.dot:hover {
+  background: rgba(255,255,255,0.6);
+}
 
 @media (max-width: 1024px) {
   .pilares-grid { grid-template-columns: repeat(2,1fr); }

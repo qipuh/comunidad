@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/nosotros/comunidad.jpeg')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/nosotros/tumilala.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="leaf-outline"></ion-icon> Producción</span>

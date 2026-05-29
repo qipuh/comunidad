@@ -1,6 +1,6 @@
 <template>
   <LayoutPublico>
-    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/cementerio-pocata.png')` }">
+    <section class="page-hero" :style="{ backgroundImage: `url('/uploads/img/variadas/cerro-baul.png')` }">
       <div class="ph-overlay"></div>
       <div class="ph-content">
         <span class="ph-tag"><ion-icon name="map-outline"></ion-icon> Territorio</span>
@@ -83,17 +83,19 @@
 import LayoutPublico from './LayoutPublico.vue'
 
 const datos = [
-  { icon: 'location-outline', valor: 'Torata', label: 'Distrito' },
+  { icon: 'earth-outline', valor: 'Moquegua', label: 'Región' },  
   { icon: 'map-outline', valor: 'Mariscal Nieto', label: 'Provincia' },
-  { icon: 'earth-outline', valor: 'Moquegua', label: 'Región' },
+  { icon: 'location-outline', valor: 'Torata', label: 'Distrito' },
   { icon: 'layers-outline', valor: '4 anexos', label: 'Sectores territoriales' },
 ]
 
 const anexos = [
   { nombre: 'Tumilaca', desc: 'Sector principal del territorio comunal, ubicado en el valle del mismo nombre con condiciones favorables para la agricultura.', img: '/uploads/img/variadas/tumilaca.png' },
   { nombre: 'Pocata', desc: 'Sector comunal con actividades agropecuarias tradicionales y organización propia para la gestión territorial.', img: '/uploads/img/variadas/pocata.png' },
-  { nombre: 'Coscore', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: '/uploads/img/variadas/coscore-alto.png' },
+  { nombre: 'Coscore Alto', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: '/uploads/img/variadas/coscore-alto.png' },
+  { nombre: 'Coscore Bajo', desc: 'Zona de transición con potencial agrícola y actividades de aprovechamiento de recursos naturales.', img: '/uploads/img/variadas/coscore-bajo.png' },
   { nombre: 'Tala', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/tala.png' },
+  { nombre: 'Cullabaya', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/tala.png' },
 ]
 
 const mineros = [
@@ -103,7 +105,7 @@ const mineros = [
 </script>
 
 <style scoped>
-.page-hero { min-height: 55vh; background-size: cover; background-position: center; display: flex; align-items: center; position: relative; }
+.page-hero { min-height: 55vh; background-size: cover; background-position: top center; display: flex; align-items: center; position: relative; }
 .ph-overlay { position: absolute; inset: 0; background: rgba(5,20,8,0.75); }
 .ph-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 120px 24px 80px; color: white; }
 .ph-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(134,239,172,0.15); color: #86efac; border-radius: 100px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }

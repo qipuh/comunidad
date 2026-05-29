@@ -16,11 +16,13 @@
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4",
     "vue": "^3.4.0",
+    "vue-router": "^5.1.0",
     "vuedraggable": "^4.1.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
+    "playwright": "^1.60.0",
     "vite": "^5.0.0"
   }
 }

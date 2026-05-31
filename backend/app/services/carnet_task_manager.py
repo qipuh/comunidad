@@ -20,6 +20,7 @@ class EstadoTarea(str, Enum):
     PROCESANDO = "procesando"
     COMPLETADA = "completada"
     ERROR = "error"
+    CANCELADA = "cancelada"
 
 
 @dataclass
@@ -35,6 +36,7 @@ class EstadoProgreso:
     error: Optional[str] = None
     creada_en: datetime = None
     completada_en: Optional[datetime] = None
+    cancelar: bool = False
 
     def __post_init__(self):
         if self.creada_en is None:
@@ -114,6 +116,24 @@ class GestorTareas:
                 tarea.error = error
                 tarea.mensaje = f"Error: {error}"
                 tarea.completada_en = datetime.utcnow()
+
+    def cancelar_tarea(self, task_id: str) -> bool:
+        """Solicita cancelación de una tarea en curso. Retorna True si se pudo marcar."""
+        with self.lock:
+            tarea = self.tareas.get(task_id)
+            if tarea and tarea.estado in (EstadoTarea.PENDIENTE, EstadoTarea.PROCESANDO):
+                tarea.cancelar = True
+                tarea.estado = EstadoTarea.CANCELADA
+                tarea.mensaje = "Cancelado por el usuario"
+                tarea.completada_en = datetime.utcnow()
+                return True
+            return False
+
+    def debe_cancelar(self, task_id: str) -> bool:
+        """El thread worker llama esto entre carnets para saber si debe abortar."""
+        with self.lock:
+            tarea = self.tareas.get(task_id)
+            return tarea.cancelar if tarea else False
 
     def ejecutar_tarea(self, task_id: str, funcion: Callable):
         """Ejecuta una función en un thread worker con control de concurrencia."""

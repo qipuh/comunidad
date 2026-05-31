@@ -21,7 +21,7 @@
 
           <div class="nav-dropdown">
             <button class="nav-drop-btn">
-              NOSOTROS
+              QUIÉNES SOMOS
               <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
             </button>
             <div class="nav-drop-content">
@@ -59,7 +59,7 @@
           {{ item.label }}
         </button>
         <button class="mobile-link admin-mobile" @click="goAdmin()">
-          ÁREA ADMINISTRATIVA
+          INTRANET
         </button>
       </div>
     </header>
@@ -91,7 +91,7 @@
             <a href="#">Actas Comunales</a>
             <a href="#">Empresa ECOSER</a>
             <a href="#">Convocatorias</a>
-            <button @click="goAdmin()">Área Administrativa</button>
+            <button @click="goAdmin()">Intranet</button>
           </div>
           <div class="footer-contact">
             <h4>Contacto</h4>

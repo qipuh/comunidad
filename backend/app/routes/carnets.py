@@ -76,7 +76,11 @@ def exportar_pdf(
 
 
 @router.get("/exportar-pdf-individual/{usuario_id}")
-def exportar_pdf_individual(usuario_id: int, db: Session = Depends(get_db)):
+def exportar_pdf_individual(
+    usuario_id: int,
+    separado: bool = Query(False, description="Anverso y reverso en páginas separadas"),
+    db: Session = Depends(get_db)
+):
     """Genera el PDF de un solo carnet."""
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
@@ -95,7 +99,7 @@ def exportar_pdf_individual(usuario_id: int, db: Session = Depends(get_db)):
 
     try:
         # Ejecutar en thread pool separado
-        pdf_bytes = _thread_pool.submit(generar_pdf_carnets, [usuario], config).result()
+        pdf_bytes = _thread_pool.submit(generar_pdf_carnets, [usuario], config, None, separado).result()
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
@@ -115,6 +119,10 @@ def exportar_async(
     limit: int = Query(200, ge=1, le=2000),
     offset: int = Query(0, ge=0),
     todos: bool = Query(False),
+    rol: Optional[str] = Query(None, description="Filtrar por rol: usuario, admin, editor"),
+    con_anexo: Optional[str] = Query(None, description="Filtrar por anexo: nombre exacto del anexo"),
+    sin_anexo: bool = Query(False, description="Solo usuarios sin anexo"),
+    separado: bool = Query(False, description="Anverso y reverso en páginas separadas"),
     db: Session = Depends(get_db),
 ):
     """
@@ -122,7 +130,19 @@ def exportar_async(
     Retorna task_id para trackear progreso.
     Máximo 2 exportaciones simultáneos en el servidor.
     """
+    from sqlalchemy import or_
+
     query = db.query(Usuario).order_by(Usuario.id.asc())
+
+    # Filtro por rol
+    if rol:
+        query = query.filter(Usuario.rol == rol)
+
+    # Filtro por anexo
+    if sin_anexo:
+        query = query.filter(or_(Usuario.anexo == None, Usuario.anexo == ""))
+    elif con_anexo:
+        query = query.filter(Usuario.anexo == con_anexo)
 
     if todos:
         usuarios_raw = query.all()
@@ -154,8 +174,12 @@ def exportar_async(
 
     # Función que ejecutará en thread (captura usuarios y config del closure)
     def generar_en_thread(task_id_local: str, callback):
-        # Los atributos ya están cargados, no hay lazy loading
-        return generar_pdf_carnets(usuarios, config, callback=callback)
+        def callback_con_cancel(procesados, mensaje=""):
+            if gestor.debe_cancelar(task_id_local):
+                raise InterruptedError("Exportación cancelada por el usuario")
+            callback(procesados, mensaje)
+
+        return generar_pdf_carnets(usuarios, config, callback=callback_con_cancel, separado=separado)
 
     # Ejecutar en background (con límite de workers)
     gestor.ejecutar_tarea(task_id, generar_en_thread)
@@ -165,6 +189,16 @@ def exportar_async(
         "estado": "pendiente",
         "mensaje": "Exportación encolada"
     }
+
+
+@router.post("/cancelar/{task_id}")
+def cancelar_exportacion(task_id: str):
+    """Cancela una exportación en curso."""
+    gestor = get_gestor_tareas()
+    cancelado = gestor.cancelar_tarea(task_id)
+    if not cancelado:
+        raise HTTPException(status_code=400, detail="La tarea no existe o ya finalizó")
+    return {"success": True, "mensaje": "Exportación cancelada"}
 
 
 @router.get("/tarea/{task_id}")
@@ -285,6 +319,9 @@ def vincular_fotos(db: Session = Depends(get_db)):
             })
             vinculados += 1
         except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
+            print(f"[ERROR vincular-fotos] DNI={dni} error={e}\n{tb}")
             db.rollback()
             detalles.append({
                 "dni": dni,
@@ -335,8 +372,15 @@ async def cargar_fotos(archivos: list[UploadFile] = File(...)):
             # Guardar archivo
             ruta_archivo = UPLOAD_DIR / archivo.filename
 
+            # Si existe, forzar permisos antes de sobreescribir
+            if ruta_archivo.exists():
+                ruta_archivo.chmod(0o664)
+
             with open(ruta_archivo, "wb") as buffer:
                 shutil.copyfileobj(archivo.file, buffer)
+
+            # Asegurar permisos de escritura para futuros accesos
+            ruta_archivo.chmod(0o664)
 
             detalles.append({
                 "archivo": archivo.filename,

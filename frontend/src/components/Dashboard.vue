@@ -12,149 +12,99 @@
         </div>
         <div class="brand-text">
           <span class="brand-name">{{ marca.nombre_pagina || 'Comunidad' }}</span>
-          <span class="brand-edition">Panel Administrativo</span>
+          <span class="brand-edition">{{ esAdmin ? 'Panel Administrativo' : 'Panel Comunero' }}</span>
         </div>
       </div>
 
       <!-- Navigation -->
       <nav class="sidebar-nav">
-        <div class="nav-section-label">Principal</div>
-        <RouterLink
-          to="/dashboard"
-          :class="['nav-link', { active: activeView === 'dashboard' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="grid-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Inicio</span>
-        </RouterLink>
-        <RouterLink
-          to="/usuarios"
-          :class="['nav-link', { active: activeView === 'usuarios' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="people-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Usuarios</span>
-        </RouterLink>
-        <RouterLink
-          to="/carnets"
-          :class="['nav-link', { active: activeView === 'carnets' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="card-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Carnets</span>
-        </RouterLink>
 
-        <div class="nav-section-label">Finanzas</div>
-        <RouterLink
-          to="/cobranza"
-          :class="['nav-link', { active: activeView === 'cobranza' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="wallet-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Cobranza</span>
-        </RouterLink>
-        <RouterLink
-          to="/operaciones"
-          :class="['nav-link', { active: activeView === 'operaciones' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="checkmark-done-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Operaciones</span>
-        </RouterLink>
+        <!-- ── SIDEBAR ADMIN ─────────────────────────── -->
+        <template v-if="esAdmin">
+          <div class="nav-section-label">Principal</div>
+          <RouterLink to="/dashboard" :class="['nav-link', { active: activeView === 'dashboard' }]" @click="sidebarOpen = false">
+            <ion-icon name="grid-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Inicio</span>
+          </RouterLink>
+          <RouterLink to="/usuarios" :class="['nav-link', { active: activeView === 'usuarios' }]" @click="sidebarOpen = false">
+            <ion-icon name="people-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Usuarios</span>
+          </RouterLink>
+          <RouterLink to="/carnets" :class="['nav-link', { active: activeView === 'carnets' }]" @click="sidebarOpen = false">
+            <ion-icon name="card-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Carnets</span>
+          </RouterLink>
 
-        <div class="nav-section-label">Gobernanza</div>
-        <RouterLink
-          to="/votacion"
-          :class="['nav-link', { active: activeView === 'votacion' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="checkbox-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Votaciones</span>
-        </RouterLink>
-        <RouterLink
-          v-if="usuario?.rol === 'admin'"
-          to="/reuniones"
-          :class="['nav-link', { active: activeView === 'reuniones' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="calendar-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Reuniones</span>
-        </RouterLink>
-        <RouterLink
-          v-if="usuario?.rol === 'admin'"
-          to="/elecciones"
-          :class="['nav-link', { active: activeView === 'elecciones' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="podium-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Elecciones</span>
-        </RouterLink>
+          <div class="nav-section-label">Finanzas</div>
+          <RouterLink to="/cobranza" :class="['nav-link', { active: activeView === 'cobranza' }]" @click="sidebarOpen = false">
+            <ion-icon name="wallet-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Cobranza</span>
+          </RouterLink>
+          <RouterLink to="/operaciones" :class="['nav-link', { active: activeView === 'operaciones' }]" @click="sidebarOpen = false">
+            <ion-icon name="checkmark-done-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Operaciones</span>
+          </RouterLink>
 
-        <div class="nav-section-label">Sistema</div>
-        <RouterLink
-          to="/reportes"
-          :class="['nav-link', { active: activeView === 'reportes' }]"
-          @click="sidebarOpen = false"
-        >
-          <ion-icon name="stats-chart-outline" class="nav-link-icon"></ion-icon>
-          <span class="nav-link-text">Reportes</span>
-        </RouterLink>
+          <div class="nav-section-label">Gobernanza</div>
+          <RouterLink to="/votacion" :class="['nav-link', { active: activeView === 'votacion' }]" @click="sidebarOpen = false">
+            <ion-icon name="checkbox-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Votaciones</span>
+          </RouterLink>
+          <RouterLink to="/reuniones" :class="['nav-link', { active: activeView === 'reuniones' }]" @click="sidebarOpen = false">
+            <ion-icon name="calendar-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Reuniones</span>
+          </RouterLink>
+          <RouterLink to="/elecciones" :class="['nav-link', { active: activeView === 'elecciones' }]" @click="sidebarOpen = false">
+            <ion-icon name="podium-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Elecciones</span>
+          </RouterLink>
 
-        <!-- Grupo Configuración -->
-        <div class="nav-group">
-          <button
-            class="nav-group-toggle"
-            :class="{ active: isConfigGroup }"
-            @click="configOpen = !configOpen"
-          >
-            <ion-icon name="settings-outline" class="nav-link-icon"></ion-icon>
-            <span class="nav-link-text">Configuración</span>
-            <ion-icon
-              name="chevron-down-outline"
-              class="chevron"
-              :class="{ rotated: configOpen }"
-            ></ion-icon>
-          </button>
-          <div class="nav-group-children" :class="{ open: configOpen }">
-            <RouterLink
-              to="/configuracion"
-              class="nav-link nav-child"
-              :class="{ active: activeView === 'configuracion' }"
-              @click="sidebarOpen = false"
-            >
-              <ion-icon name="construct-outline" class="nav-link-icon"></ion-icon>
-              <span class="nav-link-text">General</span>
-            </RouterLink>
-            <RouterLink
-              v-if="usuario?.rol === 'admin'"
-              to="/configuracion/marca"
-              class="nav-link nav-child"
-              :class="{ active: activeView === 'marca' }"
-              @click="sidebarOpen = false"
-            >
-              <ion-icon name="image-outline" class="nav-link-icon"></ion-icon>
-              <span class="nav-link-text">Marca</span>
-            </RouterLink>
-            <RouterLink
-              to="/integraciones"
-              class="nav-link nav-child"
-              :class="{ active: activeView === 'integraciones' }"
-              @click="sidebarOpen = false"
-            >
-              <ion-icon name="flash-outline" class="nav-link-icon"></ion-icon>
-              <span class="nav-link-text">Integraciones</span>
-            </RouterLink>
-            <RouterLink
-              to="/config-cobranza"
-              class="nav-link nav-child"
-              :class="{ active: activeView === 'config-cobranza' }"
-              @click="sidebarOpen = false"
-            >
-              <ion-icon name="cash-outline" class="nav-link-icon"></ion-icon>
-              <span class="nav-link-text">Config. Cobranza</span>
-            </RouterLink>
+          <div class="nav-section-label">Sistema</div>
+          <RouterLink to="/reportes" :class="['nav-link', { active: activeView === 'reportes' }]" @click="sidebarOpen = false">
+            <ion-icon name="stats-chart-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Reportes</span>
+          </RouterLink>
+
+          <div class="nav-group">
+            <button class="nav-group-toggle" :class="{ active: isConfigGroup }" @click="configOpen = !configOpen">
+              <ion-icon name="settings-outline" class="nav-link-icon"></ion-icon>
+              <span class="nav-link-text">Configuración</span>
+              <ion-icon name="chevron-down-outline" class="chevron" :class="{ rotated: configOpen }"></ion-icon>
+            </button>
+            <div class="nav-group-children" :class="{ open: configOpen }">
+              <RouterLink to="/configuracion" class="nav-link nav-child" :class="{ active: activeView === 'configuracion' }" @click="sidebarOpen = false">
+                <ion-icon name="construct-outline" class="nav-link-icon"></ion-icon>
+                <span class="nav-link-text">General</span>
+              </RouterLink>
+              <RouterLink to="/configuracion/marca" class="nav-link nav-child" :class="{ active: activeView === 'marca' }" @click="sidebarOpen = false">
+                <ion-icon name="image-outline" class="nav-link-icon"></ion-icon>
+                <span class="nav-link-text">Marca</span>
+              </RouterLink>
+              <RouterLink to="/integraciones" class="nav-link nav-child" :class="{ active: activeView === 'integraciones' }" @click="sidebarOpen = false">
+                <ion-icon name="flash-outline" class="nav-link-icon"></ion-icon>
+                <span class="nav-link-text">Integraciones</span>
+              </RouterLink>
+              <RouterLink to="/config-cobranza" class="nav-link nav-child" :class="{ active: activeView === 'config-cobranza' }" @click="sidebarOpen = false">
+                <ion-icon name="cash-outline" class="nav-link-icon"></ion-icon>
+                <span class="nav-link-text">Config. Cobranza</span>
+              </RouterLink>
+            </div>
           </div>
-        </div>
+        </template>
+
+        <!-- ── SIDEBAR USUARIO COMUNERO ──────────────── -->
+        <template v-else>
+          <div class="nav-section-label">Mi Espacio</div>
+          <RouterLink to="/mi-panel" :class="['nav-link', { active: activeView === 'mi-panel' }]" @click="sidebarOpen = false">
+            <ion-icon name="person-circle-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Mi Perfil</span>
+          </RouterLink>
+          <RouterLink to="/votacion" :class="['nav-link', { active: activeView === 'votacion' }]" @click="sidebarOpen = false">
+            <ion-icon name="checkbox-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Votaciones</span>
+          </RouterLink>
+        </template>
+
       </nav>
 
       <!-- Footer -->
@@ -186,8 +136,8 @@
           </button>
           <img :src="'/uploads/logo/logo.png'" alt="Logo" class="topbar-logo" />
           <div class="topbar-title">
-            <h1>{{ activeView === 'dashboard' ? `Hola, ${usuario?.nombre_completo?.split(' ')[0] || 'Bienvenido'}` : getTituloVista() }}</h1>
-            <p class="topbar-subtitle">{{ activeView === 'dashboard' ? 'Bienvenido a tu panel de control' : getSubtituloVista() }}</p>
+            <h1>{{ (activeView === 'dashboard' || activeView === 'mi-panel') ? `Hola, ${usuario?.nombre_completo?.split(' ')[0] || 'Bienvenido'}` : getTituloVista() }}</h1>
+            <p class="topbar-subtitle">{{ (activeView === 'dashboard' || activeView === 'mi-panel') ? (esAdmin ? 'Bienvenido a tu panel de control' : 'Bienvenido a tu espacio comunero') : getSubtituloVista() }}</p>
           </div>
         </div>
         <div class="topbar-right">
@@ -206,12 +156,37 @@
         <RouterView />
       </div>
     </main>
+
+    <!-- Barra flotante de exportación -->
+    <Transition name="slide-up">
+      <div v-if="exportStore.activo()" class="export-toast">
+        <div class="export-toast-info">
+          <ion-icon name="document-outline" class="export-toast-icon"></ion-icon>
+          <div class="export-toast-texts">
+            <span class="export-toast-titulo">Generando PDF...</span>
+            <span class="export-toast-msg">{{ exportStore.mensaje }}</span>
+          </div>
+        </div>
+        <div class="export-toast-barra">
+          <div class="export-toast-fill" :style="{ width: exportStore.progreso + '%' }"></div>
+        </div>
+        <div class="export-toast-actions">
+          <span class="export-toast-pct">{{ exportStore.progreso }}%</span>
+          <button class="export-toast-cancelar" @click="cancelarExportacion">
+            <ion-icon name="stop-circle-outline"></ion-icon>
+            Detener
+          </button>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { exportStore } from '@/services/exportStore'
+import api from '@/services/api'
 import { useMarca } from '@/composables/useMarca'
 
 const props = defineProps({ usuario: Object })
@@ -239,6 +214,11 @@ const inicialesUsuario = computed(() => {
   return nombre.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() || 'U'
 })
 
+const esAdmin = computed(() => {
+  const rol = props.usuario?.rol
+  return rol === 'admin' || rol === 'editor' || rol === 'moderator'
+})
+
 const fechaHoy = computed(() => {
   const hoy = new Date()
   return hoy.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -249,6 +229,7 @@ const irAWeb = () => {
 }
 
 const titulos = {
+  'mi-panel': { titulo: 'Mi Panel', subtitulo: 'Tu información personal, reuniones y elecciones' },
   usuarios: { titulo: 'Usuarios', subtitulo: 'Gestiona todos los usuarios del sistema' },
   configuracion: { titulo: 'Configuración', subtitulo: 'Configura los campos del formulario' },
   marca: { titulo: 'Configuración de Marca', subtitulo: 'Personaliza el logo, favicon y colores de tu organización' },
@@ -273,6 +254,15 @@ const getTituloVista = () => {
 const getSubtituloVista = () => {
   const info = titulos[activeView.value]
   return info?.subtitulo || ''
+}
+
+const cancelarExportacion = async () => {
+  if (exportStore.taskId) {
+    try {
+      await api.post(`/carnets/cancelar/${exportStore.taskId}`)
+    } catch (e) { /* ya terminó */ }
+  }
+  exportStore.reset()
 }
 </script>
 
@@ -738,5 +728,113 @@ ion-icon {
 @media (max-width: 480px) {
   .main-content-area { padding: 12px; }
   .topbar-title h1 { font-size: 15px; }
+}
+
+/* BARRA FLOTANTE DE EXPORTACIÓN */
+.export-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 340px;
+  background: #1e293b;
+  color: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.export-toast-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.export-toast-icon {
+  font-size: 22px;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.export-toast-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.export-toast-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+}
+
+.export-toast-msg {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.export-toast-barra {
+  height: 4px;
+  background: #334155;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.export-toast-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.export-toast-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.export-toast-pct {
+  font-size: 13px;
+  font-weight: 700;
+  color: #a5b4fc;
+}
+
+.export-toast-cancelar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.export-toast-cancelar:hover {
+  background: #dc2626;
+}
+
+.export-toast-cancelar ion-icon {
+  font-size: 14px;
+}
+
+/* Animación entrada/salida */
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
 }
 </style>

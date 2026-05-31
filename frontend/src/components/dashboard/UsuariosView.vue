@@ -297,7 +297,7 @@
                     <th>F. Nacimiento</th>
                     <th>Est. Civil</th>
                     <th>Anexo</th>
-                    <th style="width: 180px;">Estado</th>
+                    <th style="width: 180px; ">Estado</th>
                   </tr>
                 </thead>
                 <tbody>

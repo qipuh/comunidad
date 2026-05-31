@@ -60,8 +60,49 @@
         </div>
 
         <div class="modal-body-bloques">
+
+          <!-- Filtros de exportación -->
+          <div class="filtros-exportacion">
+            <div class="filtro-grupo">
+              <label class="filtro-label">Rol</label>
+              <div class="filtro-botones">
+                <button :class="['btn-filtro-exp', { activo: filtroExportRol === '' }]" @click="filtroExportRol = ''">Todos</button>
+                <button :class="['btn-filtro-exp', { activo: filtroExportRol === 'usuario' }]" @click="filtroExportRol = 'usuario'">Usuario</button>
+                <button :class="['btn-filtro-exp', { activo: filtroExportRol === 'admin' }]" @click="filtroExportRol = 'admin'">Admin</button>
+                <button :class="['btn-filtro-exp', { activo: filtroExportRol === 'editor' }]" @click="filtroExportRol = 'editor'">Editor</button>
+              </div>
+            </div>
+
+            <div class="filtro-grupo">
+              <label class="filtro-label">Anexo</label>
+              <div class="filtro-botones">
+                <button :class="['btn-filtro-exp', { activo: filtroExportAnexo === 'todos' }]" @click="filtroExportAnexo = 'todos'">Todos</button>
+                <button :class="['btn-filtro-exp', { activo: filtroExportAnexo === 'sin_anexo' }]" @click="filtroExportAnexo = 'sin_anexo'">Sin anexo</button>
+                <button :class="['btn-filtro-exp', { activo: filtroExportAnexo === 'con_anexo' }]" @click="filtroExportAnexo = 'con_anexo'">Con anexo</button>
+              </div>
+              <select v-if="filtroExportAnexo === 'con_anexo'" v-model="filtroExportAnexoNombre" class="select-anexo">
+                <option value="">— Todos los anexos —</option>
+                <option v-for="a in opcionesAnexo" :key="a" :value="a">{{ a }}</option>
+              </select>
+            </div>
+
+            <div class="filtro-grupo">
+              <label class="filtro-label">Formato de página</label>
+              <div class="filtro-botones">
+                <button :class="['btn-filtro-exp', { activo: !modoSeparado }]" @click="modoSeparado = false">
+                  <ion-icon name="tablet-landscape-outline"></ion-icon>
+                  Juntos (anverso + reverso)
+                </button>
+                <button :class="['btn-filtro-exp', { activo: modoSeparado }]" @click="modoSeparado = true">
+                  <ion-icon name="documents-outline"></ion-icon>
+                  Separados (1 cara por página)
+                </button>
+              </div>
+            </div>
+          </div>
+
           <p class="info-bloques">
-            Total de usuarios: <strong>{{ usuarios?.length || 0 }}</strong>
+            Total a exportar: <strong>{{ usuariosParaExportar.length }}</strong>
           </p>
 
           <div class="selector-tamano">
@@ -83,7 +124,7 @@
                 @click="tamanoBloque = 'todos'"
                 :disabled="cargando"
               >
-                TODOS ({{ usuarios?.length || 0 }})
+                TODOS ({{ usuariosParaExportar.length }})
               </button>
             </div>
           </div>
@@ -102,7 +143,7 @@
               >
                 <div class="numero-bloque">Bloque {{ bloque }}</div>
                 <div class="rango-bloque">
-                  {{ (bloque - 1) * tamanoBloque + 1 }} - {{ Math.min(bloque * tamanoBloque, usuarios?.length || 0) }}
+                  {{ (bloque - 1) * tamanoBloque + 1 }} - {{ Math.min(bloque * tamanoBloque, usuariosParaExportar.length) }}
                 </div>
                 <ion-icon name="download-outline"></ion-icon>
               </button>
@@ -113,10 +154,10 @@
             v-if="tamanoBloque === 'todos'"
             class="btn-todos-pdf"
             @click="exportarTodosPDF"
-            :disabled="cargando"
+            :disabled="cargando || usuariosParaExportar.length === 0"
           >
             <ion-icon name="cloud-download-outline"></ion-icon>
-            Descargar TODOS en un solo PDF ({{ usuarios?.length || 0 }} carnets)
+            Descargar TODOS en un solo PDF ({{ usuariosParaExportar.length }} carnets)
           </button>
 
           <div class="nota-bloques">
@@ -699,10 +740,16 @@
           </div>
         </div>
 
-        <button class="btn-exportar-individual" @click="exportarCarnetIndividual">
-          <ion-icon name="download-outline"></ion-icon>
-          Descargar este carnet (PDF)
-        </button>
+        <div class="btns-exportar-individual">
+          <button class="btn-exportar-individual" @click="exportarCarnetIndividual(false)" :disabled="cargando">
+            <ion-icon name="download-outline"></ion-icon>
+            Juntos (anverso + reverso)
+          </button>
+          <button class="btn-exportar-individual btn-exportar-separado" @click="exportarCarnetIndividual(true)" :disabled="cargando">
+            <ion-icon name="documents-outline"></ion-icon>
+            Separados (1 cara por página)
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -710,6 +757,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
+import { exportStore } from '@/services/exportStore'
 import { useRoute } from 'vue-router'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
@@ -760,11 +808,38 @@ export default {
     })
 
     const tamanoBloque = ref(200)
+    const filtroExportRol = ref('')
+    const filtroExportAnexo = ref('todos')
+    const filtroExportAnexoNombre = ref('')
+    const modoSeparado = ref(false)
+
+    const opcionesAnexo = [
+      'ALTO COSCORE', 'CALIENTES', 'CALUCHAVE', 'CHIBAYA BAJA', 'COCOTEA',
+      'COSCORE', 'CRUZ PATA', 'POCATA', 'POCATA/COSCORE', 'QUEBRADA HONDA',
+      'QUEBRADAD HONDA', 'TALA', 'TALA / QUEBRADA HONDA', 'TUMILACA',
+    ]
+
+    const usuariosParaExportar = computed(() => {
+      let lista = usuarios.value || []
+      if (filtroExportRol.value) {
+        lista = lista.filter(u => u.rol === filtroExportRol.value)
+      }
+      if (filtroExportAnexo.value === 'sin_anexo') {
+        lista = lista.filter(u => !u.anexo)
+      } else if (filtroExportAnexo.value === 'con_anexo') {
+        if (filtroExportAnexoNombre.value) {
+          lista = lista.filter(u => u.anexo === filtroExportAnexoNombre.value)
+        } else {
+          lista = lista.filter(u => !!u.anexo)
+        }
+      }
+      return lista
+    })
 
     const totalBloques = computed(() => {
-      if (!usuarios.value || usuarios.value.length === 0) return 0
+      if (usuariosParaExportar.value.length === 0) return 0
       if (tamanoBloque.value === 'todos') return 1
-      return Math.ceil(usuarios.value.length / tamanoBloque.value)
+      return Math.ceil(usuariosParaExportar.value.length / tamanoBloque.value)
     })
 
     const cargarUsuarios = async () => {
@@ -984,17 +1059,19 @@ export default {
       URL.revokeObjectURL(url)
     }
 
-    const exportarCarnetIndividual = async () => {
+    const exportarCarnetIndividual = async (separado = false) => {
       if (!usuarioSeleccionado.value) return
 
       try {
         cargando.value = true
+        const params = separado ? { separado: true } : {}
         const response = await api.get(
           `/carnets/exportar-pdf-individual/${usuarioSeleccionado.value.id}`,
-          { responseType: 'blob', timeout: 120000 }
+          { responseType: 'blob', timeout: 120000, params }
         )
         const dni = usuarioSeleccionado.value.numero_dni || usuarioSeleccionado.value.id
-        descargarBlob(response.data, `carnet-${dni}.pdf`)
+        const sufijo = separado ? '-separado' : ''
+        descargarBlob(response.data, `carnet-${dni}${sufijo}.pdf`)
       } catch (error) {
         console.error('Error exportando carnet:', error)
         alert('Error al exportar carnet: ' + (error.response?.data?.detail || error.message))
@@ -1003,27 +1080,33 @@ export default {
       }
     }
 
-    // Sistema de tareas con progreso
+    // Sistema de tareas con progreso — usa exportStore global
     const mostrarModalProgreso = ref(false)
-    const tareaActual = ref(null)
-    const progreso = ref(0)
-    const mensajeProgreso = ref('')
-    const pollingInterval = ref(null)
+    const tareaActual = computed(() => exportStore.taskId ? { task_id: exportStore.taskId, totalCarnets: exportStore.totalCarnets } : null)
+    const progreso = computed(() => exportStore.progreso)
+    const mensajeProgreso = computed(() => exportStore.mensaje)
 
     const iniciarExportacion = async (params) => {
       try {
+        if (filtroExportRol.value) params.rol = filtroExportRol.value
+        if (filtroExportAnexo.value === 'sin_anexo') params.sin_anexo = true
+        if (filtroExportAnexo.value === 'con_anexo' && filtroExportAnexoNombre.value) params.con_anexo = filtroExportAnexoNombre.value
+        if (modoSeparado.value) params.separado = true
+
         const response = await api.post('/carnets/exportar-async', null, { params })
-        tareaActual.value = {
-          task_id: response.data.task_id,
-          inicio: new Date(),
-          totalCarnets: params.todos ? usuarios.value.length : (params.limit || 200)
-        }
+        const taskId = response.data.task_id
+        const total = params.todos ? usuariosParaExportar.value.length : (params.limit || 200)
+
+        exportStore.reset()
+        exportStore.taskId = taskId
+        exportStore.estado = 'procesando'
+        exportStore.progreso = 0
+        exportStore.mensaje = 'En cola de espera...'
+        exportStore.totalCarnets = total
+
         mostrarModalProgreso.value = true
-        progreso.value = 0
-        mensajeProgreso.value = 'En cola de espera...'
         mostrarModalBloques.value = false
 
-        // Iniciar polling
         rastrearProgreso()
       } catch (error) {
         console.error('Error iniciando exportación:', error)
@@ -1031,42 +1114,43 @@ export default {
       }
     }
 
-    const rastrearProgreso = async () => {
-      if (!tareaActual.value) return
-
+    const rastrearProgreso = () => {
       const chequearEstado = async () => {
+        if (!exportStore.taskId) return
         try {
-          const response = await api.get(`/carnets/tarea/${tareaActual.value.task_id}`)
+          const response = await api.get(`/carnets/tarea/${exportStore.taskId}`)
           const estado = response.data
 
-          progreso.value = estado.porcentaje || 0
-          mensajeProgreso.value = estado.mensaje || ''
+          exportStore.progreso = estado.porcentaje || 0
+          exportStore.mensaje = estado.mensaje || ''
+          exportStore.estado = estado.estado
 
           if (estado.estado === 'completada') {
-            clearInterval(pollingInterval.value)
-            // Descargar automáticamente
-            await descargarPDF(tareaActual.value.task_id, estado.total_carnets)
+            clearInterval(exportStore.pollingInterval)
+            exportStore.pollingInterval = null
+            mostrarModalProgreso.value = false
+            await descargarPDF(exportStore.taskId, estado.total_carnets)
+            exportStore.reset()
+          } else if (estado.estado === 'cancelada') {
+            clearInterval(exportStore.pollingInterval)
+            exportStore.reset()
             mostrarModalProgreso.value = false
           } else if (estado.estado === 'error') {
-            clearInterval(pollingInterval.value)
-            alert(`Error: ${estado.error || 'Error desconocido'}`)
+            clearInterval(exportStore.pollingInterval)
+            exportStore.reset()
             mostrarModalProgreso.value = false
+            alert(`Error: ${estado.error || 'Error desconocido'}`)
           }
         } catch (error) {
           console.error('Error rastreando progreso:', error)
-          clearInterval(pollingInterval.value)
-          alert('Error al rastrear progreso')
+          clearInterval(exportStore.pollingInterval)
+          exportStore.reset()
           mostrarModalProgreso.value = false
         }
       }
 
-      // Check inicial inmediato
-      await chequearEstado()
-
-      // Polling cada 2s
-      if (tareaActual.value) {
-        pollingInterval.value = setInterval(chequearEstado, 2000)
-      }
+      chequearEstado()
+      exportStore.pollingInterval = setInterval(chequearEstado, 2000)
     }
 
     const descargarPDF = async (taskId, totalCarnets) => {
@@ -1087,23 +1171,26 @@ export default {
       }
     }
 
-    const cancelarExportacion = () => {
-      if (pollingInterval.value) {
-        clearInterval(pollingInterval.value)
+    const cancelarExportacion = async () => {
+      if (exportStore.taskId) {
+        try {
+          await api.post(`/carnets/cancelar/${exportStore.taskId}`)
+        } catch (e) { /* ya terminó */ }
       }
-      tareaActual.value = null
+      exportStore.reset()
       mostrarModalProgreso.value = false
     }
 
     const exportarTodosPDF = async () => {
-      if (usuarios.value.length === 0) {
-        alert('No hay usuarios para exportar')
+      const total = usuariosParaExportar.value.length
+      if (total === 0) {
+        alert('No hay usuarios para exportar con los filtros seleccionados')
         return
       }
 
-      const segundosEstimados = Math.ceil(usuarios.value.length * 1.5)
+      const segundosEstimados = Math.ceil(total * 1.5)
       const minutosEstimados = Math.ceil(segundosEstimados / 60)
-      if (!confirm(`Vas a generar un único PDF con TODOS los ${usuarios.value.length} carnets.\n\nTiempo estimado: ~${minutosEstimados} minuto(s).\n\n¿Continuar?`)) {
+      if (!confirm(`Vas a generar un único PDF con ${total} carnets.\n\nTiempo estimado: ~${minutosEstimados} minuto(s).\n\n¿Continuar?`)) {
         return
       }
 
@@ -1111,7 +1198,7 @@ export default {
     }
 
     const exportarBloqueePDF = async (numBloque) => {
-      const tamano = tamanoBloque.value === 'todos' ? usuarios.value.length : tamanoBloque.value
+      const tamano = tamanoBloque.value === 'todos' ? usuariosParaExportar.value.length : tamanoBloque.value
       const offset = (numBloque - 1) * tamano
       await iniciarExportacion({ limit: tamano, offset })
     }
@@ -1325,7 +1412,14 @@ export default {
       mensajeProgreso,
       cancelarExportacion,
       tareaActual,
-      tamanoBloque
+      exportStore,
+      tamanoBloque,
+      filtroExportRol,
+      filtroExportAnexo,
+      filtroExportAnexoNombre,
+      modoSeparado,
+      opcionesAnexo,
+      usuariosParaExportar,
     }
   }
 }
@@ -2359,12 +2453,18 @@ export default {
   overflow: auto;
 }
 
+.btns-exportar-individual {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
 .btn-exportar-individual {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 12px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -2373,12 +2473,25 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-top: auto;
+  flex: 1;
 }
 
-.btn-exportar-individual:hover {
+.btn-exportar-individual:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-exportar-individual:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-exportar-separado {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.btn-exportar-separado:hover:not(:disabled) {
+  box-shadow: 0 8px 16px rgba(14, 165, 233, 0.4);
 }
 
 /* LADO IZQUIERDO (ANVERSO) */
@@ -3530,5 +3643,72 @@ export default {
 
 .bloques-section {
   margin-top: 15px;
+}
+
+/* FILTROS DE EXPORTACIÓN */
+.filtros-exportacion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filtro-botones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-filtro-exp {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  background: white;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-filtro-exp:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.btn-filtro-exp.activo {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  font-weight: 600;
+}
+
+.select-anexo {
+  margin-top: 6px;
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  background: white;
+  width: 100%;
 }
 </style>

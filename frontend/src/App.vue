@@ -31,9 +31,14 @@ import authService from './services/auth.service'
 import { useWebNav } from './composables/useWebNav'
 import { alertStore } from './stores/alertStore'
 
-const RUTAS_DASHBOARD = ['/dashboard', '/usuarios', '/configuracion', '/marca', '/reportes',
+const RUTAS_DASHBOARD = ['/dashboard', '/mi-panel', '/usuarios', '/configuracion', '/marca', '/reportes',
   '/integraciones', '/cobranza', '/operaciones', '/elecciones', '/votacion',
   '/carnets', '/reuniones']
+
+const rutaSegunRol = (usuario) => {
+  const rol = usuario?.rol
+  return ['admin', 'editor', 'moderator'].includes(rol) ? '/dashboard' : '/mi-panel'
+}
 
 function vistaDesdeUrl() {
   const path = window.location.pathname || '/'
@@ -52,9 +57,10 @@ const alertState = alertStore.state
 // Cuando el usuario hace clic en "Área Admin" desde cualquier página web
 setIrAdmin(() => {
   if (authService.estaAutenticado()) {
-    usuarioActual.value = authService.obtenerUsuario()
+    const u = authService.obtenerUsuario()
+    usuarioActual.value = u
     vista.value = 'dashboard'
-    window.history.pushState({}, '', '/dashboard')
+    window.history.pushState({}, '', rutaSegunRol(u))
   } else {
     vista.value = 'login'
     window.history.pushState({}, '', '/admin')
@@ -73,7 +79,7 @@ onMounted(() => {
 const onAutenticado = (usuario) => {
   usuarioActual.value = usuario
   vista.value = 'dashboard'
-  window.history.pushState({}, '', '/dashboard')
+  window.history.pushState({}, '', rutaSegunRol(usuario))
 }
 
 const cerrarSesion = async () => {

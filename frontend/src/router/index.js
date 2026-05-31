@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import authService from '../services/auth.service'
 
-// Views del dashboard
+// Views del dashboard (admin)
 import DashboardHome from '../components/dashboard/DashboardHome.vue'
 import UsuariosView from '../components/dashboard/UsuariosView.vue'
 import ConfiguracionView from '../components/dashboard/ConfiguracionView.vue'
@@ -17,85 +17,25 @@ import VotacionView from '../components/dashboard/VotacionView.vue'
 import CarnetsView from '../components/dashboard/CarnetsView.vue'
 import ReunionesView from '../components/dashboard/ReunionesView.vue'
 import UsuarioPerfilView from '../components/dashboard/UsuarioPerfilView.vue'
+// Vista exclusiva para rol usuario
+import UsuarioPanelView from '../components/dashboard/UsuarioPanelView.vue'
+
+const esAdmin = () => {
+  const u = authService.obtenerUsuario()
+  return u?.rol === 'admin' || u?.rol === 'editor' || u?.rol === 'moderator'
+}
 
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: () => esAdmin() ? '/dashboard' : '/mi-panel',
   },
+  // ── Ruta panel usuario comunero ──────────────────────────────
   {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: DashboardHome,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/usuarios',
-    name: 'usuarios',
-    component: UsuariosView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/usuarios/:id',
-    name: 'usuario-perfil',
-    component: UsuarioPerfilView,
-    props: true,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/configuracion',
-    name: 'configuracion',
-    component: ConfiguracionView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/configuracion/marca',
-    name: 'marca',
-    component: MarcaView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/reportes',
-    name: 'reportes',
-    component: ReportesView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/integraciones',
-    name: 'integraciones',
-    component: IntegracionesView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/cobranza',
-    name: 'cobranza',
-    component: CobranzaView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/config-cobranza',
-    name: 'config-cobranza',
-    component: ConfiguracionCobranzaView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/operaciones',
-    name: 'operaciones',
-    component: OperacionesView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/elecciones',
-    name: 'elecciones',
-    component: EleccionesView,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/elecciones/:id',
-    name: 'eleccion-detalle',
-    component: EleccionDetalleView,
-    props: true,
-    meta: { requiresAuth: true },
+    path: '/mi-panel',
+    name: 'mi-panel',
+    component: UsuarioPanelView,
+    meta: { requiresAuth: true, soloUsuario: true },
   },
   {
     path: '/votacion',
@@ -103,22 +43,97 @@ const routes = [
     component: VotacionView,
     meta: { requiresAuth: true },
   },
+  // ── Rutas exclusivas admin ───────────────────────────────────
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: DashboardHome,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/usuarios',
+    name: 'usuarios',
+    component: UsuariosView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/usuarios/:id',
+    name: 'usuario-perfil',
+    component: UsuarioPerfilView,
+    props: true,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/configuracion',
+    name: 'configuracion',
+    component: ConfiguracionView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/configuracion/marca',
+    name: 'marca',
+    component: MarcaView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/reportes',
+    name: 'reportes',
+    component: ReportesView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/integraciones',
+    name: 'integraciones',
+    component: IntegracionesView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/cobranza',
+    name: 'cobranza',
+    component: CobranzaView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/config-cobranza',
+    name: 'config-cobranza',
+    component: ConfiguracionCobranzaView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/operaciones',
+    name: 'operaciones',
+    component: OperacionesView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/elecciones',
+    name: 'elecciones',
+    component: EleccionesView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/elecciones/:id',
+    name: 'eleccion-detalle',
+    component: EleccionDetalleView,
+    props: true,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
   {
     path: '/reuniones',
     name: 'reuniones',
     component: ReunionesView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
     path: '/carnets',
     name: 'carnets',
     component: CarnetsView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
   },
-  // Ruta comodín → redirige al dashboard
+  // Comodín
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/dashboard',
+    redirect: () => esAdmin() ? '/dashboard' : '/mi-panel',
   },
 ]
 
@@ -127,13 +142,17 @@ const router = createRouter({
   routes,
 })
 
-// Guard global: si la ruta requiere auth y no está autenticado, redirige a '/'
-// El login lo controla App.vue con v-if, así que simplemente dejamos pasar
-// (App.vue ya muestra Login si no está autenticado)
 router.beforeEach((to) => {
   if (to.meta.requiresAuth && !authService.estaAutenticado()) {
-    // No hay ruta de login separada; App.vue gestiona el v-if
     return false
+  }
+  // Ruta solo para admin: si es usuario comunero, redirige a su panel
+  if (to.meta.requiresAdmin && !esAdmin()) {
+    return '/mi-panel'
+  }
+  // Ruta solo para usuario: si es admin, redirige al dashboard
+  if (to.meta.soloUsuario && esAdmin()) {
+    return '/dashboard'
   }
 })
 

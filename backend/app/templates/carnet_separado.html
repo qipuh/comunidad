@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Carnets</title>
+<style>
+  @page { size: 90mm 54mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html {
+    font-size: 16px;
+  }
+  html, body {
+    margin: 0; padding: 0; background: #ffffff;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .pagina-cara {
+    width: 90mm; height: 54mm;
+    page-break-after: always; overflow: hidden;
+  }
+  .pagina-cara:last-child { page-break-after: auto; }
+  .carnet-lado {
+    width: 90mm;
+    height: 54mm;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    position: relative;
+    padding: 12px 15px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+  }
+  .carnet-lado > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ANVERSO */
+  .header-izquierdo {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .bandera-placeholder {
+    width: 41px;
+    height: 25px;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #ffeb3b 50%, #e53935 50%);
+  }
+  .bandera-img { width: 100%; height: 100%; object-fit: cover; }
+  .titulo-comunidad {
+    font-size: 9.5px; font-weight: 700; color: #0d0d0d;
+    line-height: 1.2; letter-spacing: 0.1px;
+    max-width: 165px; word-wrap: break-word; white-space: normal; margin-top: -2px;
+  }
+  .sub-resolucion {
+    font-size: 7px; font-weight: 600; color: #0f0f0f;
+    margin-top: 1px; letter-spacing: 0.3px; line-height: 1.1;
+  }
+  .num-carnet-container {
+    position: absolute; top: 12px; right: 15px; text-align: right; z-index: 5;
+  }
+  .etiqueta-carnet { font-size: 8px; font-weight: 600; color: #0d0d0d; letter-spacing: 0.3px; }
+  .num-carnet-valor {
+    font-size: 8pt;
+    text-shadow: 0 0 5px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,1);
+    font-weight: 700; white-space: nowrap;
+  }
+  .info-bloque { display: flex; gap: 8px; margin-top: 12px; }
+  .foto-section { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .foto-placeholder {
+    width: 68px; height: 85px; border: 1px solid #000000;
+    background: #f5f5f5; overflow: hidden; position: relative;
+  }
+  .foto-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+  .texto-foto { font-size: 7px; font-weight: 700; color: #000; letter-spacing: 0.2px; text-align: center; }
+  .datos-personales { display: flex; flex-direction: column; gap: 6px; padding-top: 1px; }
+  .campo { display: flex; flex-direction: column; }
+  .campo .etiqueta { font-size: 8px; color: #000000; font-weight: 600; letter-spacing: 0.3px; line-height: 1.1; }
+  .campo .valor {
+    font-size: 9.5px; font-weight: 700; color: #0d0d0d;
+    text-transform: uppercase; margin-top: 0.5px; letter-spacing: 0.2px; line-height: 1.2;
+  }
+  .campo-fechas { margin-top: 2px; display: flex; flex-direction: column; gap: 3px; }
+  .fecha-item { display: flex; flex-direction: column; }
+  .fecha-item .f-etiqueta { font-size: 8px; font-weight: 600; color: #000000; }
+  .fecha-item .f-valor {
+    font-size: 10px; font-weight: 700; color: #0d0d0d;
+    text-transform: uppercase; letter-spacing: 0.1px; line-height: 1.1;
+  }
+  .firmas-container {
+    position: absolute; bottom: 15px; right: 25px; display: flex; gap: 25px;
+  }
+  .firma-box { width: 48px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .firma-placeholder {
+    width: 100%; height: 30px; border-bottom: 1px dashed #999;
+    margin-bottom: 8px; opacity: 0.6; font-size: 5px; color: #002699;
+    display: flex; align-items: center; justify-content: center; font-style: italic;
+  }
+  .firma-imagen { max-height: 35px; max-width: 70px; margin-bottom: 8px; }
+  .firma-imagen img { max-height: 35px; max-width: 70px; object-fit: contain; }
+  .firma-text {
+    font-size: 6px; font-weight: 700; color: #222; letter-spacing: 0.3px;
+    text-transform: uppercase; line-height: 1.1; white-space: nowrap;
+    text-shadow: rgb(255,255,255) 0px 0px 5px, rgb(255,255,255) 0px 0px 5px;
+  }
+
+  /* REVERSO */
+  .lado-derecho { padding: 12px 12px; }
+  .header-derecho {
+    display: flex; flex-direction: column; align-items: center;
+    width: fit-content; position: absolute; top: 12px; left: 32px;
+  }
+  .siglas {
+    font-size: 9px; font-weight: 700; color: #0d0d0d;
+    letter-spacing: 0.3px; margin-bottom: 3px; font-family: 'Courier New', monospace;
+  }
+  .escudo-placeholder {
+    width: 50px; height: 55px; display: flex; align-items: center;
+    justify-content: center; font-size: 5px; color: #777; overflow: hidden;
+  }
+  .escudo-img { width: 100%; height: 100%; object-fit: contain; }
+  .footer-derecho {
+    display: flex; flex-direction: column; gap: 8px;
+    position: absolute; bottom: 12px; left: 12px; right: 12px;
+  }
+  .qr-row { display: flex; align-items: flex-start; gap: 10px; }
+  .qr-container { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qr-placeholder {
+    width: 100px; height: 100px; border: 1px solid #000;
+    background-color: #f5f5f5; display: block;
+  }
+  .qr-codigo {
+    font-size: 9px; font-weight: 700; color: #0d0d0d;
+    letter-spacing: 0.2px; font-family: 'Courier New', monospace;
+    text-align: center; width: 100px;
+  }
+  .metadatos-qr { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-item .m-etiqueta {
+    font-size: 7px; font-weight: 600; color: #3b3b3b;
+    letter-spacing: 0.2px; text-transform: uppercase; line-height: 1.1;
+  }
+  .meta-item .m-valor {
+    font-size: 10px; font-weight: 700; color: #0d0d0d;
+    margin-top: 1px; letter-spacing: 0.1px; line-height: 1.2;
+  }
+  .meta-item .m-valor-destacado {
+    font-size: 8px; font-weight: 700; color: #0d0d0d;
+    margin-top: 1px; letter-spacing: 0.1px; line-height: 1.2;
+  }
+  .qr-url-wrapper {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px; flex-shrink: 0; margin-left: auto;
+  }
+  .qr-url-label {
+    font-size: 9px; font-weight: 600; color: #000000;
+    text-transform: uppercase; letter-spacing: 0.2px; white-space: nowrap;
+  }
+  .qr-url {
+    width: 60px; height: 60px; padding: 2px;
+    border: 1px solid #000; background-color: #f5f5f5; display: block;
+  }
+  .qr-url-text {
+    font-size: 6pt; font-weight: 500; color: #000000;
+    max-width: 90px; word-break: break-all; text-align: center; line-height: 1;
+  }
+</style>
+</head>
+<body>
+{% for c in carnets %}
+{# ANVERSO #}
+<div class="pagina-cara">
+  <div class="carnet-lado lado-izquierdo"{% if config.fondo_anverso_data %} style="background-image: url('{{ config.fondo_anverso_data }}')"{% endif %}>
+    <div class="header-izquierdo">
+      <div class="bandera-placeholder">
+        {% if config.bandera_data %}<img src="{{ config.bandera_data }}" class="bandera-img">{% endif %}
+      </div>
+      <div>
+        <div class="titulo-comunidad">{{ config.nombre_comunidad }}</div>
+        <div class="sub-resolucion">{{ config.resolucion }}</div>
+      </div>
+    </div>
+
+    <div class="num-carnet-container">
+      <div class="etiqueta-carnet">N° CARNET</div>
+      <div class="num-carnet-valor">{{ c.numero_carnet }}</div>
+    </div>
+
+    <div class="info-bloque">
+      <div class="foto-section">
+        <div class="foto-placeholder">
+          {% if c.foto_data %}<img src="{{ c.foto_data }}" class="foto-img">{% endif %}
+        </div>
+        <div class="texto-foto">CARNET COMUNERO</div>
+      </div>
+      <div class="datos-personales">
+        <div class="campo">
+          <span class="etiqueta">APELLIDOS:</span>
+          <span class="valor">{{ c.apellidos }}</span>
+        </div>
+        <div class="campo">
+          <span class="etiqueta">NOMBRES:</span>
+          <span class="valor">{{ c.nombres }}</span>
+        </div>
+        <div class="campo-fechas">
+          <div class="fecha-item">
+            <span class="f-etiqueta">Fecha de Emisión</span>
+            <span class="f-valor">{{ c.fecha_emision }}</span>
+          </div>
+          <div class="fecha-item">
+            <span class="f-etiqueta">Fecha de Caducidad</span>
+            <span class="f-valor">{{ c.fecha_caducidad }}</span>
+          </div>
+          <div class="fecha-item">
+            <span class="f-etiqueta">Estado Civil</span>
+            <span class="f-valor">{{ c.estado_civil }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="firmas-container">
+      <div class="firma-box">
+        {% if config.firma_secretario_data %}
+          <div class="firma-imagen"><img src="{{ config.firma_secretario_data }}" alt="Firma Secretario"></div>
+        {% else %}
+          <div class="firma-placeholder">[Firma]</div>
+        {% endif %}
+        <span class="firma-text">Secretario CC-TPCT<br>F. Paripanca R</span>
+      </div>
+      <div class="firma-box">
+        {% if config.firma_presidente_data %}
+          <div class="firma-imagen"><img src="{{ config.firma_presidente_data }}" alt="Firma Presidente"></div>
+        {% else %}
+          <div class="firma-placeholder">[Firma]</div>
+        {% endif %}
+        <span class="firma-text">Presidente CC-TPCT<br>M. García N.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# REVERSO #}
+<div class="pagina-cara">
+  <div class="carnet-lado lado-derecho"{% if config.fondo_reverso_data %} style="background-image: url('{{ config.fondo_reverso_data }}')"{% endif %}>
+    <div class="header-derecho">
+      <div class="siglas">{{ config.nombre_corto }}</div>
+      <div class="escudo-placeholder">
+        {% if config.escudo_data %}<img src="{{ config.escudo_data }}" class="escudo-img">{% else %}<span>[Escudo]</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="footer-derecho">
+      <div class="qr-row">
+        <div class="qr-container">
+          <img class="qr-placeholder" src="{{ c.qr_data }}">
+          <div class="qr-codigo">{{ c.numero_carnet }}</div>
+        </div>
+        <div class="metadatos-qr">
+          <div class="meta-item"><span class="m-etiqueta">Número de DNI</span><span class="m-valor">{{ c.numero_dni }}</span></div>
+          <div class="meta-item"><span class="m-etiqueta">Categoría</span><span class="m-valor-destacado">COMUNERO(A)</span></div>
+          <div class="meta-item"><span class="m-etiqueta">Fecha de Nacimiento</span><span class="m-valor">{{ c.fecha_nacimiento }}</span></div>
+          <div class="meta-item"><span class="m-etiqueta">Anexo que Pertenece</span><span class="m-valor">{{ c.anexo }}</span></div>
+        </div>
+        {% if config.url_qr %}
+        <div class="qr-url-wrapper">
+          <div class="qr-url-label">Página Web:</div>
+          <img class="qr-url" src="{{ c.qr_url_data }}">
+          <div class="qr-url-text">{{ config.url_qr }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</body>
+</html>

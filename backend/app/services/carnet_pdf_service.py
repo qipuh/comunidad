@@ -134,8 +134,9 @@ def _construir_contexto(usuarios: List[Usuario], config_carnet) -> dict:
     return {"carnets": carnets, "config": config_ctx}
 
 
-def _renderizar_html(usuarios: List[Usuario], config_carnet) -> str:
-    template = _jinja_env.get_template("carnet.html")
+def _renderizar_html(usuarios: List[Usuario], config_carnet, separado: bool = False) -> str:
+    nombre_template = "carnet_separado.html" if separado else "carnet.html"
+    template = _jinja_env.get_template(nombre_template)
     contexto = _construir_contexto(usuarios, config_carnet)
     return template.render(**contexto)
 
@@ -160,17 +161,22 @@ def _ensure_proactor_loop():
         asyncio.set_event_loop(loop)
 
 
-def _html_a_pdf(html: str) -> bytes:
+def _html_a_pdf(html: str, separado: bool = False) -> bytes:
     """Genera PDF de un único bloque HTML."""
     _ensure_proactor_loop()
     with sync_playwright() as p:
+        # deviceScaleFactor=1 garantiza que 1px CSS = 1px físico,
+        # igual que un monitor estándar a escala 100%.
         browser = p.chromium.launch()
         try:
-            page = browser.new_page()
+            page = browser.new_page(
+                viewport={"width": 1920, "height": 1080},
+                device_scale_factor=1,
+            )
             page.set_content(html, wait_until="networkidle")
+            w, h = ("90mm", "54mm") if separado else ("180mm", "54mm")
             return page.pdf(
-                width="180mm",
-                height="54mm",
+                width=w, height=h,
                 print_background=True,
                 margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
                 prefer_css_page_size=True,
@@ -185,7 +191,7 @@ def _html_a_pdf(html: str) -> bytes:
 CHUNK_SIZE = 10
 
 
-def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None) -> bytes:
+def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None, separado: bool = False) -> bytes:
     """
     Genera PDF procesando usuarios en chunks pequeños para reportar progreso real.
     Reutiliza un único browser de Chromium para minimizar overhead.
@@ -205,18 +211,18 @@ def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None) 
             if callback:
                 callback(0, f"Iniciando generación de {total} carnets...")
 
+            w, h = ("90mm", "54mm") if separado else ("180mm", "54mm")
             for idx, chunk in enumerate(chunks):
-                # Renderizar este chunk
-                template = _jinja_env.get_template("carnet.html")
-                contexto = _construir_contexto(chunk, config_carnet)
-                html = template.render(**contexto)
+                html = _renderizar_html(chunk, config_carnet, separado=separado)
 
-                page = browser.new_page()
+                page = browser.new_page(
+                    viewport={"width": 1920, "height": 1080},
+                    device_scale_factor=1,
+                )
                 try:
                     page.set_content(html, wait_until="networkidle")
                     pdf_bytes = page.pdf(
-                        width="180mm",
-                        height="54mm",
+                        width=w, height=h,
                         print_background=True,
                         margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
                         prefer_css_page_size=True,
@@ -252,7 +258,7 @@ def _generar_pdf_chunked(usuarios: List[Usuario], config_carnet, callback=None) 
     return output.getvalue()
 
 
-def generar_pdf_carnets(usuarios: List[Usuario], config_carnet, callback=None) -> bytes:
+def generar_pdf_carnets(usuarios: List[Usuario], config_carnet, callback=None, separado: bool = False) -> bytes:
     """Genera un PDF con un carnet por pagina para cada usuario.
     Usa sync_playwright; el endpoint debe llamarlo en un thread separado
     (anyio.to_thread o starlette run_in_threadpool) para no bloquear el event loop.
@@ -269,11 +275,11 @@ def generar_pdf_carnets(usuarios: List[Usuario], config_carnet, callback=None) -
     if len(usuarios) == 1:
         if callback:
             callback(0, "Generando PDF...")
-        html = _renderizar_html(usuarios, config_carnet)
-        result = _html_a_pdf(html)
+        html = _renderizar_html(usuarios, config_carnet, separado=separado)
+        result = _html_a_pdf(html, separado=separado)
         if callback:
             callback(1, "PDF listo")
         return result
 
     # Para múltiples carnets, usar chunks con progreso real
-    return _generar_pdf_chunked(usuarios, config_carnet, callback)
+    return _generar_pdf_chunked(usuarios, config_carnet, callback, separado=separado)

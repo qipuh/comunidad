@@ -6,6 +6,10 @@
 <style>
   @page { size: 180mm 54mm; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html {
+    /* 96dpi estándar: 1px CSS = 1/96 pulgada. Fijamos base explícita. */
+    font-size: 16px;
+  }
   html, body {
     margin: 0; padding: 0; background: #ffffff;
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
@@ -28,6 +32,8 @@
     width: 85mm;
     height: 54mm;
     background-color: #ffffff;
+    border: 1px solid #cccccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     position: relative;
     padding: 12px 15px;
     background-size: cover;

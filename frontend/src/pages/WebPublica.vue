@@ -37,7 +37,7 @@
 
         <div class="header-actions">
           <a href="/admin" class="btn-admin" @click.prevent="irAdmin">
-            <ion-icon name="lock-closed-outline"></ion-icon> Área Administrativa
+            <ion-icon name="lock-closed-outline"></ion-icon> Intranet
           </a>
           <button class="hamburger" @click="menuOpen = !menuOpen">
             <span></span><span></span><span></span>
@@ -60,7 +60,7 @@
           {{ item.label }}
         </a>
         <a href="#" class="nav-mobile-link admin-link" @click.prevent="irAdmin">
-          <ion-icon name="lock-closed-outline"></ion-icon> Área Administrativa
+          <ion-icon name="lock-closed-outline"></ion-icon> Intranet
         </a>
       </div>
     </header>
@@ -477,7 +477,7 @@
             <a href="#">Actas Comunales</a>
             <a href="#">Comunicados</a>
             <a href="#">Empresa ECOSER</a>
-            <a href="#" @click.prevent="irAdmin"><ion-icon name="lock-closed-outline"></ion-icon> Área Administrativa</a>
+            <a href="#" @click.prevent="irAdmin"><ion-icon name="lock-closed-outline"></ion-icon> Intranet</a>
           </div>
         </div>
         <div class="footer-bottom">

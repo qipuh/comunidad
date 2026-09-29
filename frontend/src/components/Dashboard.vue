@@ -59,6 +59,12 @@
             <span class="nav-link-text">Elecciones</span>
           </RouterLink>
 
+          <div class="nav-section-label">Portal Web</div>
+          <RouterLink to="/galerias" :class="['nav-link', { active: activeView === 'galerias' }]" @click="sidebarOpen = false">
+            <ion-icon name="images-outline" class="nav-link-icon"></ion-icon>
+            <span class="nav-link-text">Galería de Fotos</span>
+          </RouterLink>
+
           <div class="nav-section-label">Sistema</div>
           <RouterLink to="/reportes" :class="['nav-link', { active: activeView === 'reportes' }]" @click="sidebarOpen = false">
             <ion-icon name="stats-chart-outline" class="nav-link-icon"></ion-icon>
@@ -243,7 +249,8 @@ const titulos = {
   elecciones: { titulo: 'Elecciones', subtitulo: 'Crea y gestiona elecciones y votaciones' },
   'eleccion-detalle': { titulo: 'Detalle de Elección', subtitulo: 'Gestiona opciones y resultados de la elección' },
   reuniones: { titulo: 'Reuniones', subtitulo: 'Gestiona las reuniones de la comunidad' },
-  'usuario-perfil': { titulo: 'Perfil de Usuario', subtitulo: 'Información detallada del usuario' }
+  'usuario-perfil': { titulo: 'Perfil de Usuario', subtitulo: 'Información detallada del usuario' },
+  galerias: { titulo: 'Galería de Fotos', subtitulo: 'Administra las imágenes y categorías visibles en el sitio web' }
 }
 
 const getTituloVista = () => {

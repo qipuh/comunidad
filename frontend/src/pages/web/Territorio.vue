@@ -34,6 +34,21 @@
       </div>
     </section>
 
+    <!-- BANNER TERRITORIO -->
+    <div class="section territorio-banner-wrap">
+      <div class="container">
+        <div class="territorio-banner">
+          <img :src="'/uploads/img/variadas/territorio.jpeg'" alt="Vista panorámica del territorio comunal" />
+          <div class="territorio-banner-overlay">
+            <div class="territorio-banner-text">
+              <ion-icon name="map-outline"></ion-icon>
+              <span>Vista panorámica del territorio comunal — Tumilaca, Moquegua</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <section class="section bg-light">
       <div class="container">
         <div class="section-head">
@@ -60,18 +75,19 @@
             <h2>Entorno Económico y Productivo</h2>
             <p>En el ámbito territorial del distrito de Torata y zonas de influencia de la comunidad, se desarrollan diversas actividades económicas, incluyendo aquellas vinculadas al sector minero, con presencia de proyectos de gran envergadura:</p>
             <div class="proyectos-mineros">
-              <div class="pm-card" v-for="p in mineros" :key="p.nombre">
+              <a v-for="p in mineros" :key="p.nombre" :href="p.url" target="_blank" rel="noopener" class="pm-card pm-link">
                 <ion-icon name="diamond-outline"></ion-icon>
                 <div>
                   <strong>{{ p.nombre }}</strong>
                   <span>{{ p.empresa }}</span>
                 </div>
-              </div>
+                <ion-icon name="open-outline" class="pm-ext"></ion-icon>
+              </a>
             </div>
             <p>La comunidad mantiene espacios de diálogo y coordinación con los distintos actores presentes en el territorio, en el marco del respeto a sus derechos colectivos y la búsqueda de oportunidades para el desarrollo sostenible.</p>
           </div>
           <div class="entorno-img">
-            <img :src="'/uploads/img/variadas/quebrada-honda.png'" alt="Entorno productivo" />
+            <img :src="'/uploads/img/web/5.jpeg'" alt="Entorno productivo" />
           </div>
         </div>
       </div>
@@ -92,15 +108,15 @@ const datos = [
 const anexos = [
   { nombre: 'Tumilaca', desc: 'Sector principal del territorio comunal, ubicado en el valle del mismo nombre con condiciones favorables para la agricultura.', img: '/uploads/img/variadas/tumilaca.png' },
   { nombre: 'Pocata', desc: 'Sector comunal con actividades agropecuarias tradicionales y organización propia para la gestión territorial.', img: '/uploads/img/variadas/pocata.png' },
-  { nombre: 'Coscore Alto', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: '/uploads/img/variadas/coscore-alto.png' },
+  { nombre: 'Coscore Alto', desc: 'Zona altoandina con potencial ganadero y actividades de aprovechamiento de recursos naturales propios de la sierra.', img: '/uploads/img/variadas/coscore-alto-3.png' },
   { nombre: 'Coscore Bajo', desc: 'Zona de transición con potencial agrícola y actividades de aprovechamiento de recursos naturales.', img: '/uploads/img/variadas/coscore-bajo.png' },
   { nombre: 'Tala', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/tala.png' },
-  { nombre: 'Cullabaya', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/tala.png' },
+  { nombre: 'Cullabaya', desc: 'Anexo comunal con tradición agrícola y vínculos culturales profundos con la tierra y sus recursos naturales.', img: '/uploads/img/variadas/cullaba.png' },
 ]
 
 const mineros = [
-  { nombre: 'Proyecto Quellaveco', empresa: 'Anglo American' },
-  { nombre: 'Proyecto Cuajone', empresa: 'Southern Perú' },
+  { nombre: 'Proyecto Quellaveco', empresa: 'Anglo American', url: 'https://peru.angloamerican.com/' },
+  { nombre: 'Proyecto Cuajone', empresa: 'Southern Copper', url: 'https://southerncoppercorp.com/' },
 ]
 </script>
 
@@ -146,11 +162,52 @@ const mineros = [
 .pm-card ion-icon { font-size: 28px; color: #4f46e5; flex-shrink: 0; }
 .pm-card strong { display: block; font-size: 15px; color: #1e293b; }
 .pm-card span { font-size: 13px; color: #64748b; }
-.entorno-img img { width: 100%; height: 400px; object-fit: cover; border-radius: 20px; }
+.pm-link { text-decoration: none; transition: all 0.2s; cursor: pointer; }
+.pm-link:hover { border-color: #4f46e5; background: #eef2ff; transform: translateX(4px); }
+.pm-ext { font-size: 16px !important; color: #94a3b8 !important; margin-left: auto; }
+.entorno-img img { width: 100%; height: auto; object-fit: contain; border-radius: 20px; }
 
 @media (max-width: 768px) {
   .territorio-grid, .entorno-grid { grid-template-columns: 1fr; }
   .anexos-cards { grid-template-columns: 1fr; }
   .ter-datos { grid-template-columns: 1fr 1fr; }
 }
+
+/* BANNER TERRITORIO */
+.territorio-banner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.territorio-banner img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.territorio-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%);
+  display: flex;
+  align-items: flex-end;
+  padding: 24px 32px;
+}
+
+.territorio-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.territorio-banner-text ion-icon {
+  font-size: 18px;
+  color: #86efac;
+  flex-shrink: 0;
+}
+
 </style>

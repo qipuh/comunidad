@@ -26,6 +26,8 @@ from app.models.cobranza import (
     EstadoPago
 )
 
+from app.models.galeria import FotoGaleria, Galeria
+
 __all__ = [
     "Usuario",
     "RolEnum",
@@ -48,5 +50,7 @@ __all__ = [
     "Recurrencia",
     "MetodoPago",
     "EstadoCuota",
-    "EstadoPago"
+    "EstadoPago",
+    "FotoGaleria",
+    "Galeria"
 ]

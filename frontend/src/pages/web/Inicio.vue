@@ -1,8 +1,8 @@
 <template>
   <LayoutPublico>
 
-    <!-- HERO con fondo e imagen, overlay degradado -->
-    <section class="hero" :style="{ backgroundImage: `url('/uploads/img/inicio/01.png')` }">
+    <!-- HERO SLIDER con fotos variadas -->
+    <section class="hero" :style="{ backgroundImage: `url('${sliderImages[currentSlide].src}')` }">
       <div class="hero-overlay"></div>
       <div class="hero-inner">
         <div class="hero-text">
@@ -21,6 +21,21 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Slider Controls -->
+      <div class="slider-controls">
+        <button class="slider-btn prev" @click="prevSlide">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <div class="slider-dots">
+          <button v-for="(_, idx) in sliderImages" :key="idx"
+                  :class="['dot', { active: idx === currentSlide }]"
+                  @click="goToSlide(idx)"></button>
+        </div>
+        <button class="slider-btn next" @click="nextSlide">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
       </div>
     </section>
 
@@ -106,13 +121,12 @@
           <h2>Últimas noticias</h2>
         </div>
         <div class="noticias-grid">
-          <div v-for="n in noticias" :key="n.titulo" class="noticia-card" @click="nav('noticias')">
+          <div v-for="n in noticias" :key="n.titulo" class="noticia-card" @click="nav(n.detalle || 'noticias')">
             <div class="nc-img">
               <img :src="n.img" :alt="n.titulo" />
               <span class="nc-tipo">{{ n.tipo }}</span>
             </div>
             <div class="nc-body">
-              <span class="nc-fecha"><ion-icon name="calendar-outline"></ion-icon> {{ n.fecha }}</span>
               <h4>{{ n.titulo }}</h4>
               <p>{{ n.resumen }}</p>
               <span class="nc-link">Leer más <ion-icon name="arrow-forward-outline"></ion-icon></span>
@@ -154,11 +168,51 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import LayoutPublico from './LayoutPublico.vue'
 import { useWebNav } from '../../composables/useWebNav'
 
 const { navegar } = useWebNav()
 function nav(p) { navegar(p) }
+
+const currentSlide = ref(0)
+const sliderInterval = ref(null)
+
+const sliderImages = [
+  { src: '/uploads/img/web/2.png',  alt: 'Identidad comunal - Comunidad Campesina TPCT' },
+  { src: '/uploads/img/web/3.jpeg', alt: 'Trabajo agrícola en el valle de Tumilaca' },
+  { src: '/uploads/img/web/1.jpeg', alt: 'Plaza de Moquegua - Región Moquegua' },
+  { src: '/uploads/img/web/4.jpeg', alt: 'Fauna andina del territorio comunal' },
+]
+
+function nextSlide() {
+  currentSlide.value = (currentSlide.value + 1) % sliderImages.length
+  resetAutoPlay()
+}
+
+function prevSlide() {
+  currentSlide.value = (currentSlide.value - 1 + sliderImages.length) % sliderImages.length
+  resetAutoPlay()
+}
+
+function goToSlide(idx) {
+  currentSlide.value = idx
+  resetAutoPlay()
+}
+
+function startAutoPlay() {
+  sliderInterval.value = setInterval(() => {
+    currentSlide.value = (currentSlide.value + 1) % sliderImages.length
+  }, 5000)
+}
+
+function resetAutoPlay() {
+  clearInterval(sliderInterval.value)
+  startAutoPlay()
+}
+
+onMounted(() => startAutoPlay())
+onUnmounted(() => clearInterval(sliderInterval.value))
 
 const stats = [
   { icon: 'calendar-outline', value: '1949',    label: 'Año de fundación' },
@@ -177,7 +231,7 @@ const pilares = [
   {
     key: 'organizacion', icon: 'business-outline', titulo: 'Organización Comunal',
     desc: 'Estructura democrática y participativa liderada por la Asamblea General de Usuarios.',
-    img: '/uploads/img/variadas/cementerio-pocata.png',
+    img: '/uploads/img/inicio/organizacion_comuncal.jpeg',
   },
   {
     key: 'territorio', icon: 'map-outline', titulo: 'Nuestro Territorio',
@@ -187,12 +241,12 @@ const pilares = [
   {
     key: 'produccion', icon: 'leaf-outline', titulo: 'Desarrollo Productivo',
     desc: 'Producción agrícola y pecuaria como base del sustento de las familias comuneras.',
-    img: '/uploads/img/variadas/cerro-pucarinito.png',
+    img: '/uploads/img/inicio/desarrollo.jpeg',
   },
   {
     key: 'proyectos', icon: 'construct-outline', titulo: 'Empresa ECOSER',
     desc: 'Brazo económico de la comunidad que genera empleo y presta servicios empresariales.',
-    img: '/uploads/img/variadas/coscore-alto-2.png',
+    img: '/uploads/img/inicio/ecoser.jpeg',
   },
 ]
 
@@ -204,22 +258,18 @@ const galeriaStrip = [
 
 const noticias = [
   {
-    tipo: 'Aniversario', fecha: 'Abril 2026',
-    titulo: '77° Aniversario de la Comunidad TPCT',
-    resumen: 'La comunidad celebra su 77° aniversario con actividades culturales, deportivas y asambleas comunales.',
-    img: '/uploads/img/variadas/coscore-alto.png',
-  },
-  {
-    tipo: 'Asamblea', fecha: 'Marzo 2026',
+    tipo: 'Asamblea',
     titulo: 'Acuerdos de la Asamblea General Ordinaria',
-    resumen: 'Se aprobaron los estados financieros del ejercicio 2025 y el plan de trabajo para el año en curso.',
-    img: '/uploads/img/variadas/coscore-bajo-2.png',
+    resumen: 'El día 24 de mayo de 2026, la Comunidad Campesina Tumilaca, Pocata, Coscore y Tala celebró su Asamblea General',
+    img: '/uploads/img/asamblea/1.jpeg',
+    detalle: 'asamblea-mayo-2026',
   },
   {
-    tipo: 'ECOSER', fecha: 'Febrero 2026',
-    titulo: 'ECOSER firma nuevo contrato de servicios',
-    resumen: 'La empresa comunal suscribió un contrato generando 25 puestos de trabajo para Usuarios del valle.',
-    img: '/uploads/img/variadas/coscore-bajo.png',
+    tipo: 'Asamblea',
+    titulo: 'Convocatoria a Asamblea Extraordinaria',
+    resumen: 'La Junta Directiva convoca a todos los Usuarios a una asamblea extraordinaria para tratar temas de interés colectivo relacionados con el territorio comunal.',
+    img: '/uploads/img/asamblea/convocatorias/a.jpeg',
+    detalle: 'convocatoria-extraordinaria',
   },
 ]
 </script>
@@ -228,7 +278,7 @@ const noticias = [
 .hero {
   min-height: 100vh; background-size: cover; background-position: center;
   display: flex; align-items: center; position: relative; overflow: hidden;
-  padding-top: 70px;
+  padding-top: 70px; background-attachment: fixed; transition: background-image 0.6s ease-in-out;
 }
 .hero::before {
   content: ''; position: absolute; inset: 0;
@@ -416,6 +466,40 @@ const noticias = [
 .ecoser-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
 .text-center { text-align: center; }
 .mt-40 { margin-top: 40px; }
+
+/* Slider Controls */
+.slider-controls {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 20px; z-index: 10;
+}
+
+.slider-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+  color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s; backdrop-filter: blur(4px);
+}
+
+.slider-btn:hover {
+  background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.6);
+  transform: scale(1.1);
+}
+
+.slider-btn ion-icon { font-size: 24px; }
+
+.slider-dots {
+  display: flex; gap: 12px; align-items: center;
+}
+
+.dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,0.3); border: none;
+  cursor: pointer; transition: all 0.3s; padding: 0;
+}
+
+.dot.active {
+  background: white; width: 32px; border-radius: 100px;
+}
 
 @media (max-width: 1024px) {
   .pilares-grid { grid-template-columns: repeat(2,1fr); }

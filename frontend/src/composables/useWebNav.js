@@ -2,7 +2,9 @@ import { ref } from 'vue'
 
 const PAGINAS_VALIDAS = [
   'inicio', 'nosotros', 'organizacion', 'territorio',
-  'proyectos', 'produccion', 'noticias', 'galeria', 'contacto'
+  'proyectos', 'produccion', 'noticias', 'galeria', 'contacto',
+  'asamblea-mayo-2026',
+  'convocatoria-extraordinaria'
 ]
 
 function paginaDesdeUrl() {

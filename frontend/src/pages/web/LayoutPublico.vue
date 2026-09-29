@@ -123,7 +123,7 @@ const allMenu = [
   { key: 'nosotros',     label: 'Nosotros',     icon: 'people-outline' },
   { key: 'organizacion', label: 'Organización', icon: 'business-outline' },
   { key: 'territorio',   label: 'Territorio',   icon: 'map-outline' },
-  { key: 'proyectos',    label: 'Proyectos',    icon: 'construct-outline' },
+  { key: 'proyectos',    label: 'ECOSER',    icon: 'construct-outline' },
   { key: 'produccion',   label: 'Producción',   icon: 'leaf-outline' },
   { key: 'noticias',     label: 'Noticias',     icon: 'newspaper-outline' },
   { key: 'galeria',      label: 'Galería',      icon: 'images-outline' },
@@ -131,7 +131,7 @@ const allMenu = [
 ]
 
 const headerMenu = [
-  { key: 'proyectos',  label: 'PROYECTOS',  icon: 'construct-outline' },
+  { key: 'proyectos',  label: 'ECOSER',  icon: 'construct-outline' },
   { key: 'produccion', label: 'PRODUCCIÓN', icon: 'leaf-outline' },
   { key: 'noticias',   label: 'NOTICIAS',   icon: 'newspaper-outline' },
   { key: 'galeria',    label: 'GALERÍA',    icon: 'images-outline' },

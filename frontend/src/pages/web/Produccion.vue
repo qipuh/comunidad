@@ -75,6 +75,7 @@ const agricola = [
   { nombre: 'Damasco', desc: 'Fruta de hueso tradicional de los valles moqueguanos, de sabor intenso y dulce característico.', img: '/uploads/img/produccion/damasco.jpg' },
   { nombre: 'Palta', desc: 'Aguacate andino de alta demanda, cultivado en las laderas del valle de Tumilaca con técnicas tradicionales.', img: '/uploads/img/produccion/palta.webp' },
   { nombre: 'Manzana', desc: 'Manzana serrana de variedades locales, cultivada en altitudes que garantizan su calidad y sabor.', img: '/uploads/img/produccion/manzana.jpeg' },
+  { nombre: 'Orégano', desc: 'Hierba aromática cultivada en las zonas altoandinas del territorio comunal, reconocida por su intenso aroma y sabor, destinada a mercados locales y regionales.', img: '/uploads/img/inicio/desarrollo.jpeg' },
   { nombre: 'Hortalizas', desc: 'Producción diversificada de hortalizas para consumo local y abastecimiento de mercados cercanos.', img: '/uploads/img/produccion/hortalizas.webp' },
 ]
 
@@ -104,7 +105,7 @@ const pecuaria = [
 .prod-header h2 { font-size: 1.8rem; font-weight: 800; color: #1a2e1a; margin-bottom: 4px; }
 .prod-header p { font-size: 14px; color: #4a5e4a; }
 
-.prod-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 20px; }
+.prod-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
 .prod-grid.tres { grid-template-columns: repeat(3,1fr); }
 .prod-card { background: #f8fafc; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.25s; }
 .prod-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }

@@ -33,7 +33,7 @@ import { alertStore } from './stores/alertStore'
 
 const RUTAS_DASHBOARD = ['/dashboard', '/mi-panel', '/usuarios', '/configuracion', '/marca', '/reportes',
   '/integraciones', '/cobranza', '/operaciones', '/elecciones', '/votacion',
-  '/carnets', '/reuniones']
+  '/carnets', '/reuniones', '/galerias']
 
 const rutaSegunRol = (usuario) => {
   const rol = usuario?.rol

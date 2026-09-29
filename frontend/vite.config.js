@@ -30,13 +30,15 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://comunidadcampesinatpct.com',
         changeOrigin: true,
+        secure: true,
         rewrite: (path) => path
       },
       '/uploads': {
-        target: 'http://localhost:8000',
+        target: 'https://comunidadcampesinatpct.com',
         changeOrigin: true,
+        secure: true,
         rewrite: (path) => path
       }
     }

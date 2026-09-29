@@ -50,6 +50,7 @@ os.makedirs("uploads/usuarios", exist_ok=True)
 os.makedirs("uploads/elecciones/votos", exist_ok=True)
 os.makedirs("uploads/comunidad", exist_ok=True)
 os.makedirs("uploads/marca", exist_ok=True)
+os.makedirs("uploads/galeria", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ════════════════════════════════════════════════════════════════
@@ -68,6 +69,7 @@ try:
     from app.routes.reuniones import router as reuniones_router
     from app.routes.dashboard import router as dashboard_router
     from app.routes.carnets import router as carnets_router
+    from app.routes.galeria import router as galeria_router
     logger.info("✅ Rutas importadas correctamente")
 except Exception as e:
     logger.error(f"❌ Error importando rutas: {type(e).__name__}: {e}", exc_info=True)
@@ -89,6 +91,7 @@ try:
     app.include_router(reuniones_router, tags=["Reuniones"])
     app.include_router(dashboard_router, tags=["Dashboard"])
     app.include_router(carnets_router, tags=["Carnets"])
+    app.include_router(galeria_router, tags=["Galeria"])
     logger.info("✅ Rutas registradas en la aplicación")
 except Exception as e:
     logger.error(f"ERROR registrando rutas: {type(e).__name__}: {e}", exc_info=True)

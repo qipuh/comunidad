@@ -60,7 +60,7 @@
           <p>ECOSER presta servicios a las principales empresas mineras que operan en la región Moquegua.</p>
           <div class="clientes-logos">
             <div class="cliente-logo">
-              <img :src="'/uploads/img/clientes/aaquellaveco.jpg'" alt="Anglo American" />
+              <img :src="'/uploads/img/clientes/2222.png'" alt="Anglo American" />
             </div>
             <div class="cliente-logo">
               <img :src="'/uploads/img/clientes/southern-peru.jpg'" alt="Southern Perú" />
@@ -73,19 +73,77 @@
     <section class="section bg-light">
       <div class="container">
         <div class="section-head">
-          <span class="tag">Lo que ofrecemos</span>
-          <h2>Servicios ECOSER</h2>
+          <span class="tag">ECOSER en cifras</span>
+          <h2>Nuestra Empresa Comunal</h2>
         </div>
-        <div class="servicios-grid">
-          <div v-for="s in servicios" :key="s.nombre" class="servicio-card">
-            <img :src="s.img" :alt="s.nombre" />
-            <div class="sc-body">
-              <ion-icon :name="s.icon"></ion-icon>
-              <h3>{{ s.nombre }}</h3>
+
+        <div class="ec-catalogo-grid">
+          <div
+            v-for="s in catalogoServicios"
+            :key="s.nombre"
+            class="ec-cat-card"
+            :class="{ 'ec-cat-destacado': s.destacado, 'ec-cat-img': s.img }"
+          >
+            <img v-if="s.img" :src="s.img" :alt="s.nombre" class="ec-cat-img-el" />
+            <div class="ec-cat-body">
+              <span v-if="s.destacado" class="ec-nuevo-tag">Servicio destacado</span>
+              <div class="ec-cat-icon"><ion-icon :name="s.icon"></ion-icon></div>
+              <h4>{{ s.nombre }}</h4>
               <p>{{ s.desc }}</p>
             </div>
           </div>
         </div>
+
+        <div class="ec-consejo">
+          <div class="ec-periodo-card" v-for="(c, idx) in consejoAdministracion" :key="c.periodo">
+            <button
+              type="button"
+              class="ec-periodo-head"
+              :class="c.vigente ? 'vigente' : 'anterior'"
+              @click="toggleConsejo(idx)"
+            >
+              <span class="ec-periodo-tag">
+                <span class="ec-tag-badge" :class="c.vigente ? 'vigente' : 'anterior'">
+                  {{ c.vigente ? 'En ejercicio' : 'Período anterior' }}
+                </span>
+                <span class="ec-periodo-titulo" :class="c.vigente ? 'vigente' : 'anterior'">{{ c.periodo }}</span>
+              </span>
+              <ion-icon
+                name="chevron-down-outline"
+                class="ec-chevron"
+                :class="[c.vigente ? 'vigente' : 'anterior', { open: consejoAbiertos.includes(idx) }]"
+              ></ion-icon>
+            </button>
+            <div class="ec-periodo-body" v-show="consejoAbiertos.includes(idx)">
+              <div class="ec-dir-grid">
+                <div
+                  v-for="(m, i) in c.miembros"
+                  :key="m.cargo"
+                  class="ec-dir-item"
+                  :class="{ dg: i === 0 }"
+                >
+                  <div class="ec-dir-cargo">{{ m.cargo }}</div>
+                  <div class="ec-dir-nombre">{{ m.nombre }}</div>
+                </div>
+              </div>
+              <div v-if="c.asiento" class="ec-asiento-ref">
+                <ion-icon name="document-text-outline"></ion-icon>
+                Inscrito en Asiento {{ c.asiento }} · Partida Registral N° 11001608
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ec-registro-strip">
+          <ion-icon name="business-outline"></ion-icon>
+          <span>Empresa constituida por Escritura Pública N° 080 del 21/01/2020 · Notario Oscar Valencia Huisa, Moquegua · Inscrita en Partida Registral N° 11001608 · SUNARP Zona Registral XIII.</span>
+        </div>
+
+        <p class="ec-footer-note">
+          ECOSER TPCT es una empresa de propiedad colectiva de los comuneros de Tumilaca, Pocata, Coscore y Tala.<br />
+          Todos los beneficios se reinvierten en el desarrollo de la comunidad.
+        </p>
+
         <div class="ecoser-galeria">
           <div class="section-head">
             <span class="tag">ECOSER en acción</span>
@@ -132,9 +190,7 @@ const mediaAbierto = ref(null)
 const abrirMedia = (item) => { mediaAbierto.value = item }
 
 const galeriaEcoser = [
-  { tipo: 'imagen', src: '/uploads/img/ecoser/01.png', titulo: 'Operaciones en campo' },
   { tipo: 'imagen', src: '/uploads/img/ecoser/02.png', titulo: 'Equipo ECOSER' },
-  { tipo: 'imagen', src: '/uploads/img/ecoser/03.png', titulo: 'Servicio a la comunidad' },
   { tipo: 'video',  src: '/uploads/img/ecoser/01.mov', titulo: 'Video: trabajos en territorio' },
   { tipo: 'video',  src: '/uploads/img/ecoser/02.mov', titulo: 'Video: ECOSER en acción' },
 ]
@@ -160,12 +216,53 @@ const ventajas = [
   'Cumplimiento de acuerdos comunales',
 ]
 
-const servicios = [
-  { icon: 'car-outline', nombre: 'Alquiler de camionetas', desc: 'Flota de vehículos para transporte de personal y equipos en zonas de difícil acceso del distrito de Torata.', img: '/uploads/img/variadas/tala2.png' },
-  { icon: 'people-outline', nombre: 'Provisión de mano de obra', desc: 'Personal Usuario capacitado para labores de campo, construcción y operaciones en general.', img: '/uploads/img/variadas/tumilaca.png' },
-  { icon: 'cube-outline', nombre: 'Apoyo logístico', desc: 'Soporte integral en operaciones, abastecimiento y coordinación logística en el territorio comunal.', img: '/uploads/img/variadas/1.png' },
-  { icon: 'settings-outline', nombre: 'Servicios diversos', desc: 'Atención a requerimientos específicos de empresas e instituciones que operan en la zona de influencia.', img: '/uploads/img/variadas/2.png' },
+const catalogoServicios = [
+  { icon: 'bonfire-outline', nombre: 'Apoyo a exploración minera', desc: 'Construcción e implementación de campamentos para exploraciones. Apoyo logístico integral y suministro de personal comunal para trabajos de geofísica y actividades de campo.', destacado: true, img: '/uploads/img/ecoser/apoyologistico.jpeg' },
+  { icon: 'construct-outline', nombre: 'Obras civiles y construcción', desc: 'Edificaciones, vías, canales, obras de saneamiento y proyectos de infraestructura en general.', img: '/uploads/img/ecoser/3.jpeg' },
+  { icon: 'diamond-outline', nombre: 'Minería y laboratorio', desc: 'Actividades de cateo, exploración y explotación minera. Análisis de suelos, concretos y asfaltos.' },
+  { icon: 'car-outline', nombre: 'Transporte', desc: 'Transporte público de pasajeros y carga de concentrados y minerales a nivel local, regional y nacional.', img: '/uploads/img/variadas/tala2.png' },
+  { icon: 'cog-outline', nombre: 'Mantenimiento industrial', desc: 'Mantenimiento de plantas, equipos y maquinaria. Limpieza industrial y operación de instalaciones.' },
+  { icon: 'leaf-outline', nombre: 'Agroindustria', desc: 'Crianza de ganado, cultivos, procesamiento de productos agrícolas y comercialización agropecuaria.' },
+  { icon: 'stats-chart-outline', nombre: 'Consultoría', desc: 'Formulación y ejecución de proyectos de inversión. Consultoría social, ambiental y de ingeniería.' },
+  { icon: 'water-outline', nombre: 'Combustibles y energía', desc: 'Distribución de GLP y GNV. Estaciones de servicio y venta de lubricantes e hidrocarburos.' },
+  { icon: 'hammer-outline', nombre: 'Servicios generales', desc: 'Mecánica, electricidad, carpintería, limpieza industrial y mantenimiento de espacios comunes.', img: '/uploads/img/ecoser/2.jpeg' },
 ]
+
+const consejoAdministracion = [
+  {
+    periodo: 'Mayo 2026 — Mayo 2028',
+    vigente: true,
+    asiento: null,
+    miembros: [
+      { cargo: 'Director general', nombre: 'Miguel Ángel Lazo Coayla' },
+      { cargo: 'Subdirectora general', nombre: 'Dionilde Flora Flores Calizaya' },
+      { cargo: 'Sec. de actas y archivo', nombre: 'Patricia Lidia Flores Gutiérrez' },
+      { cargo: 'Director de economía', nombre: 'David Lucio Marca Arambulo' },
+      { cargo: 'Vocal', nombre: 'Marco Antonio Centeno Quispe' },
+      { cargo: 'Fiscal', nombre: 'Germán Fidel Coaila García' },
+    ],
+  },
+  {
+    periodo: 'Mayo 2023 — Mayo 2026',
+    vigente: false,
+    asiento: 'A000043',
+    miembros: [
+      { cargo: 'Director general', nombre: 'Rubén Benedicto Centeno Soto' },
+      { cargo: 'Subdirector general', nombre: 'Marcelo Julián Gutiérrez Mamani' },
+      { cargo: 'Sec. de actas y archivos', nombre: 'Angélica Vilma Paripanca Ramos' },
+      { cargo: 'Director de economía', nombre: 'Yonathan Michael Cabana Paripanca' },
+      { cargo: 'Vocal', nombre: 'Candelaria Hilda Cabana Cuaila' },
+      { cargo: 'Fiscal', nombre: 'José Bernardo Cuaila Coayla' },
+    ],
+  },
+]
+
+const consejoAbiertos = ref([0])
+function toggleConsejo(idx) {
+  const i = consejoAbiertos.value.indexOf(idx)
+  if (i === -1) consejoAbiertos.value.push(idx)
+  else consejoAbiertos.value.splice(i, 1)
+}
 </script>
 
 <style scoped>
@@ -202,14 +299,6 @@ const servicios = [
 .eco-lista { display: flex; flex-direction: column; gap: 14px; }
 .eco-item { display: flex; align-items: flex-start; gap: 12px; color: rgba(255,255,255,0.85); font-size: 15px; }
 .eco-item ion-icon { font-size: 20px; color: #86efac; flex-shrink: 0; margin-top: 2px; }
-
-.servicios-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 24px; margin-bottom: 48px; }
-.servicio-card { background: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.servicio-card img { width: 100%; height: 200px; object-fit: cover; }
-.sc-body { padding: 24px; }
-.sc-body ion-icon { font-size: 28px; color: #16a34a; margin-bottom: 10px; }
-.sc-body h3 { font-size: 18px; font-weight: 700; color: #1a2e1a; margin-bottom: 8px; }
-.sc-body p { font-size: 14px; color: #4a5e4a; line-height: 1.7; }
 
 .clientes-block {
   margin-top: 56px;
@@ -288,12 +377,65 @@ const servicios = [
 @media (max-width: 768px) {
   .lineas-grid { grid-template-columns: repeat(2,1fr); }
   .ecoser-grid { grid-template-columns: 1fr; }
-  .servicios-grid { grid-template-columns: 1fr; }
   .galeria-grid { grid-template-columns: repeat(2, 1fr); }
   .cta-ecoser { padding: 32px 24px; }
 }
 @media (max-width: 480px) {
   .lineas-grid { grid-template-columns: 1fr; }
   .galeria-grid { grid-template-columns: 1fr; }
+}
+
+.ec-catalogo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
+.ec-cat-card { position: relative; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; overflow: hidden; }
+.ec-cat-card.ec-cat-destacado { border: 1.5px solid #b45309; background: #fffbf0; }
+.ec-cat-card.ec-cat-img { padding: 0; display: flex; flex-direction: column; }
+.ec-cat-img-el { width: 100%; height: 160px; object-fit: cover; }
+.ec-cat-card.ec-cat-img .ec-cat-body { padding: 20px; }
+.ec-nuevo-tag { display: inline-block; font-size: 11px; font-weight: 700; background: #fef3c7; color: #7c3d12; border-radius: 6px; padding: 2px 10px; margin-bottom: 10px; }
+.ec-cat-icon { width: 44px; height: 44px; border-radius: 10px; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #16a34a; margin-bottom: 14px; }
+.ec-cat-card.ec-cat-destacado .ec-cat-icon { background: #ffedd5; color: #9a3412; }
+.ec-cat-card h4 { font-size: 15px; font-weight: 700; color: #1a2e1a; margin-bottom: 6px; }
+.ec-cat-card p { font-size: 13px; color: #64748b; line-height: 1.6; }
+
+/* ECOSER: CONSEJO DE ADMINISTRACIÓN */
+.ec-consejo { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.ec-periodo-card { border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; background: #fff; }
+.ec-periodo-head { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: none; cursor: pointer; font-family: inherit; text-align: left; }
+.ec-periodo-head.vigente { background: #16a34a; }
+.ec-periodo-head.anterior { background: #f1f5f9; }
+.ec-periodo-tag { display: flex; align-items: center; gap: 10px; }
+.ec-tag-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+.ec-tag-badge.vigente { background: rgba(255,255,255,0.2); color: #dcfce7; }
+.ec-tag-badge.anterior { background: #e2e8f0; color: #64748b; }
+.ec-periodo-titulo { font-size: 14px; font-weight: 700; }
+.ec-periodo-titulo.vigente { color: #fff; }
+.ec-periodo-titulo.anterior { color: #1a2e1a; }
+.ec-chevron { font-size: 18px; transition: transform 0.2s; }
+.ec-chevron.vigente { color: rgba(255,255,255,0.8); }
+.ec-chevron.anterior { color: #94a3b8; }
+.ec-chevron.open { transform: rotate(180deg); }
+
+.ec-periodo-body { padding: 16px 18px 20px; border-top: 1px solid #e2e8f0; background: #fff; }
+.ec-dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ec-dir-item { background: #f8fafc; border-radius: 10px; padding: 12px 14px; }
+.ec-dir-item.dg { grid-column: 1 / -1; background: #dcfce7; border: 1px solid #16a34a; }
+.ec-dir-cargo { font-size: 11px; font-weight: 700; color: #16a34a; text-transform: uppercase; letter-spacing: 0.04em; }
+.ec-dir-nombre { font-size: 14px; color: #1a2e1a; margin-top: 2px; }
+.ec-asiento-ref { font-size: 12px; color: #94a3b8; margin-top: 14px; display: flex; align-items: center; gap: 6px; }
+
+.ec-registro-strip { display: flex; align-items: flex-start; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; }
+.ec-registro-strip ion-icon { font-size: 20px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+.ec-registro-strip span { font-size: 13px; color: #64748b; line-height: 1.6; }
+
+.ec-footer-note { font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.6; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+
+@media (max-width: 1024px) {
+  .ec-catalogo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .ec-dir-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .ec-catalogo-grid { grid-template-columns: 1fr; }
 }
 </style>

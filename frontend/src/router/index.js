@@ -17,6 +17,7 @@ import VotacionView from '../components/dashboard/VotacionView.vue'
 import CarnetsView from '../components/dashboard/CarnetsView.vue'
 import ReunionesView from '../components/dashboard/ReunionesView.vue'
 import UsuarioPerfilView from '../components/dashboard/UsuarioPerfilView.vue'
+import GaleriaView from '../components/dashboard/GaleriaView.vue'
 // Vista exclusiva para rol usuario
 import UsuarioPanelView from '../components/dashboard/UsuarioPanelView.vue'
 
@@ -128,6 +129,12 @@ const routes = [
     path: '/carnets',
     name: 'carnets',
     component: CarnetsView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/galerias',
+    name: 'galerias',
+    component: GaleriaView,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
   // Comodín

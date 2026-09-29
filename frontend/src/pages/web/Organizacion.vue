@@ -82,16 +82,24 @@
           <h2>Autoridades por Anexos</h2>
         </div>
         <div class="anexos-grid">
-          <div v-for="a in anexos" :key="a.nombre" class="anexo-card">
+          <div v-for="a in anexos" :key="a.nombre" class="anexo-card" :class="{ 'anexo-destacado': a.miembros.length > 0 }">
             <div class="anexo-header">
               <ion-icon name="location-outline"></ion-icon>
               <h3>{{ a.nombre }}</h3>
             </div>
             <div class="cargos-lista">
-              <div v-for="c in cargosAnexo" :key="c" class="cargo-row">
-                <span class="cargo-label">{{ c }}</span>
-                <span class="cargo-vacio">Por designar</span>
-              </div>
+              <template v-if="a.miembros.length > 0">
+                <div v-for="m in a.miembros" :key="m.cargo" class="cargo-row">
+                  <span class="cargo-label">{{ m.cargo }}</span>
+                  <span class="cargo-nombre">{{ m.nombre }}</span>
+                </div>
+              </template>
+              <template v-else>
+                <div class="cargo-vacio-msg">
+                  <ion-icon name="time-outline"></ion-icon>
+                  Por designar
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -126,11 +134,20 @@ const directiva = [
 const comision = ['Paulina Paripanca', 'Wilmer Rojas Garay', 'Miguel Lazo', 'Marco Centeno']
 
 const anexos = [
-  { nombre: 'Anexo Pocata' }, { nombre: 'Anexo Coscore' },
-  { nombre: 'Anexo Tala' }, { nombre: 'Anexo Quebrada Honda' },
+  { nombre: 'Anexo Pocata', miembros: [] },
+  {
+    nombre: 'Junta Vecinal de Coscore',
+    miembros: [
+      { cargo: 'Presidente',     nombre: 'Peñaford César Escobar Pari' },
+      { cargo: 'Vicepresidente', nombre: 'Wilmer Santos Rojas Garay' },
+      { cargo: 'Secretario',     nombre: 'Tanislao Ruben Flores Copa' },
+      { cargo: 'Tesorero',       nombre: 'Claudina Cristina Cuaila Gutierrez' },
+      { cargo: 'Vocal',          nombre: 'Graciela Rosmery Cuaila Venancio' },
+    ]
+  },
+  { nombre: 'Anexo Tala', miembros: [] },
+  { nombre: 'Anexo Quebrada Honda', miembros: [] },
 ]
-
-const cargosAnexo = ['Presidente', 'Vicepresidente', 'Tesorero', 'Fiscal']
 </script>
 
 <style scoped>
@@ -219,6 +236,11 @@ const cargosAnexo = ['Presidente', 'Vicepresidente', 'Tesorero', 'Fiscal']
 .cargo-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
 .cargo-label { font-size: 14px; font-weight: 600; color: #1e293b; }
 .cargo-vacio { font-size: 12px; color: #94a3b8; background: #f1f5f9; padding: 2px 10px; border-radius: 100px; }
+.cargo-nombre { font-size: 13px; font-weight: 600; color: #1a2e1a; }
+.cargo-vacio-msg { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #94a3b8; padding: 8px 0; }
+.anexo-destacado { border-color: #16a34a; box-shadow: 0 4px 16px rgba(22,163,74,0.12); }
+.anexo-destacado .anexo-header { background: #f0fdf4; }
+.anexo-destacado .anexo-header h3 { color: #15803d; }
 
 .asamblea-box { text-align: center; color: white; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
 .asamblea-box ion-icon { font-size: 64px; color: #86efac; }
